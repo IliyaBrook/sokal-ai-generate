@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { ErrorIcon, InfoIcon, SuccessIcon, WarningIcon, CloseIcon } from '@/components'
+import { CloseIcon, ErrorIcon, InfoIcon, SuccessIcon, WarningIcon } from '@/components/svgIcons'
 
 import { cn } from '@/utils/cn'
 
