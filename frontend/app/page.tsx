@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -14,7 +15,9 @@ export default function Home() {
           This will enable you to generate high-quality content tailored to your needs.
         </p>
         <div className="text-center">
-          <Button className="bg-blue-600 hover:bg-blue-700">Get Started</Button>
+          <Link href="/sign-up">
+            <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer">Get Started</Button>
+          </Link>
         </div>
       </div>
     </main>
