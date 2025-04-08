@@ -22,8 +22,8 @@ import { useAuth } from '@/hooks/useAuth'
 import type { IAuthResponse } from '@sokal_ai_generate/shared-types'
 
 const signInSchema = z.object({
-  email: z.string().email('Неверный формат email'),
-  password: z.string().min(6, 'Пароль должен быть не менее 6 символов'),
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 })
 
 type SignInForm = z.infer<typeof signInSchema>
@@ -51,7 +51,7 @@ export default function SignIn() {
         router.push('/dashboard')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Произошла ошибка при входе')
+      setError(err instanceof Error ? err.message : 'Sign in error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -61,9 +61,9 @@ export default function SignIn() {
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-6 shadow-lg">
         <div className="text-center">
-          <h2 className="text-3xl font-bold">Вход в систему</h2>
+          <h2 className="text-3xl font-bold">Sign In</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Введите свои учетные данные для входа
+            Enter your credentials to access your account
           </p>
         </div>
 
@@ -92,11 +92,10 @@ export default function SignIn() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Пароль</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="••••••"
                       {...field}
                     />
                   </FormControl>
@@ -110,7 +109,7 @@ export default function SignIn() {
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? 'Вход...' : 'Войти'}
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
         </Form>

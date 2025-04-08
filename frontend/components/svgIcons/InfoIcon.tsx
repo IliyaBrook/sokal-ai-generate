@@ -30,3 +30,4 @@ const InfoIcon = (props: TDiv) => (
 )
 
 export default InfoIcon
+
