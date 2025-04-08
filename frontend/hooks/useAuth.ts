@@ -1,44 +1,71 @@
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import type { IAuthResponse } from '@sokal_ai_generate/shared-types'
 
-interface SignInData {
-  email: string
-  password: string
+interface AuthOptions {
+  endpoint: string
+  method?: 'POST' | 'PUT' | 'PATCH'
+  headers?: Record<string, string>
 }
 
 export const useAuth = () => {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const signIn = async (data: SignInData): Promise<IAuthResponse | null> => {
+  const authRequest = async <T extends Record<string, any>>(
+    data: T,
+    options: AuthOptions
+  ): Promise<IAuthResponse | null> => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/users/sign-in', {
-        method: 'POST',
+      setError(null)
+
+      const response = await fetch(options.endpoint, {
+        method: options.method || 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...options.headers,
         },
         body: JSON.stringify(data),
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Ошибка при входе')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Authentication error')
       }
 
       const result = await response.json()
       return result
     } catch (error) {
+      setError(error instanceof Error ? error.message : 'Authentication error')
       throw error
     } finally {
       setIsLoading(false)
     }
   }
 
+  const signIn = async (data: { email: string; password: string }) => {
+    return authRequest(data, {
+      endpoint: '/api/users/sign-in',
+    })
+  }
+
+  const signUp = async (data: {
+    email: string
+    password: string
+    firstname: string
+    lastname: string
+  }) => {
+    return authRequest(data, {
+      endpoint: '/api/users/sign-up',
+    })
+  }
+
   return {
     signIn,
+    signUp,
     isLoading,
+    error,
+    setError,
   }
 } 

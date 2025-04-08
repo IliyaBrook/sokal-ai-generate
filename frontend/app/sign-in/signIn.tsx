@@ -30,9 +30,8 @@ type SignInForm = z.infer<typeof signInSchema>
 
 export default function SignIn() {
   const router = useRouter()
-  const { signIn } = useAuth()
-  const [error, setError] = React.useState<string>('')
-  const [isLoading, setIsLoading] = React.useState(false)
+  const { signIn, isLoading, error, setError } = useAuth()
+  const [localError, setLocalError] = React.useState<string>('')
 
   const form = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -44,16 +43,13 @@ export default function SignIn() {
 
   const onSubmit = async (data: SignInForm) => {
     try {
-      setIsLoading(true)
-      setError('')
+      setLocalError('')
       const response = await signIn(data)
       if (response) {
         router.push('/dashboard')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign in error occurred')
-    } finally {
-      setIsLoading(false)
+      setLocalError(err instanceof Error ? err.message : 'Sign in error occurred')
     }
   }
 
@@ -96,6 +92,7 @@ export default function SignIn() {
                   <FormControl>
                     <Input
                       type="password"
+                      placeholder="••••••"
                       {...field}
                     />
                   </FormControl>
@@ -116,9 +113,12 @@ export default function SignIn() {
 
         <Alert
           type="error"
-          message={error}
-          isShown={!!error}
-          onClose={() => setError('')}
+          message={error || localError}
+          isShown={!!(error || localError)}
+          onClose={() => {
+            setError(null)
+            setLocalError('')
+          }}
         />
       </div>
     </div>
