@@ -74,9 +74,12 @@ export const NavBar = (): ReactElement => {
             <button
               onClick={HndleMobileDropdown}
               type="button"
-              className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
+              className={cn(
+                "relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset",
+                isMobileMenuOpen ? "bg-gray-700 text-white" : ""
+              )}
               aria-controls="mobile-menu"
-              aria-expanded="false"
+              aria-expanded={isMobileMenuOpen}
             >
               <span className="absolute -inset-0.5"></span>
               <span className="sr-only">Open main menu</span>
@@ -228,7 +231,19 @@ export const NavBar = (): ReactElement => {
           </div>
         </div>
       </div>
-      <div className="sm:hidden" id="mobile-menu">
+      <div className={cn(
+        "sm:hidden",
+        isMobileMenuOpen ? "block" : "hidden",
+        "transition-all duration-200 ease-in-out",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out",
+        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2"
+      )} 
+      id="mobile-menu"
+      data-state={isMobileMenuOpen ? "open" : "closed"}
+      data-side="bottom"
+      >
         <div className="space-y-1 px-2 pt-2 pb-3">
           <Link
             href={"/"}
