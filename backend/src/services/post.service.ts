@@ -71,11 +71,20 @@ export class PostService {
     return true
   }
 
-  async generatePost(generatePostDto: GeneratePostDto): Promise<{ title: string; content: string }> {
+  async generatePost(userId: string, generatePostDto: GeneratePostDto): Promise<TPostDocument> {
     // Заглушка, будет заменена на реальную интеграцию с OpenAI
-    const title = `Generated post about ${generatePostDto.topic}`
-    const content = `This is a generated content about ${generatePostDto.topic} in ${generatePostDto.style} style.`
+    const title = `Generated post about ${generatePostDto.topic}`;
+    const content = `This is a generated content about ${generatePostDto.topic} in ${generatePostDto.style} style.`;
     
-    return { title, content }
+    const createPostDto: CreatePostDto = {
+      title,
+      content,
+      topic: generatePostDto.topic,
+      style: generatePostDto.style,
+      // Другие поля, если они нужны для CreatePostDto, например, status: 'draft'
+    };
+
+    const savedPost = await this.createPost(userId, createPostDto);
+    return savedPost;
   }
 } 

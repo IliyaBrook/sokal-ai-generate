@@ -16,6 +16,7 @@ import { CreatePostDto, GeneratePostDto, PostDto, UpdatePostDto } from '@/dto'
 import { JwtAuthGuard } from '@/guards'
 import { PostService } from '@/services'
 import { RequestWithUser } from '@/types'
+import { Post as PostSchema, TPostDocument } from '@/schemas'
 
 @Controller('posts')
 export class PostController {
@@ -24,10 +25,12 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   @Post('generate')
   async generatePost(
+    @Req() req: RequestWithUser,
     @Body() generatePostDto: GeneratePostDto,
   ) {
-    const generatedContent = await this.postService.generatePost(generatePostDto)
-    return generatedContent
+    const userId = req.user.id
+    const generatedPost = await this.postService.generatePost(userId, generatePostDto)
+    return new PostDto(generatedPost)
   }
 
   @UseGuards(JwtAuthGuard)
