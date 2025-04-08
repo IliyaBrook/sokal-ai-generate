@@ -1,0 +1,113 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+**🛠️ Advanced Home Assignment: AI-Powered Content Generator (Fullstack & Scalable)**
+
+**📌 Objective**
+
+We want to see how you can **quickly build, deploy, and scale** an AI-driven web app that provides **dynamic content generation**. The app should be built using **React, Node.js, and modern cloud tools**, and should be fully **dockerized, scalable, and production-ready**.
+
+At the end of the task, you will also write a **technical document** describing your thought process, technical choices, and how you approached the task.
+
+⏳ **Expected Completion Time: 5-6 hours**
+
+**🎯 Task Overview**
+
+You will develop a **Scalable AI-Powered Web App** that allows users to:  
+✅ **Generate AI-powered blog posts** based on user input.  
+✅ **Edit & save drafts** in a simple user dashboard.  
+✅ **Share generated content via a public link.**  
+✅ **Support multi-user authentication (basic auth or JWT).**  
+✅ **Ensure the app is Dockerized and cloud-deployable.**
+
+**🛠️ Requirements**
+
+**1️. Frontend (React + Next.js with ShadCN UI)**
+
+- **Use ShadCN UI** ([*https://ui.shadcn.com/*](mdc:https:/ui.shadcn.com)) for a clean and modern UI.
+
+- **User Authentication System** (Login/Signup with JWT or OAuth).
+
+- A **user dashboard** where users can:
+
+  - Enter a **topic and writing style** (e.g., "Tech News in a Professional Tone").
+
+  - Click "Generate" to create an **AI-generated blog post**.
+
+  - Edit & save drafts for later use.
+
+  - View a list of their previously generated posts.
+
+- A **publicly shareable page** for each post (e.g., yourapp.com/posts/1234).
+
+- Use **React Query / SWR** for efficient API requests.
+
+**2️. Backend (Node.js + Express / Fastify / NestJS)**
+
+- A **RESTful API** with the following endpoints:
+
+  - POST /auth/signup → Register users.
+
+  - POST /auth/login → Authenticate users and return JWT.
+
+  - POST /generate → Accepts input (topic, style) and calls **OpenAI API (or Hugging Face LLMs)** to generate a blog post.
+
+  - POST /posts/save → Saves a generated post to the database.
+
+  - GET /posts/user → Fetches a user’s saved posts.
+
+  - GET /posts/:id → Returns a single post for public viewing.
+
+- **Database Integration**: Use **PostgreSQL / MongoDB / Firebase** to store user data and posts.
+
+- Implement **rate-limiting** (to prevent excessive API calls).
+
+- Add **basic logging** and error handling for API failures.
+
+**3️. Deployment & Scalability**
+
+- **Dockerize** both frontend & backend (separate services).
+
+- Use **Docker Compose** to manage both services.
+
+- Deploy to **Vercel, AWS, Render, or another cloud provider**.
+
+- Set up **auto-scaling** (Cloud Functions, Kubernetes, or Load Balancer).
+
+- Use **Redis or Cloudflare caching** to optimize API response times.
+
+**📝 Documentation Requirement (MANDATORY)**
+
+At the end of the task, write a short **technical document (Markdown or PDF)** explaining:
+
+1.  **Architecture Overview** → Describe how the system is structured.
+
+2.  **Tech Stack & Choices** → Why did you choose certain tools/frameworks?
+
+3.  **Deployment Strategy** → How did you ensure scalability & performance?
+
+4.  **Challenges & Solutions** → What challenges did you face, and how did you solve them?
+
+5.  **Improvements & Next Steps** → If you had more time, what would you improve?
+
+**🔗 Bonus Features (Not Mandatory, but Impressive!)**
+
+🔹 **Integrate a WYSIWYG editor** (Quill.js, TipTap, or Editor.js) for content customization.  
+🔹 Implement **a scheduling feature** that allows users to publish posts at a future date.  
+🔹 Use **WebSockets** for real-time collaboration (allow multiple users to edit a post together).  
+🔹 Deploy the app with **CI/CD (GitHub Actions, GitLab CI, or Jenkins)**.  
+🔹 Add **Admin Panel (e.g., Strapi or custom-built)** to manage users & posts.  
+🔹 Implement **Multi-Language Support (i18n)** for the UI.
+
+**🔗 Submission Guidelines**
+
+1️⃣ Push your code to a **GitHub repository**.  
+2️⃣ Include a **README.md** with setup instructions.  
+3️⃣ Deploy the app and provide a **live demo link**.  
+4️⃣ Submit a **technical document** describing the implementation process.
+
+📩 Send us the GitHub repo, live link, and documentation when you're done!
+
+This version ensures the candidate **demonstrates real-world development skills**, **follows best practices**, and **documents their work**—which is crucial for an innovation team. 🚀

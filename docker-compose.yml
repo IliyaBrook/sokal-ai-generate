@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:8.0
+    restart: always
+    container_name: mongodb
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    networks:
+      - sokal-ai-network
+
+  backend:
+    build: 
+      context: .
+      dockerfile: ./backend/Dockerfile
+    ports:
+      - "4001:4000"
+    environment:
+      PORT: ${SERVER_PORT}
+      JWT_ACCESS_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_SECRET}
+      DB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/sokal-ai-db?authSource=admin
+      NODE_ENV: production
+    depends_on:
+      - mongodb
+    networks:
+      - sokal-ai-network
+
+  frontend:
+    build: 
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    ports:
+      - "80:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:4000
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - sokal-ai-network
+
+networks:
+  sokal-ai-network:
+    name: sokal-ai-network
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  backend_node_modules:
+  frontend_node_modules:
+  terminal_settings: 

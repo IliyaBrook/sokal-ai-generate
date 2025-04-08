@@ -1,0 +1,41 @@
+{
+  "name": "sokal_ai_generate",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sokal_ai  AI-Powered Content Generator",
+  "main": "index.js",
+  "repository": "https://github.com/IliyaBrook/AlexGold",
+  "author": "iliyabrook <iliyabrook1987@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0 <23.0.0"
+  },
+  "scripts": {
+    "watch:types": "yarn --cwd shared-types watch",
+    "start:production": "yarn build && cross-env PORT=80 yarn --cwd backend start",
+    "build": "yarn build:server && yarn build:client",
+    "build:server": "yarn --cwd backend build",
+    "build:client": "yarn --cwd frontend build",
+    "dev": "concurrently \"yarn watch:types\" \"yarn --cwd backend start:dev\" \"yarn --cwd frontend dev\"",
+    "dev:server": "yarn --cwd backend start:dev",
+    "dev:client": "yarn --cwd frontend dev",
+    "lint": "yarn lint:server && yarn lint:client",
+    "lint:server": "yarn --cwd backend lint",
+    "lint:client": "yarn --cwd frontend lint",
+    "format": "yarn format:server && yarn format:client",
+    "format:server": "yarn --cwd backend format",
+    "format:client": "yarn --cwd frontend format"
+  },
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared-types",
+    "configs"
+  ],
+  "dependencies": {
+    "cross-env": "^7.0.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

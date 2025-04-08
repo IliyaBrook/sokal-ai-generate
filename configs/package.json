@@ -1,0 +1,13 @@
+{
+	"name": "@sokal_ai_generate/configs",
+	"version": "1.0.2",
+	"type": "module",
+	"author": "Iliya Brook <iliyabrook1987@gmail.com>",
+	"license": "ISC",
+	"keywords": [],
+	"private": true,
+	"exports": {
+		"./eslint": "./eslint-global-rules.js",
+		"./prettier": "./prettier-global.config.js"
+	}
+}

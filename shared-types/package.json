@@ -1,0 +1,18 @@
+{
+	"name": "@sokal_ai_generate/shared-types",
+	"version": "1.0.0",
+	"main": "dist/index",
+	"private": true,
+	"description": "Shared TypeScript types for Family Games",
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch"
+	},
+	"author": "Iliya Brook <iliyabrook1987@gmail.com>",
+	"license": "MIT",
+	"keywords": [],
+	"devDependencies": {
+		"typescript": "~5.7.2",
+		"mongoose": "^8.12.1"
+	}
+}
