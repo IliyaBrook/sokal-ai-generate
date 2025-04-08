@@ -1,3 +1,5 @@
+"use client"
+
 import type { IAuthResponse, IUser } from '@sokal_ai_generate/shared-types'
 import React, {
   type Dispatch,
@@ -15,15 +17,16 @@ interface IUserDataProvider {
   setUserData: Dispatch<SetStateAction<IUser | null>>
 }
 
-export const UserDataProvider =
+export const UserDataContext =
   React.createContext<IUserDataProvider | null>(null)
 
-export const UserDataContext: React.FC<IUserDataContext> = ({
+export const UserDataProvider: React.FC<IUserDataContext> = ({
   children,
 }) => {
   const [userData, setUserData] = React.useState<IUser | null>(null)
   const navigate = useRouter()
   const pathname = usePathname()
+  // Todo use isLoading
   const [isLoading, setIsLoading] = React.useState(false)
 
   useLayoutEffect(() => {
@@ -69,8 +72,8 @@ export const UserDataContext: React.FC<IUserDataContext> = ({
   }
 
   return (
-    <UserDataProvider.Provider value={providedData}>
+    <UserDataContext.Provider value={providedData}>
       {children}
-    </UserDataProvider.Provider>
+    </UserDataContext.Provider>
   )
 }

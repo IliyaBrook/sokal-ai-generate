@@ -1,6 +1,6 @@
 import { Exclude, Expose } from 'class-transformer'
 import { IsEmail, IsOptional, MinLength } from 'class-validator'
-import { IUser, TUserRoles, IAuthResponse } from '@sokal_ai_generate/shared-types'
+import { IUser, IAuthResponse } from '@sokal_ai_generate/shared-types'
 
 export class UserDto implements Omit<IUser, 'password'> {
   @Expose()
@@ -16,9 +16,6 @@ export class UserDto implements Omit<IUser, 'password'> {
   email!: string
 
   @Expose()
-  role: TUserRoles
-
-  @Expose()
   createdAt: Date
 
   @Expose()
@@ -29,7 +26,6 @@ export class UserDto implements Omit<IUser, 'password'> {
     this.firstname = user.firstname
     this.lastname = user.lastname
     this.email = user.email
-    this.role = user.role
   }
 }
 
@@ -53,7 +49,6 @@ export class UserSignInResponseDto {
     firstname: string
     lastname?: string
     email: string
-    role?: TUserRoles
   }
 
   constructor(accessToken: string, user: IAuthResponse) {
@@ -62,8 +57,7 @@ export class UserSignInResponseDto {
       id: user.user.id,
       firstname: user.user.firstname,
       lastname: user.user.lastname,
-      email: user.user.email,
-      role: user.user.role,
+      email: user.user.email
     }
   }
 }
@@ -77,7 +71,4 @@ export class SignUpDto {
 
   @MinLength(2)
   name: string
-
-  @IsOptional()
-  role?: TUserRoles
 }

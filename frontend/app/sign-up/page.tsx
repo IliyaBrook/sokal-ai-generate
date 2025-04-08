@@ -1,4 +1,7 @@
+
+import SignUp from "./signUp";
+
 export default function SignUpPage() {
-  return <div>SignUpPage</div>;
+  return <div><SignUp/></div>;
 }
 

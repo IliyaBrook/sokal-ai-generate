@@ -45,9 +45,13 @@ export const useAuth = () => {
   }
 
   const signIn = async (data: { email: string; password: string }) => {
-    return authRequest(data, {
+    const result = await authRequest(data, {
       endpoint: '/api/users/sign-in',
     })
+    if (result?.accessToken) {
+      localStorage.setItem('accessToken', result.accessToken)
+    }
+    return result
   }
 
   const signUp = async (data: {
@@ -56,9 +60,13 @@ export const useAuth = () => {
     firstname: string
     lastname: string
   }) => {
-    return authRequest(data, {
+    const result = await authRequest(data, {
       endpoint: '/api/users/sign-up',
     })
+    if (result?.accessToken) {
+      localStorage.setItem('accessToken', result.accessToken)
+    }
+    return result
   }
 
   return {

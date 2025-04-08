@@ -2,8 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose'
 import { schemaOptions } from '.'
 
-import { TUserRoles } from '@sokal_ai_generate/shared-types'
-
 export type TUserDocument = HydratedDocument<User> & {
   id: string
 }
@@ -21,9 +19,6 @@ export class User {
 
   @Prop({ required: true })
   password: string
-
-  @Prop({ required: true, enum: ['admin', 'user'] })
-  role: TUserRoles
 
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Post' }] })
   posts: string[]

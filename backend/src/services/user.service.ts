@@ -56,7 +56,7 @@ export class UserService {
     if (page !== undefined && limit !== undefined) {
       const offset = (page - 1) * limit
       query = query
-        .find({}, 'name email password role')
+        .find({}, 'name email password')
         .sort({
           createdAt: -1,
         })

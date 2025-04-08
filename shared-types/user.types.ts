@@ -3,14 +3,11 @@ export interface IUser {
   email: string
   firstname: string
   lastname: string
-  role: TUserRoles
   password?: string
   posts?: string[]
   createdAt: Date
   updatedAt: Date
 }
-
-export type TUserRoles = 'admin' | 'user'
 
 export interface IRefreshToken {
   token: string

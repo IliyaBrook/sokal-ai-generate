@@ -19,7 +19,7 @@ import { Request, Response } from 'express'
 import { UserSignInResponseDto } from '../dto/user.dto'
 
 import { SignInDto, SignUpDto, UserDto } from '@/dto'
-import { CheckAdminGuard, JwtAuthGuard } from '@/guards'
+import { JwtAuthGuard } from '@/guards'
 import { TokenService, UserService } from '@/services'
 import type { IUser, RequestWithUser } from '@/types'
 
@@ -172,23 +172,25 @@ export class UserController {
     return user
   }
 
-  // admin routes
-  @UseGuards(CheckAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async updateUser(
     @Req() req: RequestWithUser,
     @Param('id')
     id: string,
     @Body()
-    userData: IUser,
+    userData: Partial<IUser>,
   ) {
-    const updatedUser = await this.userService.updateUser(
-      id,
-      userData,
-    )
-    if (!updatedUser) {
-      throw new NotFoundException(`User with ID ${id} not found`)
+    if (req.user.id !== id) {
+      throw new ForbiddenException(
+        'You are not allowed to update this user.',
+      );
     }
-    return updatedUser
+
+    const updatedUser = await this.userService.updateUser(id, userData);
+    if (!updatedUser) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return new UserDto(updatedUser);
   }
 }

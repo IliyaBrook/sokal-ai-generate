@@ -5,8 +5,7 @@
             "firstname": "Iliya",
             "lastname": "Brook",
             "password": "123456",
-            "email": "iliyabrook1987@gmail.com",
-            "role": "admin"
+            "email": "iliyabrook1987@gmail.com"
         },
         "local":{
             "hostname": "http://localhost"

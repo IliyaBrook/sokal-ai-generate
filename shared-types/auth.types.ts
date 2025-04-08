@@ -1,4 +1,4 @@
-import { IUser, TUserRoles } from './user.types'
+import { IUser } from './user.types'
 
 export interface IAuthResponse {
   user: IUser
@@ -11,7 +11,6 @@ export interface ISignUpData {
   password: string
   firstname: string
   lastname: string
-  role?: TUserRoles
 } 
 
 export interface ISignInData {
