@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -21,6 +22,8 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@sokal_ai_generate/configs": "*",
+    "@sokal_ai_generate/shared-types": "*",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -28,8 +31,6 @@
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "@sokal_ai_generate/shared-types":"*",
-    "@sokal_ai_generate/configs": "*"
+    "typescript": "^5"
   }
 }

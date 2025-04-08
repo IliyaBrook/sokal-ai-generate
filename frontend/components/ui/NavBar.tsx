@@ -5,8 +5,17 @@ import React, { type ReactElement, useContext, useState } from "react";
 
 import useOutsideClick from "@/hooks/useOutsideClick";
 import useSetNavActiveClass from "@/hooks/useSetNavActiveClass";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 import { UserDataProvider } from "@/contexts/UserData.context";
+import { cn } from "@/utils";
 
 export const NavBar = (): ReactElement => {
   const setDesktopClasses = useSetNavActiveClass({
@@ -22,6 +31,7 @@ export const NavBar = (): ReactElement => {
   });
 
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const dropdownRef = React.useRef(null);
   const handleMenuOpen = () => {
     setIsMenuOpen((prev) => !prev);
@@ -31,6 +41,10 @@ export const NavBar = (): ReactElement => {
 
   const contextData = useContext(UserDataProvider);
   console.log("contextData:", contextData);
+
+  const HndleMobileDropdown = () => {
+    setIsMobileMenuOpen((prev) => !prev);
+  };
 
   const handleLogOut = () => {
     try {
@@ -58,6 +72,7 @@ export const NavBar = (): ReactElement => {
         <div className="relative flex h-16 items-center justify-between">
           <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
             <button
+              onClick={HndleMobileDropdown}
               type="button"
               className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
               aria-controls="mobile-menu"
