@@ -7,7 +7,6 @@ export const PostList = ({ posts }: { posts: IPost[] }) => {
   const handlePublish = async (postId: string) => {
     try {
       const token = localStorage.getItem('accessToken');
-      console.log('Token:', token ? 'Token exists' : 'No token found');
       
       if (!token) {
         throw new Error('No access token found');
@@ -21,8 +20,7 @@ export const PostList = ({ posts }: { posts: IPost[] }) => {
         },
         body: JSON.stringify({ isPublished: true }),
       })
-      
-      console.log('Response status:', response.status);
+    
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -39,11 +37,10 @@ export const PostList = ({ posts }: { posts: IPost[] }) => {
     }
   }
 
-
   return (
     <div className="grid gap-6">
       {
-       !Array.isArray(posts) || posts?.length !== 0 ? (
+       !Array.isArray(posts) || posts?.length === 0 ? (
           <div className="flex justify-center items-center h-full">
             <p className="text-gray-500">No posts found</p>
           </div>

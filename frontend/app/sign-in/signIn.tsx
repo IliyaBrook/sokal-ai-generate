@@ -68,7 +68,7 @@ export default function SignIn() {
       setLocalError('')
       const response = await signIn(data)
       if (response) {
-        router.push('/')
+        router.push('/users/posts')
       }
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Sign in error occurred')

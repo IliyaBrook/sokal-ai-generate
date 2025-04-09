@@ -13,7 +13,7 @@ const getPublicPosts = async () => {
       cache: "no-store",
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      return [];
     }
     return await response.json();
   } catch (error) {

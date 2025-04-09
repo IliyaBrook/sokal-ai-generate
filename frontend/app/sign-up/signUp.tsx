@@ -71,7 +71,7 @@ export default function SignUp() {
       setLocalError("");
       const response = await signUp(data);
       if (response) {
-        router.push("/");
+        router.push("/users/posts");
       }
     } catch (err) {
       setLocalError(

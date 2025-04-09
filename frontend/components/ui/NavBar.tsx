@@ -178,7 +178,7 @@ export const NavBar = (): ReactElement => {
                       Your Profile
                     </Link>
                     <Link
-                      href={`/users/posts/${contextData?.userData?.id}`}
+                      href="/users/posts"
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       id="user-menu-item-1"
@@ -229,6 +229,9 @@ export const NavBar = (): ReactElement => {
               </Link>
               <Link href={"/sign-up"} className={setMobileClasses("/sign-up")}>
                 Registration
+              </Link>
+              <Link href="/users/posts" className={setMobileClasses("/sign-up")}>
+                Posts
               </Link>
             </>
           )}

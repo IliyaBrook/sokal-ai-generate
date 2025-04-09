@@ -28,7 +28,7 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
   const pathname = usePathname()
   // Todo use isLoading
   const [isLoading, setIsLoading] = React.useState(false)
-  const publicPaths = ['/', '/sign-in', '/sign-up']
+  // const publicPaths = ['/', '/sign-in', '/sign-up']
 
   useLayoutEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -67,11 +67,11 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
     }
   }, [pathname])
 
-  useLayoutEffect(() => {
-    if (!userData && !publicPaths.includes(pathname)) {
-      navigate.push('/')
-    }
-  }, [userData, pathname, navigate])
+  // useLayoutEffect(() => {
+  //   if (!userData && !publicPaths.includes(pathname)) {
+  //     navigate.push('/')
+  //   }
+  // }, [userData, pathname, navigate])
 
   const providedData = {
     userData,
