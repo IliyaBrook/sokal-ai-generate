@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button } from '../ui'
+import { Button } from '@/components/ui'
 
 interface GeneratePostProps {
   userId: string
@@ -11,7 +11,8 @@ export const GeneratePost = ({ userId, onPostGenerated }: GeneratePostProps) => 
   const [style, setStyle] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (e: React.MouseEvent) => {
+    e.preventDefault()
     if (!topic || !style) return
 
     setIsGenerating(true)
@@ -20,6 +21,7 @@ export const GeneratePost = ({ userId, onPostGenerated }: GeneratePostProps) => 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify({ topic, style }),
       })
@@ -76,10 +78,8 @@ export const GeneratePost = ({ userId, onPostGenerated }: GeneratePostProps) => 
           />
         </div>
         <Button
-          variant="secondary"
           onClick={handleGenerate}
           disabled={isGenerating || !topic || !style}
-          //className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-400"
         >
           {isGenerating ? 'Generating...' : 'Generate Post'}
         </Button>

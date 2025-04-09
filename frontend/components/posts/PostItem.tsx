@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { IPost } from '@/types';
 import {
   Card,
@@ -14,12 +15,27 @@ interface PostItemProps {
 }
 
 export const PostItem = ({ post, onPublish }: PostItemProps) => {
+  const [isPublished, setIsPublished] = useState(post.isPublished);
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    try {
+      await onPublish(post.id);
+      setIsPublished(true);
+    } catch (error) {
+      console.error('Error publishing post:', error);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   return (
     <Card key={post.id}>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
         <CardDescription>
-          {post.isPublished ? 'Published' : 'Draft'}
+          {isPublished ? 'Published' : 'Draft'}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -29,12 +45,13 @@ export const PostItem = ({ post, onPublish }: PostItemProps) => {
         <span className="text-sm text-gray-500">
           {new Date(post.createdAt).toLocaleDateString()}
         </span>
-        {!post.isPublished && (
+        {!isPublished && (
           <button
-            onClick={() => onPublish(post.id)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer"
+            onClick={handlePublish}
+            disabled={isPublishing}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer disabled:opacity-50"
           >
-            Publish
+            {isPublishing ? 'Publishing...' : 'Publish'}
           </button>
         )}
       </CardFooter>
