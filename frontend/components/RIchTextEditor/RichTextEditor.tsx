@@ -6,7 +6,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { all, createLowlight } from "lowlight";
 import dynamic from 'next/dynamic';
-// import "./RichTextEditor.scss";
+import "./RichTextEditor.scss";
 
 import css from 'highlight.js/lib/languages/css';
 import js from 'highlight.js/lib/languages/javascript';
@@ -25,10 +25,11 @@ import "highlight.js/scss/atom-one-dark.scss";
 
 interface RichTextEditorProps {
   content: string;
-  onUpdate: (content: string) => void;
+  onUpdate?: (content: string) => void;
+  mode?: "preview" | "published";
 }
 
-const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => {
+const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview" }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -54,8 +55,11 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => 
     ],
     content,
     onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML());
+      if (onUpdate && typeof onUpdate === 'function') {
+        onUpdate(editor.getHTML());
+      }
     },
+    editable: mode === "published",
     immediatelyRender: false,
   });
 
@@ -68,7 +72,7 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => 
 
   return (
     <div className="border rounded-lg p-4">
-      <div className="flex gap-2 mb-4 flex-wrap">
+      {mode === "published" && <div className="flex gap-2 mb-4 flex-wrap">
         <button
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           className={getActiveButtonStyles("codeBlock")}
@@ -176,10 +180,10 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => 
         >
           Clear nodes
         </button>
-      </div>
+      </div>}
 
       <EditorContent
-      
+        
         editor={editor}
         className="prose max-w-none rich-text-editor-content"
       />

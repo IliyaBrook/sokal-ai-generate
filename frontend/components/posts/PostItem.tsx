@@ -59,7 +59,7 @@ export const PostItem = ({
     <Card {...props}>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
-        <CardDescription>{isPublished ? "Published" : "Draft"}</CardDescription>
+        {mode === "published" && <CardDescription>{isPublished ? "Published" : "Draft"}</CardDescription>}
       </CardHeader>
       <CardContent>
         {isEditing ? (
@@ -84,12 +84,10 @@ export const PostItem = ({
             </div>
           </>
         ) : (
-          <div className="rich-text-content-wrapper">
-            <div
-              className="prose max-w-none rich-text-editor-content"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-          </div>
+          <RichTextEditor
+            content={post.content}
+            mode={isEditing ? "published" : "preview"}
+        />
         )}
       </CardContent>
       <CardFooter className="flex justify-between">
