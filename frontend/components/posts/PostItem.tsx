@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { IPost } from "@/types";
-import { TipTapEditor } from "../editor/TipTapEditor";
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "../ui";
+import { RichTextEditor } from "../editor/RichTextEditor";
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
@@ -20,7 +20,13 @@ interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   mode?: "preview" | "published";
 }
 
-export const PostItem = ({ post, onPublish, onEdit, mode, ...props }: PostItemProps) => {
+export const PostItem = ({
+  post,
+  onPublish,
+  onEdit,
+  mode,
+  ...props
+}: PostItemProps) => {
   const [isPublished, setIsPublished] = useState(post.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -57,7 +63,10 @@ export const PostItem = ({ post, onPublish, onEdit, mode, ...props }: PostItemPr
       <CardContent>
         {isEditing ? (
           <>
-            <TipTapEditor content={editedContent} onUpdate={setEditedContent} />
+            <RichTextEditor
+              content={editedContent}
+              onUpdate={setEditedContent}
+            />
             <div className="flex gap-2 mt-4">
               <button
                 onClick={handleSave}
@@ -74,7 +83,12 @@ export const PostItem = ({ post, onPublish, onEdit, mode, ...props }: PostItemPr
             </div>
           </>
         ) : (
-          <div className="prose" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="rich-text-content-wrapper">
+            <div
+              className="prose max-w-none rich-text-editor-content"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+          </div>
         )}
       </CardContent>
       <CardFooter className="flex justify-between">
@@ -92,11 +106,7 @@ export const PostItem = ({ post, onPublish, onEdit, mode, ...props }: PostItemPr
             </Button>
           )}
           {!isPublished && mode !== "preview" && (
-            <Button
-              onClick={handlePublish}
-              disabled={isPublishing}
-
-            >
+            <Button onClick={handlePublish} disabled={isPublishing}>
               {isPublishing ? "Publishing..." : "Publish"}
             </Button>
           )}

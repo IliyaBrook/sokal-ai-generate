@@ -120,3 +120,73 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* TipTap редактор и контент - изолированные стили */
+.ProseMirror {
+  outline: none !important;
+}
+
+.rich-text-content-wrapper,
+.rich-text-editor-content {
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.rich-text-content-wrapper .prose p,
+.rich-text-editor-content p {
+  margin: 1em 0 !important;
+}
+
+.rich-text-content-wrapper .prose h1,
+.rich-text-content-wrapper .prose h2,
+.rich-text-content-wrapper .prose h3,
+.rich-text-content-wrapper .prose h4,
+.rich-text-content-wrapper .prose h5,
+.rich-text-content-wrapper .prose h6,
+.rich-text-editor-content h1,
+.rich-text-editor-content h2,
+.rich-text-editor-content h3,
+.rich-text-editor-content h4,
+.rich-text-editor-content h5,
+.rich-text-editor-content h6 {
+  font-weight: bold !important;
+  line-height: 1.2 !important;
+  margin: 1.5em 0 0.5em !important;
+}
+
+.rich-text-content-wrapper .prose h1,
+.rich-text-editor-content h1 {
+  font-size: 1.8em !important;
+}
+
+.rich-text-content-wrapper .prose h2,
+.rich-text-editor-content h2 {
+  font-size: 1.5em !important;
+}
+
+.rich-text-content-wrapper .prose ul,
+.rich-text-content-wrapper .prose ol,
+.rich-text-editor-content ul,
+.rich-text-editor-content ol {
+  margin: 1em 0 !important;
+  padding-left: 2em !important;
+}
+
+.rich-text-content-wrapper .prose ul,
+.rich-text-editor-content ul {
+  list-style-type: disc !important;
+}
+
+.rich-text-content-wrapper .prose ol,
+.rich-text-editor-content ol {
+  list-style-type: decimal !important;
+}
+
+.rich-text-content-wrapper .prose blockquote,
+.rich-text-editor-content blockquote {
+  margin-left: 0 !important;
+  padding-left: 1em !important;
+  border-left: 3px solid #ccc !important;
+  color: #666 !important;
+}
