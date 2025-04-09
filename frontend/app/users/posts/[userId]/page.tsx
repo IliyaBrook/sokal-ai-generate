@@ -7,8 +7,9 @@ interface PostsPageProps {
 }
 
 export default async function PostsPage({ params }: PostsPageProps) {
+  // Todo userId to static generation for ssr
   const { userId } = await params
 
 
-  return <UserPosts userId={userId as string} />
+  return <UserPosts/>
 } 

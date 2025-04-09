@@ -12,9 +12,10 @@ import {
 interface PostItemProps {
   post: IPost;
   onPublish: (postId: string) => Promise<void>;
+  mode?: 'preview' | 'published';
 }
 
-export const PostItem = ({ post, onPublish }: PostItemProps) => {
+export const PostItem = ({ post, onPublish, mode }: PostItemProps) => {
   const [isPublished, setIsPublished] = useState(post.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -45,7 +46,7 @@ export const PostItem = ({ post, onPublish }: PostItemProps) => {
         <span className="text-sm text-gray-500">
           {new Date(post.createdAt).toLocaleDateString()}
         </span>
-        {!isPublished && (
+        {!isPublished && mode !== 'preview' && (
           <button
             onClick={handlePublish}
             disabled={isPublishing}

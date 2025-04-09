@@ -4,7 +4,7 @@ import { GeneratePost, PostList } from "@/components/posts";
 import { IPost } from "@/types";
 import { useEffect, useState } from "react";
 
-export default function UserPosts({ userId }: { userId: string }) {
+export default function UserPosts() {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -25,9 +25,13 @@ export default function UserPosts({ userId }: { userId: string }) {
     }
   };
 
+  const handlePostGenerated = (newPost: IPost) => {
+    setPosts(prevPosts => [newPost, ...prevPosts]);
+  };
+
   useEffect(() => {
     fetchPosts();
-  }, [userId]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -40,8 +44,7 @@ export default function UserPosts({ userId }: { userId: string }) {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">My Posts</h1>
       <GeneratePost
-        userId={userId}
-        onPostGenerated={fetchPosts}
+        onPostGenerated={handlePostGenerated}
       />
       <PostList posts={posts} />
     </div>
