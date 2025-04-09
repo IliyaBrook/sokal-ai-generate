@@ -186,6 +186,17 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
           color: #666;
           font-style: italic;
         }
+
+        .rich-text-editor-content code:not(.code-block) {
+          background-color: #f5f5f5;
+          color: #e01e5a;
+          font-family: 'Courier New', Courier, monospace;
+          padding: 0.2rem 0.4rem;
+          border-radius: 0.25rem;
+          font-size: 0.85em;
+          font-weight: 500;
+          border: 1px solid #eaeaea;
+        }
       `}</style>
     </div>
   );
