@@ -50,6 +50,7 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
                 res.json().then((data: IAuthResponse) => {
                   const accessToken = data.accessToken
                   localStorage.setItem('accessToken', accessToken)
+                  setUserData(data.user)
                 })
               } else {
                 localStorage.removeItem('accessToken')

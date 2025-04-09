@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IPost } from "@/types";
 import { PostItem } from "./PostItem";
 
 export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
   const [posts, setPosts] = useState(initialPosts);
+  
+  useEffect(() => {
+    setPosts(initialPosts);
+  }, [initialPosts]);
 
   const handlePublish = async (postId: string) => {
     try {
