@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { IPost } from "@/types";
 import { PostItem } from "./PostItem";
 
-export const UserPostList = ({ posts }: { posts: IPost[] }) => {
+export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
+  const [posts, setPosts] = useState(initialPosts);
+
   const handlePublish = async (postId: string) => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -37,6 +40,41 @@ export const UserPostList = ({ posts }: { posts: IPost[] }) => {
     }
   }
 
+  const handleEditPost = async (id: string, content: string) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch(`/api/posts/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content }),
+      })
+    
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to update post: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      const updatedPosts = posts.map(post => 
+        post.id === id ? { ...post, content } : post
+      );
+      setPosts(updatedPosts);
+      return result;
+    } catch (error) {
+      console.error('Error updating post:', error);
+      throw error;
+    }
+  }
+
   return (
     <div className="grid gap-6">
       {
@@ -50,6 +88,8 @@ export const UserPostList = ({ posts }: { posts: IPost[] }) => {
               key={post.id} 
               post={post} 
               onPublish={handlePublish} 
+              onEdit={handleEditPost}
+              mode="published"
             />
           ))
         )
