@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "../ui";
 import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
+import "highlight.js/styles/atom-one-dark.css";
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;

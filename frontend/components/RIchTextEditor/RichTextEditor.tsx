@@ -1,19 +1,17 @@
-import "./RichTextEditor.scss";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import ListItem from "@tiptap/extension-list-item";
 import TextAlign from "@tiptap/extension-text-align";
 import TextStyle from "@tiptap/extension-text-style";
-import ListItem from "@tiptap/extension-list-item";
-import { useEffect, useState } from "react";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { createLowlight, common, all } from "lowlight";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { all, createLowlight } from "lowlight";
 import dynamic from 'next/dynamic';
+// import "./RichTextEditor.scss";
 
-import css from 'highlight.js/lib/languages/css'
-import js from 'highlight.js/lib/languages/javascript'
-import ts from 'highlight.js/lib/languages/typescript'
-import html from 'highlight.js/lib/languages/xml'
-import typescript from 'highlight.js/lib/languages/typescript'
+import css from 'highlight.js/lib/languages/css';
+import js from 'highlight.js/lib/languages/javascript';
+import { default as ts, default as typescript } from 'highlight.js/lib/languages/typescript';
+import html from 'highlight.js/lib/languages/xml';
 
 // const lowlight = createLowlight(common);
 const lowlight = createLowlight(all);
@@ -21,15 +19,15 @@ lowlight.register('html', html)
 lowlight.register('css', css)
 lowlight.register('js', js)
 lowlight.register('ts', ts)
+lowlight.register('typescript', typescript)
 
-import "highlight.js/styles/atom-one-dark.css";
+import "highlight.js/scss/atom-one-dark.scss";
 
 interface RichTextEditorProps {
   content: string;
   onUpdate: (content: string) => void;
 }
 
-// Создаем компонент с отключенным SSR
 const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
@@ -43,10 +41,8 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => 
           keepMarks: true,
           keepAttributes: false,
         },
-        // Убрать listItem из StarterKit, так как мы импортируем его отдельно
         listItem: false,
       }),
-
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
@@ -62,12 +58,6 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => 
     },
     immediatelyRender: false,
   });
-
-  useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
-    }
-  }, [content, editor]);
 
   if (!editor) {
     return null;
@@ -189,6 +179,7 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => 
       </div>
 
       <EditorContent
+      
         editor={editor}
         className="prose max-w-none rich-text-editor-content"
       />
