@@ -11,9 +11,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common'
-import { ThrottlerGuard } from '@nestjs/throttler'
 
-import { CreatePostDto, GeneratePostDto, PostDto, UpdatePostDto } from '@/dto'
+import { CreatePostDto, PostDto, UpdatePostDto } from '@/dto'
 import { JwtAuthGuard } from '@/guards'
 import { PostService } from '@/services'
 import { RequestWithUser } from '@/types'

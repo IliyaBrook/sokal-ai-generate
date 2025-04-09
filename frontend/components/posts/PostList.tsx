@@ -5,23 +5,37 @@ import { useState } from 'react'
 export const PostList = ({ posts }: { posts: IPost[] }) => {
   const handlePublish = async (postId: string) => {
     try {
-      const response = await fetch('/api/posts/published', {
-        method: 'POST',
+      // Получаем токен
+      const token = localStorage.getItem('accessToken');
+      console.log('Token:', token ? 'Token exists' : 'No token found');
+      
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const response = await fetch(`/api/posts/${postId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ postId }),
+        body: JSON.stringify({ isPublished: true }),
       })
       
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to publish post')
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to publish post: ${response.status} ${response.statusText}`);
       }
       
-      return await response.json()
+      const result = await response.json();
+      console.log('Publication successful:', result);
+      return result;
     } catch (error) {
-      console.error('Error publishing post:', error)
-      throw error
+      console.error('Error publishing post:', error);
+      throw error;
     }
   }
 
