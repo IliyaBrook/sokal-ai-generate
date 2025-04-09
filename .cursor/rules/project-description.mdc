@@ -1,64 +1,81 @@
 ---
 description: 
 globs: 
-alwaysApply: false
----
-description: AI-Powered Content Generator (Fullstack & Scalable)
-globs:
-  - "**/*.{ts,tsx,js,jsx}"
-  - "**/*.{yml,yaml}"
-  - "**/*.{md,mdx}"
-  - "**/*.{json,env}"
-  - "**/*.{dockerfile,docker-compose.yml}"
 alwaysApply: true
+---
+project_structure:
+  type: monorepo
+  package_manager: yarn
+  root_module: sokal_ai_generate
+  modules:
+    - name: backend
+      type: nestjs
+      database: mongodb
+    - name: frontend
+      type: nextjs
+      version: 15.2.4
+      styling: tailwind
+    - name: configs
+      purpose: shared configurations
+    - name: shared-types
+      purpose: shared typescript types
 
-requirements:
-  frontend:
-    framework: "React + Next.js"
-    ui: "ShadCN UI"
-    features:
-      - "User Authentication (JWT/OAuth)"
-      - "Dashboard with topic/style input"
-      - "AI blog post generation"
-      - "Draft editing and saving"
-      - "Post history view"
-      - "Public post sharing"
-      - "React Query/SWR for API"
+technical_requirements:
+  node_version: ">=22.0.0 <23.0.0"
+  typescript: required
+  mongodb: required
+  tailwind: required
+  docker: required
 
+development_rules:
+  code_language: english
+  comments: disabled
+  types: strict
+  shared_types: "@sokal_ai_generate/shared-types"
+  shared_configs: "@sokal_ai_generate/configs"
+  linting: required
+  formatting: required
+
+build_and_run:
+  development:
+    command: yarn dev
+    hot_reload: enabled
+  production:
+    command: yarn build
+    deployment: docker
+  linting:
+    command: yarn lint
+  formatting:
+    command: yarn format
+
+architecture:
   backend:
-    framework: "Node.js + Express/Fastify/NestJS"
-    database: "PostgreSQL/MongoDB/Firebase"
-    api:
-      endpoints:
-        - "POST /auth/signup"
-        - "POST /auth/login"
-        - "POST /generate"
-        - "POST /posts/save"
-        - "GET /posts/user"
-        - "GET /posts/:id"
-      features:
-        - "Rate limiting"
-        - "Error handling"
-        - "Logging"
+    framework: nestjs
+    structure: modular
+  frontend:
+    framework: nextjs
+    router: app router
+  shared_types: required
+  shared_configs: required
 
-  deployment:
-    containerization: "Docker"
-    orchestration: "Docker Compose"
-    cloud: "Vercel "Auto-scaling"
-    caching: "Redis/Cloudflare"
+docker:
+  files:
+    - Dockerfile
+    - docker-compose.yml
+  production: required
+  ignore_rules: .dockerignore
 
-  documentation:
-    required: true
-    sections:
-      - "Architecture Overview"
-      - "Tech Stack & Choices"
-      - "Deployment Strategy"
-      - "Challenges & Solutions"
-      - "Improvements & Next Steps"
+security:
+  secrets: environment_variables
+  database: mongodb_best_practices
+  production: https_required
 
-  submission:
-    requirements:
-      - "GitHub repository"
-      - "README.md with setup"
-      - "Live demo link"
-      - "Technical documentation"
+testing:
+  framework: jest
+  coverage: required
+  e2e: supported
+
+deployment:
+  method: docker
+  ci_cd: required
+  versioning: required
