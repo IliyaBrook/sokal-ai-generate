@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from '../ui'
 
 interface GeneratePostProps {
   userId: string
@@ -74,13 +75,14 @@ export const GeneratePost = ({ userId, onPostGenerated }: GeneratePostProps) => 
             placeholder="Enter writing style"
           />
         </div>
-        <button
+        <Button
+          variant="secondary"
           onClick={handleGenerate}
           disabled={isGenerating || !topic || !style}
-          className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-400"
+          //className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-400"
         >
           {isGenerating ? 'Generating...' : 'Generate Post'}
-        </button>
+        </Button>
       </div>
     </div>
   )
