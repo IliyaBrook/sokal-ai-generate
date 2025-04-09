@@ -1,8 +1,3 @@
----
-description: 
-globs: 
-alwaysApply: false
----
 description: AI-Powered Content Generator (Fullstack & Scalable)
 globs:
   - "**/*.{ts,tsx,js,jsx}"
@@ -44,7 +39,8 @@ requirements:
   deployment:
     containerization: "Docker"
     orchestration: "Docker Compose"
-    cloud: "Vercel "Auto-scaling"
+    cloud: "Vercel/AWS/Render"
+    scaling: "Auto-scaling"
     caching: "Redis/Cloudflare"
 
   documentation:
@@ -61,4 +57,4 @@ requirements:
       - "GitHub repository"
       - "README.md with setup"
       - "Live demo link"
-      - "Technical documentation"
+      - "Technical documentation" 
