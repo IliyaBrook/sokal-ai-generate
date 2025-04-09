@@ -41,7 +41,7 @@ export const NavBar = (): ReactElement => {
 
   const handleLogOut = () => {
     try {
-      fetch("api/users/sign-out", {
+      fetch("/api/users/sign-out", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

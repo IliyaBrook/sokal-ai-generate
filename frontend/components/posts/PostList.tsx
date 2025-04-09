@@ -5,7 +5,6 @@ import { useState } from 'react'
 export const PostList = ({ posts }: { posts: IPost[] }) => {
   const handlePublish = async (postId: string) => {
     try {
-      // Получаем токен
       const token = localStorage.getItem('accessToken');
       console.log('Token:', token ? 'Token exists' : 'No token found');
       
