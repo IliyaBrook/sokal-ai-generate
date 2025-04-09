@@ -4,9 +4,10 @@ import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import TextStyle from "@tiptap/extension-text-style";
 import ListItem from "@tiptap/extension-list-item";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { createLowlight, common, all } from "lowlight";
+import dynamic from 'next/dynamic';
 
 import css from 'highlight.js/lib/languages/css'
 import js from 'highlight.js/lib/languages/javascript'
@@ -28,7 +29,8 @@ interface RichTextEditorProps {
   onUpdate: (content: string) => void;
 }
 
-export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
+// Создаем компонент с отключенным SSR
+const RichTextEditorWithNoSSR = ({ content, onUpdate }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -41,6 +43,8 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
           keepMarks: true,
           keepAttributes: false,
         },
+        // Убрать listItem из StarterKit, так как мы импортируем его отдельно
+        listItem: false,
       }),
 
       TextAlign.configure({
@@ -56,6 +60,7 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
     onUpdate: ({ editor }) => {
       onUpdate(editor.getHTML());
     },
+    immediatelyRender: false,
   });
 
   useEffect(() => {
@@ -67,25 +72,6 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
   if (!editor) {
     return null;
   }
-
-   {/* if we want to choose language uncomment this and remove lowlight.register at all */}
-  // const languages = [
-  //   { value: "", label: "plain" },
-  //   { value: "css", label: "CSS" },
-  //   { value: "javascript", label: "JavaScript" },
-  //   { value: "typescript", label: "TypeScript" },
-  //   { value: "html", label: "HTML" },
-  //   { value: "json", label: "JSON" },
-  //   { value: "python", label: "Python" },
-  //   { value: "php", label: "PHP" },
-  //   { value: "c", label: "C" },
-  //   { value: "java", label: "Java" },
-  //   { value: "csharp", label: "C#" },
-  //   { value: "go", label: "Go" },
-  //   { value: "rust", label: "Rust" },
-  //   { value: "shell", label: "Shell" },
-  //   { value: "sql", label: "SQL" },
-  // ];
 
   const getActiveButtonStyles = (buttonName: string, attributes?: {}) =>
     `p-2 rounded cursor-pointer border border-gray-300 ${editor.isActive(buttonName, attributes) ? "bg-black text-white" : ""}`;
@@ -99,34 +85,6 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
         >
           Code
         </button>
-      {/* if we want to choose language uncomment this and remove lowlight.register at all */}
-        {/* <div className="flex items-center ml-1 mr-1">
-          <select
-            className="p-2 rounded border cursor-pointer hover:border-gray-400"
-            onChange={(e) => {
-              if (editor.isActive("codeBlock")) {
-                editor
-                  .chain()
-                  .focus()
-                  .updateAttributes("codeBlock", {
-                    language: e.target.value,
-                  })
-                  .run();
-              }
-            }}
-            value={
-              editor.isActive("codeBlock")
-                ? editor.getAttributes("codeBlock").language || ""
-                : ""
-            }
-          >
-            {languages.map((lang) => (
-              <option key={lang.value} value={lang.value}>
-                {lang.label}
-              </option>
-            ))}
-          </select>
-        </div> */}
 
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -234,8 +192,11 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
         editor={editor}
         className="prose max-w-none rich-text-editor-content"
       />
-
-      {/* glob style */}
     </div>
   );
 };
+
+export const RichTextEditor = dynamic(
+  () => Promise.resolve(RichTextEditorWithNoSSR),
+  { ssr: false }
+);
