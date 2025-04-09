@@ -21,6 +21,13 @@ import { RequestWithUser } from '@/types'
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+
+  @Get('public')
+  async getPublicPosts() {
+    const posts = await this.postService.getPublicPosts()
+    return posts.map(post => new PostDto(post))
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('save')
   async savePost(

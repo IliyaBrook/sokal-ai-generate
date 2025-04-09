@@ -25,6 +25,10 @@ export class PostService {
     this.openai = new OpenAI({ apiKey })
   }
 
+  async getPublicPosts(): Promise<TPostDocument[]> {
+    return this.postModel.find({ isPublished: true }).exec()
+  }
+
   async createPost(userId: string, createPostDto: CreatePostDto): Promise<TPostDocument> {
     const post = new this.postModel({
       ...createPostDto,

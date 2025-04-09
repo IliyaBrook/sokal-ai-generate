@@ -39,16 +39,15 @@ export const PostList = ({ posts }: { posts: IPost[] }) => {
   }
 
 
-  
   return (
     <div className="grid gap-6">
       {
-        posts.length === 0 ? (
+       !Array.isArray(posts) || posts?.length !== 0 ? (
           <div className="flex justify-center items-center h-full">
             <p className="text-gray-500">No posts found</p>
           </div>
         ): (
-          posts.map((post) => (
+          posts?.map((post) => (
             <PostItem 
               key={post.id} 
               post={post} 

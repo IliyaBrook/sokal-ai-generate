@@ -1,9 +1,14 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-
+const getPublicPosts = async () => {
+  const response = await fetch('/api/posts/public')
+  const data = await response.json()
+  return data
+}
 
 export default async function Home() {
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
