@@ -65,7 +65,8 @@ Authorization: Bearer {{login.response.body.accessToken}}
 
 ### Generate Post
 # Requires authentication
-POST {{api}}/posts/generate
+
+POST {{api}}/generate
 Authorization: Bearer {{login.response.body.accessToken}}
 Content-Type: application/json
 

@@ -55,7 +55,7 @@ backend_routes:
   - POST /posts/save > Сохраняет сгенерированный пост в базу данных. с привязкой к id пользователя
   - GET /posts/user > Получает сохраненные посты пользователя.
   - GET /posts/:id > Возвращает один пост для публичного просмотра.
-  - POST /posts/published тут когда пользователь выбирает посты которые он сохранил в сехеме поста status должен изменится с isPublished false на true по дифолты если status не передан при GET /posts/user status должен быть unpublished
+  - POST /posts/published тут когда пользователь выбирает посты которые он сохранил в сехеме поста status должен изменится с isPublished false на true
 
 architecture:
   backend:

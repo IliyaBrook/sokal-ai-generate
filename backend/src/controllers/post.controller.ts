@@ -22,17 +22,6 @@ import { RequestWithUser } from '@/types'
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @UseGuards(JwtAuthGuard, ThrottlerGuard)
-  @Post('generate')
-  async generatePost(
-    @Req() req: RequestWithUser,
-    @Body() generatePostDto: GeneratePostDto,
-  ) {
-    const userId = req.user.id
-    const generatedPost = await this.postService.generatePost(userId, generatePostDto)
-    return new PostDto(generatedPost)
-  }
-
   @UseGuards(JwtAuthGuard)
   @Post('save')
   async savePost(

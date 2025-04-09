@@ -1,3 +1,4 @@
+import { GeneratePostService } from './services/generatepost.service';
 import { Module } from '@nestjs/common'
 import { ThrottlerModule } from '@nestjs/throttler';
 
@@ -22,6 +23,7 @@ import services from '@/services'
   ],
   controllers,
   providers: [
+        GeneratePostService, 
     ...services,
     ...guards
   ],
