@@ -11,7 +11,7 @@ import {
 
 interface PostItemProps {
   post: IPost;
-  onPublish: (postId: string) => Promise<void>;
+  onPublish: (postId: string) => Promise<any>;
   mode?: 'preview' | 'published';
 }
 
@@ -22,7 +22,8 @@ export const PostItem = ({ post, onPublish, mode }: PostItemProps) => {
   const handlePublish = async () => {
     setIsPublishing(true);
     try {
-      await onPublish(post.id);
+      const result = await onPublish(post.id);
+      console.log('Publish result:', result);
       setIsPublished(true);
     } catch (error) {
       console.error('Error publishing post:', error);
@@ -32,7 +33,7 @@ export const PostItem = ({ post, onPublish, mode }: PostItemProps) => {
   };
 
   return (
-    <Card key={post.id}>
+    <Card>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
         <CardDescription>
@@ -40,7 +41,7 @@ export const PostItem = ({ post, onPublish, mode }: PostItemProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-600">{post.content}</p>
+        <p className="text-gray-600 whitespace-pre-line">{post.content}</p>
       </CardContent>
       <CardFooter className="flex justify-between">
         <span className="text-sm text-gray-500">

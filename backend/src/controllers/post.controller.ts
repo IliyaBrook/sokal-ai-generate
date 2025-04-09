@@ -54,6 +54,7 @@ export class PostController {
     @Body() updatePostDto: UpdatePostDto,
   ) {
     const userId = req.user.id
+    console.log('[change post userId]:', userId)
     const post = await this.postService.getPostById(id)
     
     if (post.authorId.toString() !== userId) {

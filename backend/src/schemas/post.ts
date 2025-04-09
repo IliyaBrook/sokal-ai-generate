@@ -37,4 +37,8 @@ export const PostSchema = SchemaFactory.createForClass(Post)
 
 PostSchema.virtual('id').get(function() {
   return this._id.toString()
+})
+
+PostSchema.pre('findOneAndUpdate', function() {
+  this.set({ updatedAt: new Date() })
 }) 

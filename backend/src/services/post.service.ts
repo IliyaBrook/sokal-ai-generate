@@ -41,21 +41,17 @@ export class PostService {
     userId: string,
     updatePostDto: UpdatePostDto,
   ): Promise<TPostDocument> {
-    const post = await this.postModel.findOne({
-      _id: postId,
-      authorId: userId,
-    })
+    const post = await this.postModel.findOneAndUpdate(
+      { _id: postId, authorId: userId },
+      { $set: updatePostDto },
+      { new: true }
+    )
 
     if (!post) {
       throw new NotFoundException(`Post with ID ${postId} not found or you don't have permission`)
     }
 
-    Object.assign(post, {
-      ...updatePostDto,
-      updatedAt: new Date(),
-    })
-
-    return post.save()
+    return post
   }
 
   async getPostById(postId: string): Promise<TPostDocument> {
