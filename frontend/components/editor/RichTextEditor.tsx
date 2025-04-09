@@ -1,11 +1,11 @@
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import TextAlign from '@tiptap/extension-text-align'
-import { useEffect } from 'react'
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import TextAlign from "@tiptap/extension-text-align";
+import { useEffect } from "react";
 
 interface RichTextEditorProps {
-  content: string
-  onUpdate: (content: string) => void
+  content: string;
+  onUpdate: (content: string) => void;
 }
 
 export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
@@ -13,23 +13,23 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
     extensions: [
       StarterKit,
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
+        types: ["heading", "paragraph"],
       }),
     ],
     content,
     onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML())
+      onUpdate(editor.getHTML());
     },
-  })
+  });
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content)
+      editor.commands.setContent(content);
     }
-  }, [content, editor])
+  }, [content, editor]);
 
   if (!editor) {
-    return null
+    return null;
   }
 
   return (
@@ -89,8 +89,14 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
         >
           Right
         </button>
+      
       </div>
-      <EditorContent editor={editor} className="prose max-w-none rich-text-editor-content" />
+
+      
+      <EditorContent
+        editor={editor}
+        className="prose max-w-none rich-text-editor-content"
+      />
     </div>
-  )
-}
+  );
+};
