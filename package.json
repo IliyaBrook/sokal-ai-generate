@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Sokal_ai  AI-Powered Content Generator",
   "main": "index.js",
-  "repository": "https://github.com/IliyaBrook/AlexGold",
+  "repository": "https://github.com/IliyaBrook/sokal_ai_generate",
   "author": "iliyabrook <iliyabrook1987@gmail.com>",
   "license": "MIT",
   "engines": {
@@ -33,6 +33,7 @@
     "configs"
   ],
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cross-env": "^7.0.3"
   },
   "devDependencies": {

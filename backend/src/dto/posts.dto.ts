@@ -60,6 +60,10 @@ export class CreatePostDto implements ICreatePostData {
   @IsNotEmpty()
   style: string
 
+  @IsString()
+  @IsOptional()
+  status?: string
+
   @IsBoolean()
   @IsOptional()
   isPublished?: boolean

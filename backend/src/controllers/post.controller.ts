@@ -10,19 +10,18 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common'
-import { Request } from 'express'
+import { ThrottlerGuard } from '@nestjs/throttler'
 
 import { CreatePostDto, GeneratePostDto, PostDto, UpdatePostDto } from '@/dto'
 import { JwtAuthGuard } from '@/guards'
 import { PostService } from '@/services'
 import { RequestWithUser } from '@/types'
-import { Post as PostSchema, TPostDocument } from '@/schemas'
 
 @Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
   @Post('generate')
   async generatePost(
     @Req() req: RequestWithUser,

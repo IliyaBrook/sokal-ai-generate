@@ -1,16 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, Logger } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { ConfigService } from '@nestjs/config'
+import OpenAI from 'openai'
 
 import { Post, TPostDocument } from '@/schemas'
 import { CreatePostDto, GeneratePostDto, UpdatePostDto } from '@/dto'
+import { EnvironmentVariables } from '@/types'
 
 @Injectable()
 export class PostService {
+  private readonly logger = new Logger(PostService.name)
+  private openai: OpenAI
+
   constructor(
     @InjectModel(Post.name)
     private postModel: Model<TPostDocument>,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    const apiKey = this.configService.get<EnvironmentVariables['OPENAI_API_KEY']>('OPENAI_API_KEY')
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY is not configured')
+    }
+    this.openai = new OpenAI({ apiKey })
+  }
 
   async createPost(userId: string, createPostDto: CreatePostDto): Promise<TPostDocument> {
     const post = new this.postModel({
@@ -19,6 +32,7 @@ export class PostService {
       createdAt: new Date(),
       updatedAt: new Date(),
     })
+    this.logger.log(`Creating post with title: ${createPostDto.title} for user: ${userId}`)
     return post.save()
   }
 
@@ -45,9 +59,11 @@ export class PostService {
   }
 
   async getPostById(postId: string): Promise<TPostDocument> {
-    const post = await this.postModel.findById(postId)
+    this.logger.log(`Fetching post by id: ${postId}`)
+    const post = await this.postModel.findById(postId).exec()
     
     if (!post) {
+      this.logger.warn(`Post not found: ${postId}`)
       throw new NotFoundException(`Post with ID ${postId} not found`)
     }
     
@@ -55,7 +71,8 @@ export class PostService {
   }
 
   async getUserPosts(userId: string): Promise<TPostDocument[]> {
-    return this.postModel.find({ authorId: userId }).sort({ createdAt: -1 })
+    this.logger.log(`Fetching posts for user: ${userId}`)
+    return this.postModel.find({ authorId: userId }).sort({ createdAt: -1 }).exec()
   }
 
   async deletePost(postId: string, userId: string): Promise<boolean> {
@@ -72,19 +89,58 @@ export class PostService {
   }
 
   async generatePost(userId: string, generatePostDto: GeneratePostDto): Promise<TPostDocument> {
-    // Заглушка, будет заменена на реальную интеграцию с OpenAI
-    const title = `Generated post about ${generatePostDto.topic}`;
-    const content = `This is a generated content about ${generatePostDto.topic} in ${generatePostDto.style} style.`;
-    
-    const createPostDto: CreatePostDto = {
-      title,
-      content,
-      topic: generatePostDto.topic,
-      style: generatePostDto.style,
-      // Другие поля, если они нужны для CreatePostDto, например, status: 'draft'
-    };
+    this.logger.log(`Generating post on topic "${generatePostDto.topic}" in style "${generatePostDto.style}" for user: ${userId}`)
 
-    const savedPost = await this.createPost(userId, createPostDto);
-    return savedPost;
+    const prompt = `Generate a blog post about "${generatePostDto.topic}" in a "${generatePostDto.style}" style.
+The output should be in JSON format with two keys: "title" (string) and "content" (string, Markdown formatted text).`
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      })
+
+      const result = response.choices[0]?.message?.content
+
+      if (!result) {
+        this.logger.error('OpenAI response content is empty or null')
+        throw new Error('Failed to generate content from OpenAI')
+      }
+
+      let parsedResult: { title: string; content: string }
+      try {
+        parsedResult = JSON.parse(result)
+      } catch (parseError) {
+        this.logger.error('Failed to parse OpenAI JSON response:', result, parseError)
+        parsedResult = {
+          title: generatePostDto.topic,
+          content: result
+        }
+      }
+
+      const { title, content } = parsedResult
+
+      if (!title || !content) {
+        this.logger.error('Parsed OpenAI response lacks title or content:', parsedResult)
+        throw new Error('Invalid content structure received from OpenAI')
+      }
+
+      const createPostDto: CreatePostDto = {
+        title,
+        content,
+        topic: generatePostDto.topic,
+        style: generatePostDto.style,
+        status: 'draft',
+      }
+
+      this.logger.log(`Successfully generated content for topic: ${generatePostDto.topic}`)
+      const savedPost = await this.createPost(userId, createPostDto)
+      return savedPost
+
+    } catch (error) {
+      this.logger.error(`Error generating post with OpenAI for topic "${generatePostDto.topic}":`, error)
+      throw new Error(`Failed to generate post: ${error.message}`)
+    }
   }
 } 

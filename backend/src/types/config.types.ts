@@ -5,4 +5,5 @@ export interface EnvironmentVariables {
   API_URL: string
   CLIENT_URL: string
   DB_URL: string
+  OPENAI_API_KEY: string
 }

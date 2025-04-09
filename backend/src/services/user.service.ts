@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt';
 import type { Model } from 'mongoose'
 
 import { UserSignInDto } from '../dto/user.dto'
