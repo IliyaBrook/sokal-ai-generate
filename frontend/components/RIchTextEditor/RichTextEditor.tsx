@@ -1,3 +1,4 @@
+import "./RichTextEditor.scss";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
@@ -5,8 +6,20 @@ import TextStyle from "@tiptap/extension-text-style";
 import ListItem from "@tiptap/extension-list-item";
 import { useEffect } from "react";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { createLowlight, common } from "lowlight";
-const lowlight = createLowlight(common);
+import { createLowlight, common, all } from "lowlight";
+
+import css from 'highlight.js/lib/languages/css'
+import js from 'highlight.js/lib/languages/javascript'
+import ts from 'highlight.js/lib/languages/typescript'
+import html from 'highlight.js/lib/languages/xml'
+import typescript from 'highlight.js/lib/languages/typescript'
+
+// const lowlight = createLowlight(common);
+const lowlight = createLowlight(all);
+lowlight.register('html', html)
+lowlight.register('css', css)
+lowlight.register('js', js)
+lowlight.register('ts', ts)
 
 import "highlight.js/styles/atom-one-dark.css";
 
@@ -55,23 +68,24 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
     return null;
   }
 
-  const languages = [
-    { value: "", label: "plain" },
-    { value: "css", label: "CSS" },
-    { value: "javascript", label: "JavaScript" },
-    { value: "typescript", label: "TypeScript" },
-    { value: "html", label: "HTML" },
-    { value: "json", label: "JSON" },
-    { value: "python", label: "Python" },
-    { value: "php", label: "PHP" },
-    { value: "c", label: "C" },
-    { value: "java", label: "Java" },
-    { value: "csharp", label: "C#" },
-    { value: "go", label: "Go" },
-    { value: "rust", label: "Rust" },
-    { value: "shell", label: "Shell" },
-    { value: "sql", label: "SQL" },
-  ];
+   {/* if we want to choose language uncomment this and remove lowlight.register at all */}
+  // const languages = [
+  //   { value: "", label: "plain" },
+  //   { value: "css", label: "CSS" },
+  //   { value: "javascript", label: "JavaScript" },
+  //   { value: "typescript", label: "TypeScript" },
+  //   { value: "html", label: "HTML" },
+  //   { value: "json", label: "JSON" },
+  //   { value: "python", label: "Python" },
+  //   { value: "php", label: "PHP" },
+  //   { value: "c", label: "C" },
+  //   { value: "java", label: "Java" },
+  //   { value: "csharp", label: "C#" },
+  //   { value: "go", label: "Go" },
+  //   { value: "rust", label: "Rust" },
+  //   { value: "shell", label: "Shell" },
+  //   { value: "sql", label: "SQL" },
+  // ];
 
   const getActiveButtonStyles = (buttonName: string, attributes?: {}) =>
     `p-2 rounded cursor-pointer border border-gray-300 ${editor.isActive(buttonName, attributes) ? "bg-black text-white" : ""}`;
@@ -85,8 +99,8 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
         >
           Code
         </button>
-
-        <div className="flex items-center ml-1 mr-1">
+      {/* if we want to choose language uncomment this and remove lowlight.register at all */}
+        {/* <div className="flex items-center ml-1 mr-1">
           <select
             className="p-2 rounded border cursor-pointer hover:border-gray-400"
             onChange={(e) => {
@@ -112,7 +126,7 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}

@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "../ui";
-import { RichTextEditor } from "../editor/RichTextEditor";
+import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
