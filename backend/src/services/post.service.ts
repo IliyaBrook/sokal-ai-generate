@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { ConfigService } from '@nestjs/config'
 import OpenAI from 'openai'
 
-import { Post, TPostDocument } from '@/schemas'
 import { CreatePostDto, GeneratePostDto, UpdatePostDto } from '@/dto'
+import { Post, TPostDocument } from '@/schemas'
 import { EnvironmentVariables } from '@/types'
 
 @Injectable()
@@ -91,8 +91,11 @@ export class PostService {
   async generatePost(userId: string, generatePostDto: GeneratePostDto): Promise<TPostDocument> {
     this.logger.log(`Generating post on topic "${generatePostDto.topic}" in style "${generatePostDto.style}" for user: ${userId}`)
 
-    const prompt = `Generate a blog post about "${generatePostDto.topic}" in a "${generatePostDto.style}" style.
-The output should be in JSON format with two keys: "title" (string) and "content" (string, Markdown formatted text).`
+    const prompt = `
+    Generate a blog post about "${generatePostDto.topic}" in a "${generatePostDto.style}" style.
+    The output should be in JSON format with two keys: 
+    "title" (string) and "content" (string, Markdown formatted text).
+    `
 
     try {
       const response = await this.openai.chat.completions.create({

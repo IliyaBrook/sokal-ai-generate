@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   NotFoundException,
   Param,
@@ -65,8 +66,14 @@ export class PostController {
     @Body() updatePostDto: UpdatePostDto,
   ) {
     const userId = req.user.id
-    const post = await this.postService.updatePost(id, userId, updatePostDto)
-    return new PostDto(post)
+    const post = await this.postService.getPostById(id)
+    
+    if (post.authorId.toString() !== userId) {
+      throw new ForbiddenException('You are not allowed to update this post')
+    }
+
+    const updatedPost = await this.postService.updatePost(id, userId, updatePostDto)
+    return new PostDto(updatedPost)
   }
 
   @UseGuards(JwtAuthGuard)

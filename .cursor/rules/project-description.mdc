@@ -47,6 +47,15 @@ build_and_run:
     command: yarn lint
   formatting:
     command: yarn format
+  
+backend_routes:
+  - POST /auth/signup > Регистрация пользователей.
+  - POST /auth/login > Аутентификация пользователей и возврат JWT.
+  - POST /generate > Принимает ввод (тема, стиль) и вызывает **API OpenAI (или LLM Hugging Face)** для генерации поста блога. не сохраняет в базу просто отдает пользователю то что сгенерировал open ai
+  - POST /posts/save > Сохраняет сгенерированный пост в базу данных. с привязкой к id пользователя
+  - GET /posts/user > Получает сохраненные посты пользователя.
+  - GET /posts/:id > Возвращает один пост для публичного просмотра.
+  - POST /posts/published тут когда пользователь выбирает посты которые он сохранил в сехеме поста status должен изменится с isPublished false на true по дифолты если status не передан при GET /posts/user status должен быть unpublished
 
 architecture:
   backend:

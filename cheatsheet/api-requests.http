@@ -63,20 +63,6 @@ Authorization: Bearer {{login.response.body.accessToken}}
 	"firstname": "FirstNameUpdated44"
 }
 
-### create user
-POST {{api}}/games
-Content-Type: application/json
-Authorization: Bearer {{login.response.body.accessToken}}
-
-{
-	"title": "new game",
-	"description": "game for baby 3 years",
-	"instructions": "test instructions",
-	"minAge": 3,
-	"maxPlayers": 5,
-	"tags": ["2 person", "parents"]
-}
-
 ### Generate Post
 # Requires authentication
 POST {{api}}/posts/generate
