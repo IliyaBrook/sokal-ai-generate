@@ -1,6 +1,6 @@
 'use client'
 
-import { GeneratePost, PostList } from "@/components/posts";
+import { GeneratePost, UserPostList } from "@/components/posts";
 import { IPost } from "@/types";
 import { useEffect, useState } from "react";
 
@@ -46,7 +46,7 @@ export default function UserPosts() {
       <GeneratePost
         onPostGenerated={handlePostGenerated}
       />
-      <PostList posts={posts} />
+      <UserPostList posts={posts} />
     </div>
   );
 }

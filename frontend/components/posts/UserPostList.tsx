@@ -3,7 +3,7 @@
 import { IPost } from "@/types";
 import { PostItem } from "./PostItem";
 
-export const PostList = ({ posts }: { posts: IPost[] }) => {
+export const UserPostList = ({ posts }: { posts: IPost[] }) => {
   const handlePublish = async (postId: string) => {
     try {
       const token = localStorage.getItem('accessToken');

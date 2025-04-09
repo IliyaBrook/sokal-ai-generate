@@ -1,3 +1,3 @@
-export * from './PostList'
+export * from './UserPostList'
 export * from './GeneratePost'
 export * from './PostItem'
