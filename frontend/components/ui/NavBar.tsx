@@ -34,7 +34,6 @@ export const NavBar = (): ReactElement => {
   useOutsideClick(dropdownRef, () => setIsMenuOpen(false));
 
   const contextData = useContext(UserDataContext);
-  console.log("contextData:", contextData);
 
   const HndleMobileDropdown = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -179,13 +178,12 @@ export const NavBar = (): ReactElement => {
                       Your Profile
                     </Link>
                     <Link
-                      // @Todo add route settings/id
-                      href="/user/settings/id"
+                      href={`/users/posts/${contextData?.userData?.id}`}
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       id="user-menu-item-1"
                     >
-                      Settings
+                      Posts
                     </Link>
                     <button
                       onClick={handleLogOut}
