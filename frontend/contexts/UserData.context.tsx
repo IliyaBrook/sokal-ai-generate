@@ -1,12 +1,12 @@
 "use client"
 
-import type { IAuthResponse, IUser } from '@sokal_ai_generate/shared-types'
+import type { IAuthResponse, IUser } from '@sokal_ai_generate/shared-types';
+import { usePathname, useRouter } from 'next/navigation';
 import React, {
   type Dispatch,
   type SetStateAction,
-  useLayoutEffect,
-} from 'react'
-import { useRouter, usePathname } from 'next/navigation';
+  useLayoutEffect
+} from 'react';
 
 interface IUserDataContext {
   children: React.ReactNode
@@ -28,6 +28,7 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
   const pathname = usePathname()
   // Todo use isLoading
   const [isLoading, setIsLoading] = React.useState(false)
+  const publicPaths = ['/', '/sign-in', '/sign-up']
 
   useLayoutEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -66,6 +67,12 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
     }
   }, [pathname])
 
+  useLayoutEffect(() => {
+    if (!userData && !publicPaths.includes(pathname)) {
+      navigate.push('/')
+    }
+  }, [userData, pathname, navigate])
+
   const providedData = {
     userData,
     setUserData,
@@ -77,3 +84,4 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
     </UserDataContext.Provider>
   )
 }
+

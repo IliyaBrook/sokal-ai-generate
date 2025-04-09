@@ -1,28 +1,34 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { PostItem } from "@/components/posts";
+import { IPost } from "@/types";
 
 const getPublicPosts = async () => {
-  const response = await fetch('/api/posts/public')
-  const data = await response.json()
-  return data
-}
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    const response = await fetch(`${baseUrl}/api/posts/public`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching public posts:", error);
+    return [];
+  }
+};
 
 export default async function Home() {
+  const posts = await getPublicPosts();
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
-        <h1 className="text-4xl font-bold text-center mb-6 text-gray-800">Welcome to AI Content Generator</h1>
-        <p className="text-lg text-gray-600 mb-4">
-          This is an AI-powered web application that helps you generate dynamic content. 
-          Our platform uses advanced AI technology to create unique and engaging content based on your preferences.
-        </p>
-        <div className="text-center">
-          <Link href="/sign-up">
-            <Button >Get Started</Button>
-          </Link>
-        </div>
-      </div>
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+    
+      {posts.map((post: IPost) => (
+        <PostItem key={post.id} post={post} className="max-w-5xl" />
+      ))}
     </main>
   );
 }

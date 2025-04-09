@@ -1,6 +1,7 @@
-import { IPost } from '@/types'
-import { PostItem } from './PostItem'
-import { useState } from 'react'
+"use client";
+
+import { IPost } from "@/types";
+import { PostItem } from "./PostItem";
 
 export const PostList = ({ posts }: { posts: IPost[] }) => {
   const handlePublish = async (postId: string) => {

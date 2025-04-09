@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { IPost } from '@/types';
+"use client";
+
+import { useState } from "react";
+import { IPost } from "@/types";
 import {
   Card,
   CardContent,
@@ -7,38 +9,38 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 
-interface PostItemProps {
+interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
-  onPublish: (postId: string) => Promise<any>;
-  mode?: 'preview' | 'published';
+  onPublish?: (postId: string) => Promise<any>;
+  mode?: "preview" | "published";
 }
 
-export const PostItem = ({ post, onPublish, mode }: PostItemProps) => {
+export const PostItem = ({ post, onPublish, mode, ...props }: PostItemProps) => {
   const [isPublished, setIsPublished] = useState(post.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublish = async () => {
-    setIsPublishing(true);
-    try {
-      const result = await onPublish(post.id);
-      console.log('Publish result:', result);
-      setIsPublished(true);
-    } catch (error) {
-      console.error('Error publishing post:', error);
-    } finally {
-      setIsPublishing(false);
+    if (onPublish && typeof onPublish === "function") {
+      setIsPublishing(true);
+      try {
+        const result = await onPublish(post.id);
+        console.log("Publish result:", result);
+        setIsPublished(true);
+      } catch (error) {
+        console.error("Error publishing post:", error);
+      } finally {
+        setIsPublishing(false);
+      }
     }
   };
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
-        <CardDescription>
-          {isPublished ? 'Published' : 'Draft'}
-        </CardDescription>
+        <CardDescription>{isPublished ? "Published" : "Draft"}</CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-gray-600 whitespace-pre-line">{post.content}</p>
@@ -47,16 +49,16 @@ export const PostItem = ({ post, onPublish, mode }: PostItemProps) => {
         <span className="text-sm text-gray-500">
           {new Date(post.createdAt).toLocaleDateString()}
         </span>
-        {!isPublished && mode !== 'preview' && (
+        {!isPublished && mode !== "preview" && (
           <button
             onClick={handlePublish}
             disabled={isPublishing}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer disabled:opacity-50"
           >
-            {isPublishing ? 'Publishing...' : 'Publish'}
+            {isPublishing ? "Publishing..." : "Publish"}
           </button>
         )}
       </CardFooter>
     </Card>
   );
-}; 
+};
