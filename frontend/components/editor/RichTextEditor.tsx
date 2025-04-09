@@ -4,16 +4,22 @@ import TextAlign from "@tiptap/extension-text-align";
 import TextStyle from "@tiptap/extension-text-style";
 import ListItem from "@tiptap/extension-list-item";
 import { useEffect } from "react";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { createLowlight, common } from "lowlight";
+const lowlight = createLowlight(common);
+
+import "highlight.js/styles/atom-one-dark.css";
 
 interface RichTextEditorProps {
   content: string;
   onUpdate: (content: string) => void;
-} 
+}
 
 export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        codeBlock: false,
         bulletList: {
           keepMarks: true,
           keepAttributes: false,
@@ -22,18 +28,16 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
           keepMarks: true,
           keepAttributes: false,
         },
-        codeBlock: {
-          languageClassPrefix: 'language-',
-          HTMLAttributes: {
-            class: 'code-block',
-          },
-        },
       }),
+
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
       TextStyle,
       ListItem,
+      CodeBlockLowlight.configure({
+        lowlight,
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -51,153 +55,173 @@ export const RichTextEditor = ({ content, onUpdate }: RichTextEditorProps) => {
     return null;
   }
 
+  const languages = [
+    { value: "", label: "plain" },
+    { value: "css", label: "CSS" },
+    { value: "javascript", label: "JavaScript" },
+    { value: "typescript", label: "TypeScript" },
+    { value: "html", label: "HTML" },
+    { value: "json", label: "JSON" },
+    { value: "python", label: "Python" },
+    { value: "php", label: "PHP" },
+    { value: "c", label: "C" },
+    { value: "java", label: "Java" },
+    { value: "csharp", label: "C#" },
+    { value: "go", label: "Go" },
+    { value: "rust", label: "Rust" },
+    { value: "shell", label: "Shell" },
+    { value: "sql", label: "SQL" },
+  ];
+
+  const getActiveButtonStyles = (buttonName: string, attributes?: {}) =>
+    `p-2 rounded cursor-pointer border border-gray-300 ${editor.isActive(buttonName, attributes) ? "bg-black text-white" : ""}`;
+
   return (
     <div className="border rounded-lg p-4">
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={getActiveButtonStyles("codeBlock")}
+        >
+          Code
+        </button>
+
+        <div className="flex items-center ml-1 mr-1">
+          <select
+            className="p-2 rounded border cursor-pointer hover:border-gray-400"
+            onChange={(e) => {
+              if (editor.isActive("codeBlock")) {
+                editor
+                  .chain()
+                  .focus()
+                  .updateAttributes("codeBlock", {
+                    language: e.target.value,
+                  })
+                  .run();
+              }
+            }}
+            value={
+              editor.isActive("codeBlock")
+                ? editor.getAttributes("codeBlock").language || ""
+                : ""
+            }
+          >
+            {languages.map((lang) => (
+              <option key={lang.value} value={lang.value}>
+                {lang.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-2 rounded ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
+          className={getActiveButtonStyles("bold")}
         >
           Bold
         </button>
         <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={`p-2 rounded ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''}`}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
+          className={getActiveButtonStyles("heading", { level: 1 })}
         >
           H1
         </button>
         <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-2 rounded ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-200' : ''}`}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
+          className={getActiveButtonStyles("heading", { level: 2 })}
         >
           H2
         </button>
         <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`p-2 rounded ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-200' : ''}`}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+          className={getActiveButtonStyles("heading", { level: 3 })}
         >
           H3
         </button>
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-2 rounded ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
+          className={getActiveButtonStyles("italic")}
         >
           Italic
         </button>
         <button
           onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={`p-2 rounded ${editor.isActive('strike') ? 'bg-gray-200' : ''}`}
+          className={getActiveButtonStyles("strike")}
         >
           Strike
         </button>
-        <button
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          className={`p-2 rounded ${editor.isActive('code') ? 'bg-gray-200' : ''}`}
-        >
-          Code
-        </button>
+
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-2 rounded ${editor.isActive('bulletList') ? 'bg-gray-200' : ''}`}
+          className={getActiveButtonStyles("bulletList")}
         >
           Bullet List
         </button>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-2 rounded ${editor.isActive('orderedList') ? 'bg-gray-200' : ''}`}
+          className={getActiveButtonStyles("orderedList")}
         >
           Numbered List
         </button>
         <button
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`p-2 rounded ${editor.isActive('blockquote') ? 'bg-gray-200' : ''}`}
+          className={getActiveButtonStyles("blockquote")}
         >
           Quote
         </button>
+
         <button
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`p-2 rounded ${editor.isActive('codeBlock') ? 'bg-gray-200' : ''}`}
-        >
-          Code Block
-        </button>
-        <button
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          className={`p-2 rounded ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''}`}
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          className={getActiveButtonStyles("textAlign", { textAlign: "left" })}
         >
           Left
         </button>
         <button
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          className={`p-2 rounded ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''}`}
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          className={getActiveButtonStyles("textAlign", {
+            textAlign: "center",
+          })}
         >
           Center
         </button>
         <button
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          className={`p-2 rounded ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''}`}
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          className={getActiveButtonStyles("textAlign", { textAlign: "right" })}
         >
           Right
         </button>
-       
-      
         <button
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className="p-2 rounded"
+          className={getActiveButtonStyles("horizontalRule")}
         >
           Horizontal rule
         </button>
         <button
           onClick={() => editor.chain().focus().unsetAllMarks().run()}
-          className="p-2 rounded"
+          className={getActiveButtonStyles("unsetAllMarks")}
         >
           Clear marks
         </button>
         <button
           onClick={() => editor.chain().focus().clearNodes().run()}
-          className="p-2 rounded"
+          className={getActiveButtonStyles("clearNodes")}
         >
           Clear nodes
         </button>
       </div>
 
-      
       <EditorContent
         editor={editor}
         className="prose max-w-none rich-text-editor-content"
       />
 
-      <style jsx global>{`
-        .rich-text-editor-content .code-block {
-          background-color: #2d2d2d;
-          color: #ccc;
-          font-family: 'Courier New', Courier, monospace;
-          padding: 1rem;
-          border-radius: 0.5rem;
-          margin: 1rem 0;
-          overflow-x: auto;
-          font-size: 0.9rem;
-          line-height: 1.5;
-          tab-size: 2;
-        }
-        
-        .rich-text-editor-content blockquote {
-          border-left: 3px solid #ddd;
-          padding-left: 1rem;
-          color: #666;
-          font-style: italic;
-        }
-
-        .rich-text-editor-content code:not(.code-block) {
-          background-color: #f5f5f5;
-          color: #e01e5a;
-          font-family: 'Courier New', Courier, monospace;
-          padding: 0.2rem 0.4rem;
-          border-radius: 0.25rem;
-          font-size: 0.85em;
-          font-weight: 500;
-          border: 1px solid #eaeaea;
-        }
-      `}</style>
+      {/* glob style */}
     </div>
   );
 };
