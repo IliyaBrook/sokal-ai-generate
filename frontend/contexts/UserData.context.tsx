@@ -34,7 +34,7 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
     if (token) {
       try {
         setIsLoading(true)
-        fetch('api/users/auth', {
+        fetch('/api/users/auth', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -44,7 +44,7 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
               setUserData(data)
             })
           } else if (response.status === 401) {
-            fetch('/users/refresh').then((res) => {
+            fetch('/api/users/refresh').then((res) => {
               if (res.ok) {
                 res.json().then((data: IAuthResponse) => {
                   const accessToken = data.accessToken

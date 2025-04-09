@@ -1,17 +1,22 @@
 'use client'
 
 import { GeneratePost, PostList } from "@/components/posts";
-import { Post } from "@/types";
+import { IPost } from "@/types";
 import { useEffect, useState } from "react";
 
 export default function UserPosts({ userId }: { userId: string }) {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<IPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`/api/posts/user`);
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/posts/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         const data = await response.json();
         setPosts(data);
       } catch (error) {
