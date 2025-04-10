@@ -14,9 +14,7 @@ export class SchedulerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleScheduledPosts() {
-    const now = new Date()
-    this.logger.log(`Checking for scheduled posts to publish at ${now.toISOString()}`)
-    
+    const now = new Date()    
     try {
       const posts = await this.postModel.find({
         isPublished: false,
