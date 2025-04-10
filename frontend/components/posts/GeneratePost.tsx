@@ -45,7 +45,10 @@ export const GeneratePost = ({ onPostGenerated }: {
       }
       setGeneratedPost({
         ...post,
-        id: 'preview'
+        id: 'preview',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isPublished: false
       })
       setIsDialogOpen(true)
     } catch (error) {
