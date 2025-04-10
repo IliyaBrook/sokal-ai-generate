@@ -12,8 +12,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { PostItem } from './PostItem'
-import { IPost } from '@/types'
+import { IPost, ICreatePostData } from '@/types'
 import useAuthUserFetch from '@/hooks/useAuthUserFetch'
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Switch } from "@/components/ui/switch"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
 export const GeneratePost = ({ onPostGenerated }: {
   onPostGenerated: (newPost: IPost) => void
@@ -23,6 +29,8 @@ export const GeneratePost = ({ onPostGenerated }: {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedPost, setGeneratedPost] = useState<IPost | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [scheduleEnabled, setScheduleEnabled] = useState(false)
+  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined)
   const apiFetch = useAuthUserFetch<IPost>()
 
   const handleGenerate = async (e: React.MouseEvent) => {
@@ -62,14 +70,21 @@ export const GeneratePost = ({ onPostGenerated }: {
     if (!generatedPost) return
 
     try {
-      const savedPost = await apiFetch('/api/posts/save', {
+      const endpoint = scheduleEnabled && scheduleDate ? '/api/posts/schedule' : '/api/posts/save'
+      const postData: ICreatePostData = {
+        title: generatedPost.title,
+        content: generatedPost.content,
+        topic: generatedPost.topic,
+        style: generatedPost.style,
+      }
+      
+      if (scheduleEnabled && scheduleDate) {
+        postData.scheduledPublishDate = scheduleDate
+      }
+      
+      const savedPost = await apiFetch(endpoint, {
         method: 'POST',
-        body: JSON.stringify({
-          title: generatedPost.title,
-          content: generatedPost.content,
-          topic: generatedPost.topic,
-          style: generatedPost.style,
-        }),
+        body: JSON.stringify(postData),
       })
 
       if (!savedPost) {
@@ -79,6 +94,8 @@ export const GeneratePost = ({ onPostGenerated }: {
       onPostGenerated(savedPost)
       setTopic('')
       setStyle('')
+      setScheduleEnabled(false)
+      setScheduleDate(undefined)
       setIsDialogOpen(false)
       setGeneratedPost(null)
     } catch (error) {
@@ -137,15 +154,61 @@ export const GeneratePost = ({ onPostGenerated }: {
                 onPublish={async () => {}}
                 mode="preview"
               />
+              
+              <div className="mt-4 flex items-center space-x-2">
+                <Switch 
+                  checked={scheduleEnabled}
+                  onCheckedChange={setScheduleEnabled}
+                  id="schedule-switch"
+                />
+                <label htmlFor="schedule-switch" className="text-sm font-medium">
+                  Schedule for later publication
+                </label>
+              </div>
+              
+              {scheduleEnabled && (
+                <div className="mt-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !scheduleDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {scheduleDate ? format(scheduleDate, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={scheduleDate}
+                        onSelect={setScheduleDate}
+                        initialFocus
+                        disabled={(date: Date) => date < new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
             </div>
           )}
           
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setGeneratedPost(null)}>
+            <AlertDialogCancel onClick={() => {
+              setGeneratedPost(null)
+              setScheduleEnabled(false)
+              setScheduleDate(undefined)
+            }}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleSave}>
-              Save
+            <AlertDialogAction 
+              onClick={handleSave} 
+              disabled={scheduleEnabled && !scheduleDate}
+            >
+              {scheduleEnabled ? 'Schedule' : 'Save'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -40,6 +40,24 @@ export class PostController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('schedule')
+  async schedulePost(
+    @Req() req: RequestWithUser,
+    @Body() createPostDto: CreatePostDto,
+  ) {
+    if (!createPostDto.scheduledPublishDate) {
+      throw new ForbiddenException('Scheduled publish date is required')
+    }
+    
+    const userId = req.user.id
+    const post = await this.postService.createPost(userId, {
+      ...createPostDto,
+      isPublished: false,
+    })
+    return new PostDto(post)
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('user')
   async getUserPosts(@Req() req: RequestWithUser) {
     const userId = req.user.id
@@ -56,33 +74,35 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async updatePost(
-    @Req() req: RequestWithUser,
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
+    @Req() req: RequestWithUser,
   ) {
     const userId = req.user.id
-    console.log('[change post userId]:', userId)
     const post = await this.postService.getPostById(id)
     
     if (post.authorId.toString() !== userId) {
-      throw new ForbiddenException('You are not allowed to update this post')
+      throw new ForbiddenException('You do not have permission to update this post')
     }
-
-    const updatedPost = await this.postService.updatePost(id, userId, updatePostDto)
+    
+    const updatedPost = await this.postService.updatePost(id, updatePostDto)
     return new PostDto(updatedPost)
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deletePost(
-    @Req() req: RequestWithUser,
     @Param('id') id: string,
+    @Req() req: RequestWithUser,
   ) {
     const userId = req.user.id
-    const result = await this.postService.deletePost(id, userId)
-    if (!result) {
-      throw new NotFoundException(`Post with ID ${id} not found or you don't have permission`)
+    const post = await this.postService.getPostById(id)
+    
+    if (post.authorId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to delete this post')
     }
+    
+    await this.postService.deletePost(id)
     return { success: true }
   }
 } 

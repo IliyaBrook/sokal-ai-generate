@@ -26,6 +26,9 @@ export class Post {
   @Prop({ default: false })
   isPublished: boolean
 
+  @Prop({ type: Date, required: false })
+  scheduledPublishDate: Date
+
   @Prop({ type: Date })
   createdAt: Date
 

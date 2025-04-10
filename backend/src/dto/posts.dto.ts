@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer'
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsDate } from 'class-validator'
 import { IPost, ICreatePostData, IGeneratePostData, IUpdatePostData } from '@sokal_ai_generate/shared-types'
 
 export class PostDto implements IPost {
@@ -25,6 +25,9 @@ export class PostDto implements IPost {
   isPublished: boolean
 
   @Expose()
+  scheduledPublishDate?: Date
+
+  @Expose()
   createdAt: Date
 
   @Expose()
@@ -38,6 +41,7 @@ export class PostDto implements IPost {
     this.style = post.style
     this.authorId = post.authorId
     this.isPublished = post.isPublished
+    this.scheduledPublishDate = post.scheduledPublishDate
     this.createdAt = post.createdAt
     this.updatedAt = post.updatedAt
   }
@@ -67,6 +71,10 @@ export class CreatePostDto implements ICreatePostData {
   @IsBoolean()
   @IsOptional()
   isPublished?: boolean
+  
+  @IsDate()
+  @IsOptional()
+  scheduledPublishDate?: Date
 }
 
 export class UpdatePostDto implements IUpdatePostData {

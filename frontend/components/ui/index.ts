@@ -4,4 +4,7 @@ export * from './skeleton'
 export * from './Alert'
 export * from './label'
 export * from './form'
+export * from './calendar'
+export * from './popover'
+export * from './switch'
 

@@ -6,6 +6,7 @@ export interface IPost {
     style: string;
     authorId: string;
     isPublished: boolean;
+    scheduledPublishDate?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -19,6 +20,7 @@ export interface ICreatePostData {
     topic: string;
     style: string;
     isPublished?: boolean;
+    scheduledPublishDate?: Date;
 }
 export interface IUpdatePostData {
     title?: string;
@@ -26,4 +28,5 @@ export interface IUpdatePostData {
     topic?: string;
     style?: string;
     isPublished?: boolean;
+    scheduledPublishDate?: Date;
 }

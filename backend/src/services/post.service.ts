@@ -42,17 +42,16 @@ export class PostService {
 
   async updatePost(
     postId: string,
-    userId: string,
     updatePostDto: UpdatePostDto,
   ): Promise<TPostDocument> {
-    const post = await this.postModel.findOneAndUpdate(
-      { _id: postId, authorId: userId },
+    const post = await this.postModel.findByIdAndUpdate(
+      postId,
       { $set: updatePostDto },
       { new: true }
     )
 
     if (!post) {
-      throw new NotFoundException(`Post with ID ${postId} not found or you don't have permission`)
+      throw new NotFoundException(`Post with ID ${postId} not found`)
     }
 
     return post
@@ -75,14 +74,13 @@ export class PostService {
     return this.postModel.find({ authorId: userId }).sort({ createdAt: -1 }).exec()
   }
 
-  async deletePost(postId: string, userId: string): Promise<boolean> {
+  async deletePost(postId: string): Promise<boolean> {
     const result = await this.postModel.deleteOne({
       _id: postId,
-      authorId: userId,
     })
     
     if (result.deletedCount === 0) {
-      throw new NotFoundException(`Post with ID ${postId} not found or you don't have permission`)
+      throw new NotFoundException(`Post with ID ${postId} not found`)
     }
     
     return true

@@ -13,6 +13,7 @@ import {
 import { Button } from "../ui";
 import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
 import "highlight.js/styles/atom-one-dark.css";
+import { format } from "date-fns";
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
@@ -37,7 +38,6 @@ export const PostItem = ({
       setIsPublishing(true);
       try {
         const result = await onPublish(post.id);
-        console.log("Publish result:", result);
         setIsPublished(true);
       } catch (error) {
         console.error("Error publishing post:", error);
@@ -54,6 +54,13 @@ export const PostItem = ({
     }
   };
 
+  const getPostStatus = () => {
+    if (isPublished) return "Published";
+    if (post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()) {
+      return `Scheduled for ${format(new Date(post.scheduledPublishDate), "PPP")}`;
+    }
+    return "Draft";
+  };
   
   return (
     <Card>
@@ -61,7 +68,7 @@ export const PostItem = ({
         <CardTitle>{post.title}</CardTitle>
         {mode === "published" && (
           <CardDescription>
-            {isPublished ? "Published" : "Draft"}
+            {getPostStatus()}
           </CardDescription>
         )}
       </CardHeader>
@@ -103,7 +110,7 @@ export const PostItem = ({
               Edit
             </Button>
           )}
-          {!isPublished && mode !== "preview" && (
+          {!isPublished && mode !== "preview" && !post.scheduledPublishDate && (
             <Button onClick={handlePublish} disabled={isPublishing}>
               {isPublishing ? "Publishing..." : "Publish"}
             </Button>
