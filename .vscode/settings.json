@@ -11,6 +11,5 @@
         "local":{
             "hostname": "http://localhost"
         }
-    },
-
+    }
 }

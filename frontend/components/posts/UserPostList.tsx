@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { IAuthResponse, IPost, IUpdatePostData } from "@/types";
+import useAuthUserFetch from "@/hooks/useAuthUserFetch";
+import { IPost } from "@/types";
+import { useEffect, useState } from "react";
 import { PostItem } from "./PostItem";
-import useApiFetch from "@/hooks/useApiFetch";
 
 export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
   const [posts, setPosts] = useState(initialPosts);
@@ -12,7 +12,7 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
     setPosts(initialPosts);
   }, [initialPosts]);
 
-  const apiFetch = useApiFetch<IPost>()
+  const apiFetch = useAuthUserFetch<IPost>()
 
   const handlePublish = async (postId: string) => {
     try {

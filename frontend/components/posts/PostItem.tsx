@@ -25,8 +25,7 @@ export const PostItem = ({
   post,
   onPublish,
   onEdit,
-  mode,
-  ...props
+  mode
 }: PostItemProps) => {
   const [isPublished, setIsPublished] = useState(post.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);

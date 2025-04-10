@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { PostItem } from './PostItem'
 import { IPost } from '@/types'
-import useApiFetch from '@/hooks/useApiFetch'
+import useAuthUserFetch from '@/hooks/useAuthUserFetch'
 
 export const GeneratePost = ({ onPostGenerated }: {
   onPostGenerated: (newPost: IPost) => void
@@ -23,7 +23,7 @@ export const GeneratePost = ({ onPostGenerated }: {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedPost, setGeneratedPost] = useState<IPost | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const apiFetch = useApiFetch<IPost>()
+  const apiFetch = useAuthUserFetch<IPost>()
 
   const handleGenerate = async (e: React.MouseEvent) => {
     e.preventDefault()
