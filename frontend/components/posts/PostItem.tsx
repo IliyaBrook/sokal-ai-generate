@@ -45,6 +45,9 @@ export const PostItem = ({
   const [isScheduling, setIsScheduling] = useState(false);
   const [scheduleTime, setScheduleTime] = useState("12:00");
   const apiFetch = useAuthUserFetch<IPost>();
+  const [localScheduledDate, setLocalScheduledDate] = useState<Date | undefined | null>(
+    post.scheduledPublishDate ? new Date(post.scheduledPublishDate) : undefined
+  );
 
   const handlePublish = async () => {
     if (onPublish && typeof onPublish === "function") {
@@ -90,11 +93,14 @@ export const PostItem = ({
       });
       
       if (updatedPost) {
+        setLocalScheduledDate(scheduledDateTime);
         post.scheduledPublishDate = updatedPost.scheduledPublishDate;
         setShowScheduler(false);
+        toast.success("Post scheduled successfully");
       }
     } catch (error) {
       console.error("Error scheduling post:", error);
+      toast.error("Failed to schedule post. Please try again.");
     } finally {
       setIsScheduling(false);
     }
@@ -110,22 +116,25 @@ export const PostItem = ({
       });
       
       if (updatedPost) {
+        setLocalScheduledDate(null);
         post.scheduledPublishDate = undefined;
+        toast.success("Publication schedule has been canceled");
       }
     } catch (error) {
       console.error("Error canceling schedule:", error);
+      toast.error("Failed to cancel schedule. Please try again.");
     }
   };
 
   const getPostStatus = () => {
     if (isPublished) return "Published";
-    if (post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()) {
-      return `Scheduled for ${format(new Date(post.scheduledPublishDate), "PPP HH:mm")}`;
+    if (localScheduledDate && new Date(localScheduledDate) > new Date()) {
+      return `Scheduled for ${format(new Date(localScheduledDate), "PPP HH:mm")}`;
     }
     return "Draft";
   };
   
-  const isScheduled = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
+  const isScheduled = !isPublished && localScheduledDate && new Date(localScheduledDate) > new Date();
   
   return (
     <Card>
@@ -237,7 +246,7 @@ export const PostItem = ({
           {isScheduled && (
             <div className="flex items-center gap-2">
               <span className="text-sm">
-                Scheduled: {post.scheduledPublishDate ? format(new Date(post.scheduledPublishDate), "PPP HH:mm") : ""}
+                Scheduled: {localScheduledDate ? format(new Date(localScheduledDate), "PPP HH:mm") : ""}
               </span>
               <Button 
                 variant="destructive" 
