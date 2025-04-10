@@ -2,18 +2,25 @@
 
 import { useState } from "react";
 import { IPost } from "@/types";
+import { Button } from "../ui";
+import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
+import "highlight.js/styles/atom-one-dark.css";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib";
+import { useAuthUserFetch } from "@/hooks";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Calendar,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "../ui";
-import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
-import "highlight.js/styles/atom-one-dark.css";
-import { format } from "date-fns";
+} from "@/components/ui";
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
@@ -32,6 +39,11 @@ export const PostItem = ({
   const [isPublishing, setIsPublishing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
+  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [scheduleTime, setScheduleTime] = useState("12:00");
+  const apiFetch = useAuthUserFetch<IPost>();
 
   const handlePublish = async () => {
     if (onPublish && typeof onPublish === "function") {
@@ -54,13 +66,59 @@ export const PostItem = ({
     }
   };
 
+  const handleSchedule = async () => {
+    if (!scheduleDate) return;
+    
+    setIsScheduling(true);
+    try {
+      const scheduledDateTime = new Date(scheduleDate);
+      const [hours, minutes] = scheduleTime.split(":").map(Number);
+      scheduledDateTime.setHours(hours, minutes);
+      
+      const updatedPost = await apiFetch(`/api/posts/${post.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          scheduledPublishDate: scheduledDateTime
+        }),
+      });
+      
+      if (updatedPost) {
+        post.scheduledPublishDate = updatedPost.scheduledPublishDate;
+        setShowScheduler(false);
+      }
+    } catch (error) {
+      console.error("Error scheduling post:", error);
+    } finally {
+      setIsScheduling(false);
+    }
+  };
+
+  const handleCancelSchedule = async () => {
+    try {
+      const updatedPost = await apiFetch(`/api/posts/${post.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          scheduledPublishDate: null
+        }),
+      });
+      
+      if (updatedPost) {
+        post.scheduledPublishDate = undefined;
+      }
+    } catch (error) {
+      console.error("Error canceling schedule:", error);
+    }
+  };
+
   const getPostStatus = () => {
     if (isPublished) return "Published";
     if (post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()) {
-      return `Scheduled for ${format(new Date(post.scheduledPublishDate), "PPP")}`;
+      return `Scheduled for ${format(new Date(post.scheduledPublishDate), "PPP HH:mm")}`;
     }
     return "Draft";
   };
+  
+  const isScheduled = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
   
   return (
     <Card>
@@ -95,26 +153,111 @@ export const PostItem = ({
             </button>
           </div>
         )}
+        
+        {showScheduler && (
+          <div className="mt-4 border p-4 rounded">
+            <h3 className="text-lg font-medium mb-2">Schedule Publication</h3>
+            
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-sm mb-1">Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !scheduleDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {scheduleDate ? format(scheduleDate, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={scheduleDate}
+                      onSelect={setScheduleDate}
+                      initialFocus
+                      disabled={(date: Date) => date < new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div>
+                <label className="block text-sm mb-1">Time</label>
+                <input
+                  type="time"
+                  value={scheduleTime}
+                  onChange={(e) => setScheduleTime(e.target.value)}
+                  className="w-full border rounded p-2"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleSchedule} 
+                  disabled={!scheduleDate || isScheduling}
+                >
+                  {isScheduling ? "Scheduling..." : "Schedule"}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowScheduler(false)}
+                >
+                  Cancel
+                </Button>
+              </div>             
+            </div>
+          </div>
+        )}
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <span className="text-sm text-gray-500">
-          {new Date(post.createdAt).toLocaleDateString()}
-        </span>
-        <div className="flex gap-2">
-          {mode !== "preview" && onEdit && (
-            <Button
-              onClick={() => setIsEditing(true)}
-              variant="secondary"
-              disabled={isEditing}
-            >
-              Edit
-            </Button>
+      <CardFooter className="flex flex-col gap-2">
+        <div className="w-full flex justify-between items-center">
+          <span className="text-sm text-gray-500">
+            {new Date(post.createdAt).toLocaleDateString()}
+          </span>
+          
+          {isScheduled && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm">
+                Scheduled: {post.scheduledPublishDate ? format(new Date(post.scheduledPublishDate), "PPP HH:mm") : ""}
+              </span>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={handleCancelSchedule}
+              >
+                Cancel Schedule
+              </Button>
+            </div>
           )}
-          {!isPublished && mode !== "preview" && !post.scheduledPublishDate && (
-            <Button onClick={handlePublish} disabled={isPublishing}>
-              {isPublishing ? "Publishing..." : "Publish"}
-            </Button>
-          )}
+          
+          <div className="flex gap-2">
+            {!isPublished && mode !== "preview" && !isScheduled && (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowScheduler(!showScheduler)}
+              >
+                Schedule
+              </Button>
+            )}
+            {mode !== "preview" && onEdit && (
+              <Button
+                onClick={() => setIsEditing(true)}
+                variant="secondary"
+                disabled={isEditing}
+              >
+                Edit
+              </Button>
+            )}
+            {!isPublished && mode !== "preview" && !isScheduled && (
+              <Button onClick={handlePublish} disabled={isPublishing}>
+                {isPublishing ? "Publishing..." : "Publish"}
+              </Button>
+            )}
+          </div>
         </div>
       </CardFooter>
     </Card>

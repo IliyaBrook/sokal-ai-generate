@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/cn'
 
 import type { TDiv } from '@/types'
 
-const InfoIcon = (props: TDiv) => (
+export const InfoIcon = (props: TDiv) => (
   <div
     className={cn(
       'mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:size-10',
@@ -28,6 +28,4 @@ const InfoIcon = (props: TDiv) => (
     </svg>
   </div>
 )
-
-export default InfoIcon
 

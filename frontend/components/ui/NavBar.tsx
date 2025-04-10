@@ -8,7 +8,7 @@ import useSetNavActiveClass from "@/hooks/useSetNavActiveClass";
 import { SettingsIcon } from "@/components/svgIcons/SettingsIcon";
 
 import { UserDataContext } from "@/contexts/UserData.context";
-import { cn } from "@/utils";
+import { cn } from "@/lib";
 
 export const NavBar = (): ReactElement => {
   const setDesktopClasses = useSetNavActiveClass({
@@ -169,7 +169,7 @@ export const NavBar = (): ReactElement => {
                     ref={dropdownRef}
                   >
                     {/* <Link
-                      // @Todo add route /user/id
+                      // TODO add route /user/id
                       href="/user/id"
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
@@ -240,5 +240,3 @@ export const NavBar = (): ReactElement => {
     </nav>
   );
 };
-
-export default NavBar;

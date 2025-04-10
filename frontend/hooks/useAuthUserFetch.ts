@@ -7,7 +7,7 @@ import { useContext } from "react"
 
 type FetchFunction<T> = (url: string, options?: RequestInit) => Promise<T>;
 
-const useAuthUserFetch = <T>(): FetchFunction<T> => {
+export const useAuthUserFetch = <T>(): FetchFunction<T> => {
   const router = useRouter()
   const userData = useContext(UserDataContext)
 
@@ -60,5 +60,3 @@ const useAuthUserFetch = <T>(): FetchFunction<T> => {
   
   return fetchData
 }
-
-export default useAuthUserFetch

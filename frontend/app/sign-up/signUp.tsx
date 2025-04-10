@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import Alert from "@/components/ui/Alert";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -15,8 +13,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+  Alert,
+  Input,
+  Button
+} from "@/components/ui";
+
 import { useAuth } from "@/hooks/useAuth";
 
 const signUpSchema = z.object({

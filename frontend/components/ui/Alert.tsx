@@ -2,11 +2,11 @@ import React, { useEffect } from 'react'
 
 import { CloseIcon, ErrorIcon, InfoIcon, SuccessIcon, WarningIcon } from '@/components/svgIcons'
 
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/cn'
 
 import type { IAlert } from '@/types'
 
-const Alert: React.FC<IAlert> = ({
+export const Alert: React.FC<IAlert> = ({
   type = 'error',
   message,
   showIcon = true,
@@ -162,4 +162,3 @@ const Alert: React.FC<IAlert> = ({
     </div>
   )
 }
-export default Alert

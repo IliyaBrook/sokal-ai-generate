@@ -1,9 +1,10 @@
 "use client";
 
-import useAuthUserFetch from "@/hooks/useAuthUserFetch";
+import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { IPost } from "@/types";
 import { useEffect, useState } from "react";
 import { PostItem } from "./PostItem";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 
 export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
   const [posts, setPosts] = useState(initialPosts);
@@ -83,6 +84,14 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
 
   return (
     <div className="space-y-8">
+      <Tabs defaultValue="all_posts" className="w-[400px] mb-4">
+        <TabsList>
+          <TabsTrigger value="all_posts">All Posts</TabsTrigger>
+          <TabsTrigger value="shceduled_posts">Scheduled Posts</TabsTrigger>
+          <TabsTrigger value="published_posts">Published Posts</TabsTrigger>
+        </TabsList>
+        <TabsContent value="password">Change your password here.</TabsContent>
+      </Tabs>
       {!Array.isArray(posts) || posts.length === 0 ? (
         <div className="flex justify-center items-center h-full">
           <p className="text-gray-500">No posts found</p>

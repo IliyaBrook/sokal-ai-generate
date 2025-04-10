@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/cn'
 
 import type { TDiv } from '@/types'
 
-const WarningIcon = (props: TDiv) => (
+export const WarningIcon = (props: TDiv) => (
   <div
     className={cn(
       'mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-yellow-100 sm:mx-0 sm:size-10',
@@ -28,5 +28,3 @@ const WarningIcon = (props: TDiv) => (
     </svg>
   </div>
 )
-
-export default WarningIcon

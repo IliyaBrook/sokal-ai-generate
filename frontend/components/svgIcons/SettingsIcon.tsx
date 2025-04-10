@@ -19,5 +19,3 @@ export const SettingsIcon = (props: SVGProps<SVGSVGElement>): React.ReactElement
     </svg>
   );
 };
-
-export default SettingsIcon; 

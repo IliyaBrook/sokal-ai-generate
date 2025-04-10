@@ -15,7 +15,7 @@ export class SchedulerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleScheduledPosts() {
     const now = new Date()
-    this.logger.log('Checking for scheduled posts to publish')
+    this.logger.log(`Checking for scheduled posts to publish at ${now.toISOString()}`)
     
     try {
       const posts = await this.postModel.find({
@@ -29,10 +29,15 @@ export class SchedulerService {
         for (const post of posts) {
           await this.postModel.findByIdAndUpdate(
             post._id,
-            { isPublished: true },
+            { 
+              isPublished: true,
+              updatedAt: new Date() 
+            },
           )
-          this.logger.log(`Published post ${post._id}`)
+          this.logger.log(`Published post ${post._id} (scheduled for ${post.scheduledPublishDate})`)
         }
+      } else {
+        this.logger.debug('No posts scheduled for publication at this time')
       }
     } catch (error) {
       this.logger.error('Error publishing scheduled posts', error.stack)

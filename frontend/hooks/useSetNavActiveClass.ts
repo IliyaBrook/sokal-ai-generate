@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { cn } from '@/utils/cn'
+import { cn } from '@/lib/cn'
 import { usePathname } from 'next/navigation'
 interface IUseSetNavActiveClass {
   defaultClasses?: string
