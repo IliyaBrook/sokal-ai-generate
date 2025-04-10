@@ -97,6 +97,9 @@ export class UpdatePostDto implements IUpdatePostData {
   @IsBoolean()
   @IsOptional()
   isPublished?: boolean
+  
+  @IsOptional()
+  scheduledPublishDate?: Date | null
 }
 
 export class GeneratePostDto implements IGeneratePostData {

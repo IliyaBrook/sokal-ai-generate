@@ -31,5 +31,5 @@ export interface IUpdatePostData {
   topic?: string
   style?: string
   isPublished?: boolean
-  scheduledPublishDate?: Date
+  scheduledPublishDate?: Date | null
 } 
