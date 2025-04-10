@@ -4,6 +4,7 @@ import "./globals.css";
 import "highlight.js/scss/atom-one-dark.scss";
 import { NavBar } from "@/components/ui/NavBar";
 import { UserDataProvider } from "@/contexts/UserData.context";
+import { Toaster } from "sonner";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
           <NavBar />
           {children}
         </UserDataProvider>
+        <Toaster richColors position="bottom-center"/>
       </body>
     </html>
   );

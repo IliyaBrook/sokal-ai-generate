@@ -2,9 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { toast } from "sonner";
 
 import {
   Form,
@@ -13,7 +14,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  Alert,
   Input,
   Button
 } from "@/components/ui";
@@ -31,9 +31,7 @@ type SignUpForm = z.infer<typeof signUpSchema>;
 
 export default function SignUp() {
   const router = useRouter();
-  const { signUp, isLoading, error, setError } = useAuth();
-  const [localError, setLocalError] = React.useState<string>("");
-  const errorTimerId = React.useRef<NodeJS.Timeout | null>(null);
+  const { signUp, isLoading, setError } = useAuth();
 
   const form = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
@@ -45,39 +43,16 @@ export default function SignUp() {
     },
   });
 
-  const clearErrorTimer = () => {
-    if (errorTimerId.current) {
-      clearTimeout(errorTimerId.current);
-      errorTimerId.current = null;
-    }
-  };
-
-  const startErrorTimer = () => {
-    clearErrorTimer();
-    errorTimerId.current = setTimeout(() => {
-      setError(null);
-      setLocalError("");
-    }, 5000);
-  };
-
-  useEffect(() => {
-    if (error || localError) {
-      startErrorTimer();
-    }
-    return clearErrorTimer;
-  }, [error, localError, setError]);
-
   const onSubmit = async (data: SignUpForm) => {
     try {
-      setLocalError("");
       const response = await signUp(data);
       if (response) {
         router.push("/users/posts");
       }
     } catch (err) {
-      setLocalError(
-        err instanceof Error ? err.message : "Sign up error occurred"
-      );
+      const errorMessage = err instanceof Error ? err.message : "Sign up error occurred";
+      toast.error(errorMessage);
+      setError(null);
     }
   };
 
@@ -173,17 +148,6 @@ export default function SignUp() {
             </Button>
           </form>
         </Form>
-
-        <Alert
-          type="error"
-          message={error || localError}
-          isShown={!!(error || localError)}
-          onClose={() => {
-            clearErrorTimer();
-            setError(null);
-            setLocalError("");
-          }}
-        />
       </div>
     </div>
   );

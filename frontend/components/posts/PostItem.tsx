@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib";
 import { useAuthUserFetch } from "@/hooks";
+import { toast } from "sonner";
 import {
   Popover,
   PopoverContent,
@@ -69,12 +70,18 @@ export const PostItem = ({
   const handleSchedule = async () => {
     if (!scheduleDate) return;
     
+    const scheduledDateTime = new Date(scheduleDate);
+    const [hours, minutes] = scheduleTime.split(":").map(Number);
+    scheduledDateTime.setHours(hours, minutes);
+    
+    const now = new Date();
+    if (scheduledDateTime < now) {
+      toast.error("Cannot schedule for a past time. Please select a future time.");
+      return;
+    }
+    
     setIsScheduling(true);
     try {
-      const scheduledDateTime = new Date(scheduleDate);
-      const [hours, minutes] = scheduleTime.split(":").map(Number);
-      scheduledDateTime.setHours(hours, minutes);
-      
       const updatedPost = await apiFetch(`/api/posts/${post.id}`, {
         method: 'PUT',
         body: JSON.stringify({
@@ -180,7 +187,15 @@ export const PostItem = ({
                       selected={scheduleDate}
                       onSelect={setScheduleDate}
                       initialFocus
-                      disabled={(date: Date) => date < new Date()}
+                      disabled={(date: Date) => {
+                        const today = new Date();
+                        return date.getDate() < today.getDate() && 
+                               date.getMonth() <= today.getMonth() && 
+                               date.getFullYear() <= today.getFullYear();
+                      }}
+                      classNames={{
+                        day_selected: "bg-primary text-primary-foreground font-bold",
+                      }}
                     />
                   </PopoverContent>
                 </Popover>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui";
 import {
   AlertDialog,
@@ -11,9 +10,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { PostItem } from "./PostItem";
-import { IPost, ICreatePostData } from "@/types";
-import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -21,9 +17,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { cn } from "@/lib";
+import { ICreatePostData, IPost } from "@/types";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { PostItem } from "./PostItem";
+
 
 export const GeneratePost = ({
   onPostGenerated,
@@ -92,7 +94,13 @@ export const GeneratePost = ({
         const scheduledDateTime = new Date(scheduleDate);
         const [hours, minutes] = scheduleTime.split(":").map(Number);
         scheduledDateTime.setHours(hours, minutes);
-
+        
+        const now = new Date();
+        if (scheduledDateTime < now) {
+          toast.error("Cannot schedule for a past time. Please select a future time.");
+          return;
+        }
+        
         postData.scheduledPublishDate = scheduledDateTime;
       }
 
@@ -117,7 +125,7 @@ export const GeneratePost = ({
       console.error("Error saving post:", error);
     }
   };
-
+  
   return (
     <>
       <div className="mb-8 p-6 border rounded-lg shadow-sm">
@@ -209,7 +217,15 @@ export const GeneratePost = ({
                           selected={scheduleDate}
                           onSelect={setScheduleDate}
                           initialFocus
-                          disabled={(date: Date) => date < new Date()}
+                          disabled={(date: Date) => {
+                            const today = new Date();
+                            return date.getDate() < today.getDate() && 
+                                   date.getMonth() <= today.getMonth() && 
+                                   date.getFullYear() <= today.getFullYear();
+                          }}
+                          classNames={{
+                            day_selected: "bg-primary text-primary-foreground font-bold",
+                          }}
                         />
                       </PopoverContent>
                     </Popover>

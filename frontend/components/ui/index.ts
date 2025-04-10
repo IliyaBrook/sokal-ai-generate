@@ -1,4 +1,3 @@
-export * from './Alert'
 export * from './NavBar'
 export * from './alert-dialog'
 export * from './button'

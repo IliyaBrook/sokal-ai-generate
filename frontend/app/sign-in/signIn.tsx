@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 
 import {
   Form,
@@ -16,7 +17,6 @@ import {
 } from "@/components/ui";
 
 import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/Alert";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -29,9 +29,7 @@ type SignInForm = z.infer<typeof signInSchema>;
 
 export default function SignIn() {
   const router = useRouter();
-  const { signIn, isLoading, error, setError } = useAuth();
-  const [localError, setLocalError] = React.useState<string>("");
-  const errorTimerId = React.useRef<NodeJS.Timeout | null>(null);
+  const { signIn, isLoading, setError } = useAuth();
 
   const form = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -41,39 +39,16 @@ export default function SignIn() {
     },
   });
 
-  const clearErrorTimer = () => {
-    if (errorTimerId.current) {
-      clearTimeout(errorTimerId.current);
-      errorTimerId.current = null;
-    }
-  };
-
-  const startErrorTimer = () => {
-    clearErrorTimer();
-    errorTimerId.current = setTimeout(() => {
-      setError(null);
-      setLocalError("");
-    }, 5000);
-  };
-
-  useEffect(() => {
-    if (error || localError) {
-      startErrorTimer();
-    }
-    return clearErrorTimer;
-  }, [error, localError, setError]);
-
   const onSubmit = async (data: SignInForm) => {
     try {
-      setLocalError("");
       const response = await signIn(data);
       if (response) {
         router.push("/users/posts");
       }
     } catch (err) {
-      setLocalError(
-        err instanceof Error ? err.message : "Sign in error occurred"
-      );
+      const errorMessage = err instanceof Error ? err.message : "Sign in error occurred";
+      toast.error(errorMessage);
+      setError(null);
     }
   };
 
@@ -130,17 +105,6 @@ export default function SignIn() {
             </Button>
           </form>
         </Form>
-
-        <Alert
-          type="error"
-          message={error || localError}
-          isShown={!!(error || localError)}
-          onClose={() => {
-            clearErrorTimer();
-            setError(null);
-            setLocalError("");
-          }}
-        />
       </div>
     </div>
   );
