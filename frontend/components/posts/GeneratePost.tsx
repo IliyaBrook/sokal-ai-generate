@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useState } from 'react'
 import { Button } from '@/components/ui'
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { PostItem } from './PostItem'
 import { IPost } from '@/types'
+import useApiFetch from '@/hooks/useApiFetch'
 
 export const GeneratePost = ({ onPostGenerated }: {
   onPostGenerated: (newPost: IPost) => void
@@ -22,6 +23,7 @@ export const GeneratePost = ({ onPostGenerated }: {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedPost, setGeneratedPost] = useState<IPost | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const apiFetch = useApiFetch<IPost>()
 
   const handleGenerate = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -29,7 +31,7 @@ export const GeneratePost = ({ onPostGenerated }: {
 
     setIsGenerating(true)
     try {
-      const response = await fetch('/api/generate', {
+      const post = await apiFetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,16 +40,12 @@ export const GeneratePost = ({ onPostGenerated }: {
         body: JSON.stringify({ topic, style }),
       })
 
-      if (!response.ok) {
+      if (!post) {
         throw new Error('Failed to generate post')
       }
-
-      const post = await response.json()
       setGeneratedPost({
         ...post,
-        id: 'preview',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        id: 'preview'
       })
       setIsDialogOpen(true)
     } catch (error) {
@@ -61,12 +59,8 @@ export const GeneratePost = ({ onPostGenerated }: {
     if (!generatedPost) return
 
     try {
-      const response = await fetch('/api/posts/save', {
+      const savedPost = await apiFetch('/api/posts/save', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
         body: JSON.stringify({
           title: generatedPost.title,
           content: generatedPost.content,
@@ -75,11 +69,10 @@ export const GeneratePost = ({ onPostGenerated }: {
         }),
       })
 
-      if (!response.ok) {
+      if (!savedPost) {
         throw new Error('Failed to save post')
       }
 
-      const savedPost = await response.json()
       onPostGenerated(savedPost)
       setTopic('')
       setStyle('')

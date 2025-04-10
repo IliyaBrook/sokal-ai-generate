@@ -183,7 +183,6 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview" }: RichTe
       </div>}
 
       <EditorContent
-        
         editor={editor}
         className="prose max-w-none rich-text-editor-content"
       />

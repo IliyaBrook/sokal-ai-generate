@@ -2,18 +2,16 @@ import { PostItem } from "@/components/posts";
 import { IPost } from "@/types";
 
 const getPublicPosts = async () => {
- 
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-    console.log('baseUrl', baseUrl);
-    const response = await fetch(`${baseUrl || "http://localhost:4000/api"}/posts/public`, {
+    const response = await fetch(`${baseUrl || "http://localhost:4000"}/posts/public`, {
       headers: {
         "Content-Type": "application/json",
       },
       cache: "no-store",
     });
     if (!response.ok) {
-      return [];
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     return await response.json();
   } catch (error) {

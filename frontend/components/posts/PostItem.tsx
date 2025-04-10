@@ -55,39 +55,39 @@ export const PostItem = ({
     }
   };
 
+  
   return (
-    <Card {...props}>
+    <Card>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
-        {mode === "published" && <CardDescription>{isPublished ? "Published" : "Draft"}</CardDescription>}
+        {mode === "published" && (
+          <CardDescription>
+            {isPublished ? "Published" : "Draft"}
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent>
-        {isEditing ? (
-          <>
-            <RichTextEditor
-              content={editedContent}
-              onUpdate={setEditedContent}
-            />
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={handleSave}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="bg-gray-500 text-white px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
-            </div>
-          </>
-        ) : (
-          <RichTextEditor
-            content={post.content}
-            mode={isEditing ? "published" : "preview"}
+        <RichTextEditor
+          key={isEditing ? `richTextEditor-published-${post.id}` : `richTextEditor-preview-${post.id}`}
+          content={editedContent}
+          onUpdate={setEditedContent}
+          mode={isEditing ? "published" : "preview"}
         />
+        {isEditing && (
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={handleSave}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setIsEditing(false)}
+              className="bg-gray-500 text-white px-4 py-2 rounded"
+            >
+              Cancel
+            </button>
+          </div>
         )}
       </CardContent>
       <CardFooter className="flex justify-between">

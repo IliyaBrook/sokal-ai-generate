@@ -26,15 +26,11 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
   const [userData, setUserData] = React.useState<IUser | null>(null)
   const navigate = useRouter()
   const pathname = usePathname()
-  // Todo use isLoading
-  const [isLoading, setIsLoading] = React.useState(false)
-  // const publicPaths = ['/', '/sign-in', '/sign-up']
 
   useLayoutEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
       try {
-        setIsLoading(true)
         fetch('/api/users/auth', {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -61,18 +57,10 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
         })
       } catch {
         console.log('Not authorized')
-        setIsLoading(false)
-      } finally {
-        setIsLoading(false)
+        navigate.push('/')
       }
     }
   }, [pathname])
-
-  // useLayoutEffect(() => {
-  //   if (!userData && !publicPaths.includes(pathname)) {
-  //     navigate.push('/')
-  //   }
-  // }, [userData, pathname, navigate])
 
   const providedData = {
     userData,
