@@ -63,19 +63,25 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
   }
 
   const getScheduledPosts = () => {
-    return posts.filter(post => 
-      !post.isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()
-    );
+    return Array.isArray(posts) 
+      ? posts.filter(post => 
+        !post.isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()
+      )
+      : [];
   }
 
   const getPublishedPosts = () => {
-    return posts.filter(post => post.isPublished);
+    return Array.isArray(posts)
+      ? posts.filter(post => post.isPublished)
+      : [];
   }
 
   const getDraftPosts = () => {
-    return posts.filter(post => 
-      !post.isPublished && (!post.scheduledPublishDate || new Date(post.scheduledPublishDate) <= new Date())
-    );
+    return Array.isArray(posts)
+      ? posts.filter(post => 
+        !post.isPublished && (!post.scheduledPublishDate || new Date(post.scheduledPublishDate) <= new Date())
+      )
+      : [];
   }
 
   const scheduledPosts = getScheduledPosts();
