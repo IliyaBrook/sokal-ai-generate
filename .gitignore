@@ -29,6 +29,8 @@ out/
 *.swp
 *.swo
 .DS_Store
+.cursorignore
+.cursorindexingignore
 
 # Logs
 logs/
