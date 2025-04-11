@@ -17,7 +17,7 @@ export default function Shared({ linkId }: {linkId: string}) {
   const [currentPost, setCurrentPost] = useState<PostWithAuthor | null>(null)
   const [error, setError] = useState<string | null>(null)
   const apiFetch = useAuthUserFetch()
-console.log("currentPost:", currentPost)
+
   useEffect(() => {
     const fetchPost = async () => {
       try {
