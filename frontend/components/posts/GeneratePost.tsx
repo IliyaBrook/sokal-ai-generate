@@ -27,7 +27,7 @@ export const GeneratePost = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPost, setGeneratedPost] = useState<IPost | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const apiFetch = useAuthUserFetch<IPost>();
+  const apiFetch = useAuthUserFetch();
 
   const handleGenerate: React.MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ export const GeneratePost = ({
 
     setIsGenerating(true);
     try {
-      const post = await apiFetch("/api/generate", {
+      const post = await apiFetch<IPost>("/api/generate", {
         method: "POST",
         body: JSON.stringify({ topic, style }),
       });
@@ -78,7 +78,7 @@ export const GeneratePost = ({
         throw new Error("Failed to save post");
       }
 
-      onPostGenerated(savedPost);
+      onPostGenerated(savedPost as IPost);
       setTopic("");
       setStyle("");
       setIsDialogOpen(false);

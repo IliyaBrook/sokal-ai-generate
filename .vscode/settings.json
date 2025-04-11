@@ -1,5 +1,7 @@
 {
     "css.lint.unknownAtRules": "ignore",
+    "workbench.editor.splitSizing": "distribute",
+    "typescript.tsserver.log": "verbose",
     "rest-client.environmentVariables": {
         "$shared": {
             "api": "http://localhost:4000/api",

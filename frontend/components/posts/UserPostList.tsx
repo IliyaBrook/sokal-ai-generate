@@ -14,11 +14,11 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
     setPosts(initialPosts);
   }, [initialPosts]);
 
-  const apiFetch = useAuthUserFetch<IPost>()
+  const apiFetch = useAuthUserFetch()
 
   const handlePublish = async (postId: string) => {
     try {
-      const data = await apiFetch(`/api/posts/${postId}`, {
+      const data = await apiFetch<IPost>(`/api/posts/${postId}`, {
         method: 'PUT',
         body: JSON.stringify({ isPublished: true }),
       })

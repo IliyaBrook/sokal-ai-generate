@@ -13,10 +13,10 @@ export default function UserPosts() {
   const userName = [data?.userData?.firstname, data?.userData?.lastname]?.join(
     " "
   );
-  const apiFetch = useAuthUserFetch<IPost[]>();
+  const apiFetch = useAuthUserFetch();
   const fetchPosts = async () => {
     try {
-      const data = await apiFetch(`/api/posts/user`);
+      const data = await apiFetch<IPost[]>(`/api/posts/user`);
       setPosts(data);
     } catch (error) {
       console.error("Error fetching posts:", error);
