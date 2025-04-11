@@ -11,6 +11,10 @@ import { useAuthUserFetch } from "@/hooks";
 import { toast } from "sonner";
 import "react-datepicker/dist/react-datepicker.css";
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Card,
   CardContent,
   CardDescription,
@@ -19,6 +23,17 @@ import {
   CardTitle,
   DatePickerInput
 } from "@/components/ui";
+
+// Добавим интерфейс для ответа сервера с короткой ссылкой
+interface ShortLinkResponse {
+  id: string
+  code: string
+  targetType: string
+  targetId: string
+  url: string
+  createdAt: Date
+  expiresAt?: Date
+}
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
@@ -41,7 +56,14 @@ export const PostItem = ({
   const [showScheduler, setShowScheduler] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
   const [scheduleTime, setScheduleTime] = useState("12:00");
-  const apiFetch = useAuthUserFetch<IPost>();
+  const [shortLink, setShortLink] = useState<string | undefined>(post.shortLink);
+  const [shortLinkId, setShortLinkId] = useState<string | undefined>(undefined);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [isCreatingLink, setIsCreatingLink] = useState(false);
+  const [isDeletingLink, setIsDeletingLink] = useState(false);
+
+  const apiFetch = useAuthUserFetch();
+
   const [localScheduledDate, setLocalScheduledDate] = useState<Date | undefined | null>(
     post.scheduledPublishDate ? new Date(post.scheduledPublishDate) : undefined
   );
@@ -67,6 +89,65 @@ export const PostItem = ({
     }
   };
 
+  const handleCreateShortLink = async () => {
+    setIsCreatingLink(true);
+    try {
+      const response = await apiFetch<ShortLinkResponse>(`/api/short`, {
+        method: 'POST',
+        body: JSON.stringify({
+          targetType: 'post',
+          targetId: post.id
+        }),
+      });
+      
+      if (response && response.url) {
+        const url = response.url;
+        const code = url.split('/').pop();
+        const formattedUrl = `${window.location.origin}/shared/${code}`;
+        
+        setShortLink(formattedUrl);
+        setShortLinkId(response.id);
+        setShowLinkDialog(true);
+        toast.success("Share link created successfully");
+      }
+    } catch (error) {
+      console.error("Error creating share link:", error);
+      toast.error("Failed to create share link. Please try again.");
+    } finally {
+      setIsCreatingLink(false);
+    }
+  };
+
+  const handleDeleteShortLink = async () => {
+    if (!shortLinkId) {
+      toast.error("Cannot delete link: missing link ID");
+      return;
+    }
+    
+    setIsDeletingLink(true);
+    try {
+      const response = await apiFetch<ShortLinkResponse>(`/api/short/${shortLinkId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response) {
+        setShortLink(undefined);
+        setShortLinkId(undefined);
+        toast.success("Share link deleted successfully");
+      }
+    } catch (error) {
+      console.error("Error deleting share link:", error);
+      toast.error("Failed to delete share link. Please try again.");
+    } finally {
+      setIsDeletingLink(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Link copied to clipboard");
+  };
+
   const handleSchedule = async () => {
     if (!scheduleDate) return;
     
@@ -82,7 +163,7 @@ export const PostItem = ({
     
     setIsScheduling(true);
     try {
-      const updatedPost = await apiFetch(`/api/posts/${post.id}`, {
+      const updatedPost = await apiFetch<IPost>(`/api/posts/${post.id}`, {
         method: 'PUT',
         body: JSON.stringify({
           scheduledPublishDate: scheduledDateTime
@@ -110,7 +191,7 @@ export const PostItem = ({
 
   const handleCancelSchedule = async () => {
     try {
-      const updatedPost = await apiFetch(`/api/posts/${post.id}`, {
+      const updatedPost = await apiFetch<IPost>(`/api/posts/${post.id}`, {
         method: 'PUT',
         body: JSON.stringify({
           scheduledPublishDate: null
@@ -238,6 +319,36 @@ export const PostItem = ({
           )}
           
           <div className="flex gap-2">
+            {/* Кнопки управления ссылками - доступны всегда, когда mode="published" */}
+            {mode === "published" && (
+              <>
+                {shortLink ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowLinkDialog(true)}
+                    >
+                      Show Link
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteShortLink}
+                      disabled={isDeletingLink}
+                    >
+                      {isDeletingLink ? "Deleting..." : "Delete Link"}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={handleCreateShortLink}
+                    disabled={isCreatingLink}
+                  >
+                    {isCreatingLink ? "Creating..." : "Share"}
+                  </Button>
+                )}
+              </>
+            )}
             {!isPublished && mode !== "preview" && !isScheduled && (
               <Button 
                 variant="outline" 
@@ -263,6 +374,40 @@ export const PostItem = ({
           </div>
         </div>
       </CardFooter>
+      
+      <AlertDialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Share Post</AlertDialogTitle>
+          </AlertDialogHeader>
+          <div className="mt-4">
+            <p className="text-sm text-gray-500 mb-2">Share this link with others:</p>
+            <div className="flex items-center gap-2">
+              <input 
+                type="text" 
+                value={shortLink} 
+                readOnly 
+                className="flex-1 p-2 border rounded"
+              />
+              <Button onClick={() => copyToClipboard(shortLink || '')}>
+                Copy
+              </Button>
+            </div>
+            <div className="mt-4 flex justify-between">
+              <Button variant="outline" onClick={() => setShowLinkDialog(false)}>
+                Close
+              </Button>
+              <Button 
+                variant="default" 
+                onClick={handleCreateShortLink}
+                disabled={isCreatingLink}
+              >
+                {isCreatingLink ? "Creating..." : "Generate New Link"}
+              </Button>
+            </div>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

@@ -5,13 +5,16 @@ import { IAuthResponse } from "@sokal_ai_generate/shared-types"
 import { useRouter } from "next/navigation"
 import { useContext } from "react"
 
-type FetchFunction<T> = (url: string, options?: RequestInit) => Promise<T>;
 
-export const useAuthUserFetch = <T>(): FetchFunction<T> => {
+type FetchFunction = {
+  <T>(url: string, options?: RequestInit): Promise<T>;
+};
+
+export const useAuthUserFetch = (): FetchFunction => {
   const router = useRouter()
   const userData = useContext(UserDataContext)
 
-  const fetchData = async (url: string, options: RequestInit = {}): Promise<T> => {
+  const fetchData = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
     const token = localStorage.getItem('accessToken')
     
     const defaultHeaders: Record<string, string> = {

@@ -7,6 +7,7 @@ export interface IPost {
     authorId: string;
     isPublished: boolean;
     scheduledPublishDate?: Date;
+    shortLink?: string;
     createdAt: Date;
     updatedAt: Date;
 }
