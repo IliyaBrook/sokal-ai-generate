@@ -20,3 +20,4 @@ __exportStar(require("./auth.types"), exports);
 __exportStar(require("./user.types"), exports);
 __exportStar(require("./common.types"), exports);
 __exportStar(require("./post.types"), exports);
+__exportStar(require("./shortlink.types"), exports);

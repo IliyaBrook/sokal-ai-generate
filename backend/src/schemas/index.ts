@@ -19,3 +19,4 @@ export const schemaOptions: SchemaOptions = {
 export * from './user'
 export * from './refreshToken'
 export * from './post'
+export * from './shortLink'

@@ -8,6 +8,8 @@ import {
   UserSchema,
   Post,
   PostSchema,
+  ShortLink,
+  ShortLinkSchema
 } from '@/schemas'
 import type { EnvironmentVariables } from '@/types'
 
@@ -33,6 +35,10 @@ export const databaseProviders = [
     {
       name: Post.name,
       schema: PostSchema,
+    },
+    {
+      name: ShortLink.name,
+      schema: ShortLinkSchema,
     },
   ]),
 ]
