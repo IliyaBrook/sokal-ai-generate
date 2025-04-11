@@ -11,13 +11,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { DatePickerInput } from "@/components/ui";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { cn } from "@/lib";
 import { ICreatePostData, IPost } from "@/types";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
 import { PostItem } from "./PostItem";
@@ -192,21 +191,10 @@ export const GeneratePost = ({
                 <div className="mt-4 grid gap-4">
                   <div>
                     <label className="block text-sm mb-1">Date</label>
-                    <div className="relative">
-                      <DatePicker
-                        selected={scheduleDate}
-                        onChange={(date: Date | null) => date && setScheduleDate(date)}
-                        dateFormat="MMMM d, yyyy"
-                        minDate={new Date()}
-                        placeholderText="Select a date"
-                        className="w-full border rounded p-2 pl-10"
-                        wrapperClassName="w-full"
-                        showPopperArrow={false}
-                        todayButton="Today"
-                        highlightDates={[new Date()]}
-                      />
-                      <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                    </div>
+                    <DatePickerInput
+                      selected={scheduleDate}
+                      onChange={(date: Date | null) => date && setScheduleDate(date)}
+                    />
                   </div>
 
                   <div>

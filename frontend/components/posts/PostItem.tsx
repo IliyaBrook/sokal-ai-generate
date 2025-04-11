@@ -1,25 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { IPost } from "@/types";
-import { Button } from "../ui";
-import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
-import "highlight.js/styles/atom-one-dark.css";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib";
-import { useAuthUserFetch } from "@/hooks";
-import { toast } from "sonner";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
+  DatePickerInput
 } from "@/components/ui";
+import { useAuthUserFetch } from "@/hooks";
+import { IPost } from "@/types";
+import { format } from "date-fns";
+import "highlight.js/styles/atom-one-dark.css";
+import { useState } from "react";
+import "react-datepicker/dist/react-datepicker.css";
+import { toast } from "sonner";
+import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
+import { Button } from "../ui";
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
@@ -138,11 +135,6 @@ export const PostItem = ({
     <Card>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
-        {mode === "published" && (
-          <CardDescription>
-            {getPostStatus()}
-          </CardDescription>
-        )}
       </CardHeader>
       <CardContent>
         <RichTextEditor
@@ -153,18 +145,17 @@ export const PostItem = ({
         />
         {isEditing && (
           <div className="flex gap-2 mt-4">
-            <button
+            <Button
               onClick={handleSave}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+              variant="secondary"
             >
               Save
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setIsEditing(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         )}
         
@@ -175,21 +166,10 @@ export const PostItem = ({
             <div className="grid gap-4">
               <div>
                 <label className="block text-sm mb-1">Date</label>
-                <div className="relative">
-                  <DatePicker
-                    selected={scheduleDate}
-                    onChange={(date: Date | null) => date && setScheduleDate(date)}
-                    dateFormat="MMMM d, yyyy"
-                    minDate={new Date()}
-                    placeholderText="Select a date"
-                    className="w-full border rounded p-2 pl-10"
-                    wrapperClassName="w-full"
-                    showPopperArrow={false}
-                    todayButton="Today"
-                    highlightDates={[new Date()]}
-                  />
-                  <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                </div>
+                <DatePickerInput
+                  selected={scheduleDate}
+                  onChange={(date: Date | null) => date && setScheduleDate(date)}
+                />
               </div>
               
               <div>
