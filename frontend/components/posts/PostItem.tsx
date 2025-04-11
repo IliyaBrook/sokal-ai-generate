@@ -35,16 +35,31 @@ interface ShortLinkResponse {
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
-  onPublish?: (postId: string) => Promise<any>;
+  onPublish?: ((postId: string) => Promise<any> | undefined);
   onEdit?: (id: string, content: string) => Promise<void>;
-  mode?: "preview" | "published";
+  showStatus?: boolean;
+  showEdit?: boolean;
+  showShare?: boolean;
+  showSchedule?: boolean;
+  showPublish?: boolean;
 }
+
+const getCurrentTime = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
 
 export const PostItem = ({
   post,
   onPublish,
   onEdit,
-  mode
+  showStatus = false,
+  showEdit = false,
+  showShare = false,
+  showSchedule = false,
+  showPublish = false
 }: PostItemProps) => {
   const [isPublished, setIsPublished] = useState(post.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -53,7 +68,7 @@ export const PostItem = ({
   const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
   const [showScheduler, setShowScheduler] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
-  const [scheduleTime, setScheduleTime] = useState("12:00");
+  const [scheduleTime, setScheduleTime] = useState(getCurrentTime());
   const [shortLink, setShortLink] = useState<string | undefined>(post.shortLink);
   const [shortLinkId, setShortLinkId] = useState<string | undefined>(undefined);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
@@ -226,7 +241,7 @@ export const PostItem = ({
     <Card>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
-        {mode === "published" && (
+        {showStatus && (
           <CardDescription>
             {getPostStatus()}
           </CardDescription>
@@ -317,8 +332,7 @@ export const PostItem = ({
           )}
           
           <div className="flex gap-2">
-            {/* Кнопки управления ссылками - доступны всегда, когда mode="published" */}
-            {mode === "published" && (
+            {showShare && (
               <>
                 {shortLink ? (
                   <>
@@ -347,7 +361,7 @@ export const PostItem = ({
                 )}
               </>
             )}
-            {!isPublished && mode !== "preview" && !isScheduled && (
+            {!isPublished && showSchedule && !isScheduled && (
               <Button 
                 variant="outline" 
                 onClick={() => setShowScheduler(!showScheduler)}
@@ -355,7 +369,7 @@ export const PostItem = ({
                 Schedule
               </Button>
             )}
-            {mode !== "preview" && onEdit && (
+            {showEdit && onEdit && (
               <Button
                 onClick={() => setIsEditing(true)}
                 variant="secondary"
@@ -364,7 +378,7 @@ export const PostItem = ({
                 Edit
               </Button>
             )}
-            {!isPublished && mode !== "preview" && !isScheduled && (
+            {!isPublished && showPublish && !isScheduled && (
               <Button onClick={handlePublish} disabled={isPublishing}>
                 {isPublishing ? "Publishing..." : "Publish"}
               </Button>

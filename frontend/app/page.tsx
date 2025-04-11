@@ -49,7 +49,7 @@ export default async function Home() {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-1">
             {posts.map((post: IPost) => (
               <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:shadow-xl hover:-translate-y-1">
-                <PostItem post={post} className="w-full" />
+                <PostItem post={post} showStatus className="w-full" />
               </div>
             ))}
           </div>

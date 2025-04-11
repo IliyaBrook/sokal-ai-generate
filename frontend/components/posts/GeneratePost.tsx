@@ -134,8 +134,6 @@ export const GeneratePost = ({
             <div className="my-4 max-h-[60vh] overflow-y-auto">
               <PostItem
                 post={generatedPost}
-                onPublish={async () => {}}
-                mode="preview"
               />
             </div>
           )}

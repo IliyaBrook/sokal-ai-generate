@@ -108,7 +108,10 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                         post={post} 
                         onPublish={handlePublish} 
                         onEdit={handleEditPost}
-                        mode="published"
+                        showStatus
+                        showEdit
+                        showShare
+                        showSchedule
                       />
                     ))}
                   </div>
@@ -125,7 +128,11 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                         post={post} 
                         onPublish={handlePublish} 
                         onEdit={handleEditPost}
-                        mode="published"
+                        showStatus
+                        showEdit
+                        showShare
+                        showSchedule
+                        showPublish
                       />
                     ))}
                   </div>
@@ -142,7 +149,9 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                         post={post} 
                         onPublish={handlePublish} 
                         onEdit={handleEditPost}
-                        mode="published"
+                        showStatus
+                        showEdit
+                        showShare
                       />
                     ))}
                   </div>
@@ -164,7 +173,10 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                   post={post} 
                   onPublish={handlePublish} 
                   onEdit={handleEditPost}
-                  mode="published"
+                  showStatus
+                  showEdit
+                  showShare
+                  showSchedule
                 />
               ))}
             </div>
@@ -183,7 +195,11 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                   post={post} 
                   onPublish={handlePublish} 
                   onEdit={handleEditPost}
-                  mode="published"
+                  showStatus
+                  showEdit
+                  showShare
+                  showSchedule
+                  showPublish
                 />
               ))}
             </div>
@@ -202,7 +218,9 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                   post={post} 
                   onPublish={handlePublish} 
                   onEdit={handleEditPost}
-                  mode="published"
+                  showStatus
+                  showEdit
+                  showShare
                 />
               ))}
             </div>

@@ -111,13 +111,15 @@ export default function Shared({ linkId }: SharedProps) {
       {isAuthor ? (
         <PostItem 
           post={currentPost} 
-          mode="published" 
+          showStatus
+          showEdit
+          showShare
           onEdit={handleEditPost}
         />
       ) : (
         <PostItem 
           post={currentPost} 
-          mode="preview"
+          showStatus
         />
       )}
     </div>
