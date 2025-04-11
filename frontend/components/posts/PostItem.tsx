@@ -1,22 +1,24 @@
 "use client";
 
+import { useState } from "react";
+import { IPost } from "@/types";
+import { Button } from "../ui";
+import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
+import "highlight.js/styles/atom-one-dark.css";
+import { format } from "date-fns";
+import { cn } from "@/lib";
+import { useAuthUserFetch } from "@/hooks";
+import { toast } from "sonner";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
   DatePickerInput
 } from "@/components/ui";
-import { useAuthUserFetch } from "@/hooks";
-import { IPost } from "@/types";
-import { format } from "date-fns";
-import "highlight.js/styles/atom-one-dark.css";
-import { useState } from "react";
-import "react-datepicker/dist/react-datepicker.css";
-import { toast } from "sonner";
-import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
-import { Button } from "../ui";
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
@@ -135,6 +137,11 @@ export const PostItem = ({
     <Card>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
+        {mode === "published" && (
+          <CardDescription>
+            {getPostStatus()}
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent>
         <RichTextEditor
