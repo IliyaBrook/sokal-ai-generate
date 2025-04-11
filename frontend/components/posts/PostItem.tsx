@@ -92,6 +92,11 @@ export const PostItem = ({
       if (updatedPost) {
         setLocalScheduledDate(scheduledDateTime);
         post.scheduledPublishDate = updatedPost.scheduledPublishDate;
+        
+        if (onEdit) {
+          await onEdit(post.id, post.content);
+        }
+        
         setShowScheduler(false);
         toast.success("Post scheduled successfully");
       }
@@ -115,6 +120,11 @@ export const PostItem = ({
       if (updatedPost) {
         setLocalScheduledDate(null);
         post.scheduledPublishDate = undefined;
+        
+        if (onEdit) {
+          await onEdit(post.id, post.content);
+        }
+        
         toast.success("Publication schedule has been canceled");
       }
     } catch (error) {

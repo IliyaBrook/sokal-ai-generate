@@ -29,6 +29,14 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
         },
         body: JSON.stringify({ isPublished: true }),
       })
+      
+      if (data) {
+        const updatedPosts = posts.map(post => 
+          post.id === postId ? { ...post, isPublished: true } : post
+        );
+        setPosts(updatedPosts);
+      }
+      
       return data;
     } catch (error) {
       console.error('Error publishing post:', error);
