@@ -1,9 +1,10 @@
 import Shared from "./Shared";
 
-export default function SharedPage({
+export default async function SharedPage({
   params,
 }: {
-  params: { linkId: string };
+  params: Promise<{ linkId: string }>
 }) {
-  return <Shared linkId={params.linkId} />;
+  const { linkId } = await params
+  return <Shared linkId={linkId} />;
 }

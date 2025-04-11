@@ -7,22 +7,17 @@ import { IPost } from "@/types"
 import { useContext, useEffect, useState } from "react"
 import { toast } from "sonner"
 
-interface SharedProps {
-  linkId: string
-}
-
-// Расширяем интерфейс для отображения имени автора
 interface PostWithAuthor extends IPost {
   authorName?: string
 }
 
-export default function Shared({ linkId }: SharedProps) {
-  const userData = useContext(UserDataContext)
+export default function Shared({ linkId }: {linkId: string}) {
+  const contextData = useContext(UserDataContext)
   const [isLoading, setIsLoading] = useState(true)
   const [currentPost, setCurrentPost] = useState<PostWithAuthor | null>(null)
   const [error, setError] = useState<string | null>(null)
   const apiFetch = useAuthUserFetch()
-
+console.log("currentPost:", currentPost)
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -32,20 +27,20 @@ export default function Shared({ linkId }: SharedProps) {
             "Content-Type": "application/json",
           },
         })
-
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
 
         const data = await response.json()
-        
+        console.log("data:", data)
         if (!data.post) {
           throw new Error("Post not found")
         }
         
         setCurrentPost({
           ...data.post,
-          authorName: `${data.creator.firstName || ''} ${data.creator.lastName || ''}`.trim()
+          authorName: `${data.creator.firstname || ''} ${data.creator.lastname || ''}`.trim()
         })
       } catch (error) {
         console.error("Error fetching post:", error)
@@ -103,25 +98,18 @@ export default function Shared({ linkId }: SharedProps) {
     )
   }
 
-  const isAuthor = userData?.userData && userData.userData.id === currentPost.authorId
+  const isAuthor = contextData?.userData && contextData.userData.id === currentPost.authorId
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Shared Post</h1>
-      {isAuthor ? (
-        <PostItem 
+      <h1 className="text-2xl font-bold mb-6">Shared Post from {currentPost.authorName}</h1>
+      <PostItem 
           post={currentPost} 
           showStatus
-          showEdit
-          showShare
+          showEdit={!!contextData?.userData}
+          showShare={!!isAuthor}
           onEdit={handleEditPost}
         />
-      ) : (
-        <PostItem 
-          post={currentPost} 
-          showStatus
-        />
-      )}
     </div>
   )
 }

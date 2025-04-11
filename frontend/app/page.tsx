@@ -3,8 +3,7 @@ import { IPost } from "@/types";
 
 const getPublicPosts = async () => {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-    const response = await fetch(`${baseUrl || "http://localhost:4000"}/posts/public`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/public`, {
       headers: {
         "Content-Type": "application/json",
       },

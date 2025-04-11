@@ -32,7 +32,7 @@ export class SharedService {
       throw new NotFoundException('Post not found')
     }
 
-    const creator = await this.userModel.findById(shortLink.creator).select('id firstName lastName email').exec()
+    const creator = await this.userModel.findById(shortLink.creator).select('id firstname lastname email').exec()
     if (!creator) {
       throw new NotFoundException('Creator not found')
     }
