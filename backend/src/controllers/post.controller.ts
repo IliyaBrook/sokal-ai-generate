@@ -75,15 +75,7 @@ export class PostController {
   async updatePost(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
-    @Req() req: RequestWithUser,
   ) {
-    const userId = req.user.id
-    const post = await this.postService.getPostById(id)
-    
-    if (post.authorId.toString() !== userId) {
-      throw new ForbiddenException('You do not have permission to update this post')
-    }
-    
     const updatedPost = await this.postService.updatePost(id, updatePostDto)
     return new PostDto(updatedPost)
   }
