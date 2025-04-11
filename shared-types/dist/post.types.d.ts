@@ -20,7 +20,7 @@ export interface ICreatePostData {
     topic: string;
     style: string;
     isPublished?: boolean;
-    scheduledPublishDate?: Date;
+    scheduledPublishDate?: Date | string;
 }
 export interface IUpdatePostData {
     title?: string;

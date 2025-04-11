@@ -118,7 +118,7 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
               )}
 
               {draftPosts.length > 0 && (
-                <div>
+                <div className="mt-4">
                   <h2 className="text-xl font-semibold mb-4">Drafts</h2>
                   <div className="grid gap-6">
                     {draftPosts.map((post) => (
@@ -135,7 +135,7 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
               )}
 
               {publishedPosts.length > 0 && (
-                <div>
+                <div className="mt-4">
                   <h2 className="text-xl font-semibold mb-4">Published Posts</h2>
                   <div className="grid gap-6">
                     {publishedPosts.map((post) => (

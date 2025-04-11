@@ -10,17 +10,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Switch } from "@/components/ui/switch";
-import { DatePickerInput } from "@/components/ui";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { cn } from "@/lib";
 import { ICreatePostData, IPost } from "@/types";
-import { format } from "date-fns";
 import { useState } from "react";
-import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
 import { PostItem } from "./PostItem";
-
 
 export const GeneratePost = ({
   onPostGenerated,
@@ -32,12 +27,9 @@ export const GeneratePost = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPost, setGeneratedPost] = useState<IPost | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [scheduleEnabled, setScheduleEnabled] = useState(false);
-  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
-  const [scheduleTime, setScheduleTime] = useState("12:00");
   const apiFetch = useAuthUserFetch<IPost>();
 
-  const handleGenerate = async (e: React.MouseEvent) => {
+  const handleGenerate: React.MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.preventDefault();
     if (!topic || !style) return;
 
@@ -45,10 +37,6 @@ export const GeneratePost = ({
     try {
       const post = await apiFetch("/api/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
         body: JSON.stringify({ topic, style }),
       });
 
@@ -74,10 +62,6 @@ export const GeneratePost = ({
     if (!generatedPost) return;
 
     try {
-      const endpoint =
-        scheduleEnabled && scheduleDate
-          ? "/api/posts/schedule"
-          : "/api/posts/save";
       const postData: ICreatePostData = {
         title: generatedPost.title,
         content: generatedPost.content,
@@ -85,21 +69,7 @@ export const GeneratePost = ({
         style: generatedPost.style,
       };
 
-      if (scheduleEnabled && scheduleDate) {
-        const scheduledDateTime = new Date(scheduleDate);
-        const [hours, minutes] = scheduleTime.split(":").map(Number);
-        scheduledDateTime.setHours(hours, minutes);
-        
-        const now = new Date();
-        if (scheduledDateTime < now) {
-          toast.error("Cannot schedule for a past time. Please select a future time.");
-          return;
-        }
-        
-        postData.scheduledPublishDate = scheduledDateTime;
-      }
-
-      const savedPost = await apiFetch(endpoint, {
+      const savedPost = await apiFetch("/api/posts/save", {
         method: "POST",
         body: JSON.stringify(postData),
       });
@@ -111,9 +81,6 @@ export const GeneratePost = ({
       onPostGenerated(savedPost);
       setTopic("");
       setStyle("");
-      setScheduleEnabled(false);
-      setScheduleDate(undefined);
-      setScheduleTime("12:00");
       setIsDialogOpen(false);
       setGeneratedPost(null);
     } catch (error) {
@@ -172,42 +139,6 @@ export const GeneratePost = ({
                 onPublish={async () => {}}
                 mode="preview"
               />
-
-              <div className="mt-4 flex items-center space-x-2">
-                <Switch
-                  checked={scheduleEnabled}
-                  onCheckedChange={setScheduleEnabled}
-                  id="schedule-switch"
-                />
-                <label
-                  htmlFor="schedule-switch"
-                  className="text-sm font-medium"
-                >
-                  Schedule for later publication
-                </label>
-              </div>
-
-              {scheduleEnabled && (
-                <div className="mt-4 grid gap-4">
-                  <div>
-                    <label className="block text-sm mb-1">Date</label>
-                    <DatePickerInput
-                      selected={scheduleDate}
-                      onChange={(date: Date | null) => date && setScheduleDate(date)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm mb-1">Time</label>
-                    <input
-                      type="time"
-                      value={scheduleTime}
-                      onChange={(e) => setScheduleTime(e.target.value)}
-                      className="w-full border rounded p-2"
-                    />
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -215,18 +146,12 @@ export const GeneratePost = ({
             <AlertDialogCancel
               onClick={() => {
                 setGeneratedPost(null);
-                setScheduleEnabled(false);
-                setScheduleDate(undefined);
-                setScheduleTime("12:00");
               }}
             >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSave}
-              disabled={scheduleEnabled && !scheduleDate}
-            >
-              {scheduleEnabled ? "Schedule" : "Save"}
+            <AlertDialogAction onClick={handleSave}>
+              Save
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
