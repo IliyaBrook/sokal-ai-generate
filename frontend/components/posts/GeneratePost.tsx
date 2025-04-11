@@ -223,9 +223,6 @@ export const GeneratePost = ({
                                    date.getMonth() <= today.getMonth() && 
                                    date.getFullYear() <= today.getFullYear();
                           }}
-                          classNames={{
-                            day_selected: "bg-primary text-primary-foreground font-bold",
-                          }}
                         />
                       </PopoverContent>
                     </Popover>

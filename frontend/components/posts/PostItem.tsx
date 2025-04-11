@@ -205,6 +205,7 @@ export const PostItem = ({
                       classNames={{
                         day_selected: "bg-primary text-primary-foreground font-bold",
                       }}
+                      key={`calendar-${post.id}_${scheduleDate?.toISOString()}`}
                     />
                   </PopoverContent>
                 </Popover>
