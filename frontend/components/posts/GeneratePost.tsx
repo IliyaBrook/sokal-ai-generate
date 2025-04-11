@@ -10,12 +10,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { cn } from "@/lib";
@@ -23,6 +17,8 @@ import { ICreatePostData, IPost } from "@/types";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
 import { PostItem } from "./PostItem";
 
@@ -196,36 +192,21 @@ export const GeneratePost = ({
                 <div className="mt-4 grid gap-4">
                   <div>
                     <label className="block text-sm mb-1">Date</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !scheduleDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {scheduleDate
-                            ? format(scheduleDate, "PPP")
-                            : "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={scheduleDate}
-                          onSelect={setScheduleDate}
-                          initialFocus
-                          disabled={(date: Date) => {
-                            const today = new Date();
-                            return date.getDate() < today.getDate() && 
-                                   date.getMonth() <= today.getMonth() && 
-                                   date.getFullYear() <= today.getFullYear();
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <div className="relative">
+                      <DatePicker
+                        selected={scheduleDate}
+                        onChange={(date: Date | null) => date && setScheduleDate(date)}
+                        dateFormat="MMMM d, yyyy"
+                        minDate={new Date()}
+                        placeholderText="Select a date"
+                        className="w-full border rounded p-2 pl-10"
+                        wrapperClassName="w-full"
+                        showPopperArrow={false}
+                        todayButton="Today"
+                        highlightDates={[new Date()]}
+                      />
+                      <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    </div>
                   </div>
 
                   <div>

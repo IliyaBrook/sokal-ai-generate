@@ -10,11 +10,9 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib";
 import { useAuthUserFetch } from "@/hooks";
 import { toast } from "sonner";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Calendar,
   Card,
   CardContent,
   CardDescription,
@@ -177,38 +175,21 @@ export const PostItem = ({
             <div className="grid gap-4">
               <div>
                 <label className="block text-sm mb-1">Date</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !scheduleDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {scheduleDate ? format(scheduleDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={scheduleDate}
-                      onSelect={setScheduleDate}
-                      initialFocus
-                      disabled={(date: Date) => {
-                        const today = new Date();
-                        return date.getDate() < today.getDate() && 
-                               date.getMonth() <= today.getMonth() && 
-                               date.getFullYear() <= today.getFullYear();
-                      }}
-                      classNames={{
-                        day_selected: "bg-primary text-primary-foreground font-bold",
-                      }}
-                      key={`calendar-${post.id}_${scheduleDate?.toISOString()}`}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="relative">
+                  <DatePicker
+                    selected={scheduleDate}
+                    onChange={(date: Date | null) => date && setScheduleDate(date)}
+                    dateFormat="MMMM d, yyyy"
+                    minDate={new Date()}
+                    placeholderText="Select a date"
+                    className="w-full border rounded p-2 pl-10"
+                    wrapperClassName="w-full"
+                    showPopperArrow={false}
+                    todayButton="Today"
+                    highlightDates={[new Date()]}
+                  />
+                  <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                </div>
               </div>
               
               <div>

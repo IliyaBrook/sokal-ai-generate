@@ -440,12 +440,21 @@
     "@floating-ui/core" "^1.6.0"
     "@floating-ui/utils" "^0.2.9"
 
-"@floating-ui/react-dom@^2.0.0":
+"@floating-ui/react-dom@^2.0.0", "@floating-ui/react-dom@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@floating-ui/react-dom/-/react-dom-2.1.2.tgz#a1349bbf6a0e5cb5ded55d023766f20a4d439a31"
   integrity sha512-06okr5cgPzMNBy+Ycse2A6udMi4bqwW/zgBF/rwjcNqWkyr82Mcg8b0vjX8OJpZFy/FKjJmw6wV7t44kK6kW7A==
   dependencies:
     "@floating-ui/dom" "^1.0.0"
+
+"@floating-ui/react@^0.27.3":
+  version "0.27.7"
+  resolved "https://registry.yarnpkg.com/@floating-ui/react/-/react-0.27.7.tgz#dd5512f84528b849a99d93266b963b84c83bd201"
+  integrity sha512-5V9pwFeiv+95Jlowq/7oiGISSrdXMTs2jfoSy8k+WM6oI/Skm1WWjPdJWeporN2O4UGcsaCJdirKffKayMoPgw==
+  dependencies:
+    "@floating-ui/react-dom" "^2.1.2"
+    "@floating-ui/utils" "^0.2.9"
+    tabbable "^6.0.0"
 
 "@floating-ui/utils@^0.2.9":
   version "0.2.9"
@@ -2484,6 +2493,13 @@
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.7.tgz#50ae4353eaaddc04044279812f52c8c65857dbcb"
   integrity sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==
+
+"@types/react-datepicker@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@types/react-datepicker/-/react-datepicker-7.0.0.tgz#1d36553a92546246f1e10d862b3cfa7d295dff01"
+  integrity sha512-4tWwOUq589tozyQPBVEqGNng5DaZkomx5IVNuur868yYdgjH6RaL373/HKiVt1IDoNNXYiTGspm1F7kjrarM8Q==
+  dependencies:
+    react-datepicker "*"
 
 "@types/react-dom@19.0.3":
   version "19.0.3"
@@ -7624,6 +7640,15 @@ raw-body@^3.0.0:
     iconv-lite "0.6.3"
     unpipe "1.0.0"
 
+react-datepicker@*, react-datepicker@^8.3.0:
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/react-datepicker/-/react-datepicker-8.3.0.tgz#21d51294a953755bcc273d411fe10d12918a6f51"
+  integrity sha512-DhfrIJnTPJTUVRtXU7c7zooug40rD6q+Fc8UTCt19dYEotLpDQgTN98MfocY6Rc4S99oOFFEoxyanOM/TKauuw==
+  dependencies:
+    "@floating-ui/react" "^0.27.3"
+    clsx "^2.1.1"
+    date-fns "^4.1.0"
+
 react-day-picker@^9.6.5:
   version "9.6.5"
   resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-9.6.5.tgz#94e8679bec5f26911f525b01bc208dfc5628706b"
@@ -8512,6 +8537,11 @@ synckit@^0.11.0:
   dependencies:
     "@pkgr/core" "^0.2.1"
     tslib "^2.8.1"
+
+tabbable@^6.0.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/tabbable/-/tabbable-6.2.0.tgz#732fb62bc0175cfcec257330be187dcfba1f3b97"
+  integrity sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==
 
 tailwind-merge@^3.2.0:
   version "3.2.0"
