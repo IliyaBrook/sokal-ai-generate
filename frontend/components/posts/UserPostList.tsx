@@ -90,72 +90,131 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
 
   return (
     <div className="space-y-8">
-      <Tabs defaultValue="all_posts" className="w-[400px] mb-4">
+      <Tabs defaultValue="all_posts" className="mb-4">
         <TabsList>
           <TabsTrigger value="all_posts">All Posts</TabsTrigger>
-          <TabsTrigger value="shceduled_posts">Scheduled Posts</TabsTrigger>
+          <TabsTrigger value="scheduled_posts">Scheduled Posts</TabsTrigger>
+          <TabsTrigger value="drafts">Drafts</TabsTrigger>
           <TabsTrigger value="published_posts">Published Posts</TabsTrigger>
         </TabsList>
-        <TabsContent value="password">Change your password here.</TabsContent>
+        <TabsContent value="all_posts">
+          {!Array.isArray(posts) || posts.length === 0 ? (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-gray-500">No posts found</p>
+            </div>
+          ) : (
+            <>
+              {scheduledPosts.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">Scheduled Posts</h2>
+                  <div className="grid gap-6">
+                    {scheduledPosts.map((post) => (
+                      <PostItem 
+                        key={post.id} 
+                        post={post} 
+                        onPublish={handlePublish} 
+                        onEdit={handleEditPost}
+                        mode="published"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {draftPosts.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">Drafts</h2>
+                  <div className="grid gap-6">
+                    {draftPosts.map((post) => (
+                      <PostItem 
+                        key={post.id} 
+                        post={post} 
+                        onPublish={handlePublish} 
+                        onEdit={handleEditPost}
+                        mode="published"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {publishedPosts.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">Published Posts</h2>
+                  <div className="grid gap-6">
+                    {publishedPosts.map((post) => (
+                      <PostItem 
+                        key={post.id} 
+                        post={post} 
+                        onPublish={handlePublish} 
+                        onEdit={handleEditPost}
+                        mode="published"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </TabsContent>
+        <TabsContent value="scheduled_posts">
+          {scheduledPosts.length === 0 ? (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-gray-500">No scheduled posts found</p>
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {scheduledPosts.map((post) => (
+                <PostItem 
+                  key={post.id} 
+                  post={post} 
+                  onPublish={handlePublish} 
+                  onEdit={handleEditPost}
+                  mode="published"
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="drafts">
+          {draftPosts.length === 0 ? (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-gray-500">No draft posts found</p>
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {draftPosts.map((post) => (
+                <PostItem 
+                  key={post.id} 
+                  post={post} 
+                  onPublish={handlePublish} 
+                  onEdit={handleEditPost}
+                  mode="published"
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="published_posts">
+          {publishedPosts.length === 0 ? (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-gray-500">No published posts found</p>
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {publishedPosts.map((post) => (
+                <PostItem 
+                  key={post.id} 
+                  post={post} 
+                  onPublish={handlePublish} 
+                  onEdit={handleEditPost}
+                  mode="published"
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
-      {!Array.isArray(posts) || posts.length === 0 ? (
-        <div className="flex justify-center items-center h-full">
-          <p className="text-gray-500">No posts found</p>
-        </div>
-      ) : (
-        <>
-          {scheduledPosts.length > 0 && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Scheduled Posts</h2>
-              <div className="grid gap-6">
-                {scheduledPosts.map((post) => (
-                  <PostItem 
-                    key={post.id} 
-                    post={post} 
-                    onPublish={handlePublish} 
-                    onEdit={handleEditPost}
-                    mode="published"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {draftPosts.length > 0 && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Drafts</h2>
-              <div className="grid gap-6">
-                {draftPosts.map((post) => (
-                  <PostItem 
-                    key={post.id} 
-                    post={post} 
-                    onPublish={handlePublish} 
-                    onEdit={handleEditPost}
-                    mode="published"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {publishedPosts.length > 0 && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Published Posts</h2>
-              <div className="grid gap-6">
-                {publishedPosts.map((post) => (
-                  <PostItem 
-                    key={post.id} 
-                    post={post} 
-                    onPublish={handlePublish} 
-                    onEdit={handleEditPost}
-                    mode="published"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
     </div>
   )
 }
