@@ -1,5 +1,4 @@
 'use client'
-
 export default function Shared() {
     return (
         <div>
@@ -7,4 +6,3 @@ export default function Shared() {
         </div>
     )
 }
-
