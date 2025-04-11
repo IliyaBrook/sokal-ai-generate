@@ -2,6 +2,7 @@
 
 import { GeneratePost, UserPostList } from "@/components/posts";
 import { UserDataContext } from "@/contexts/UserData.context";
+import { useAuthUserFetch } from "@/hooks";
 import { IPost } from "@/types";
 import { useContext, useEffect, useState } from "react";
 
@@ -12,15 +13,10 @@ export default function UserPosts() {
   const userName = [data?.userData?.firstname, data?.userData?.lastname]?.join(
     " "
   );
+  const apiFetch = useAuthUserFetch<IPost[]>();
   const fetchPosts = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch(`/api/posts/user`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
+      const data = await apiFetch(`/api/posts/user`);
       setPosts(data);
     } catch (error) {
       console.error("Error fetching posts:", error);

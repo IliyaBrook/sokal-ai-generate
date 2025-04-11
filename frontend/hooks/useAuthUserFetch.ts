@@ -42,12 +42,14 @@ export const useAuthUserFetch = <T>(): FetchFunction<T> => {
           response = await fetch(url, fetchOptions)
         } else {
           localStorage.removeItem('accessToken')
+          userData?.setUserData(null)
           router.push('/')
-          throw new Error('Authentication failed')
         }
       }
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`)
+        localStorage.removeItem('accessToken')
+        userData?.setUserData(null)
+        router.push('/')
       }
 
       const result = await response.json()

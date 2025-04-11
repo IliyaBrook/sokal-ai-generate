@@ -5,6 +5,7 @@ import { IPost } from "@/types";
 import { useEffect, useState } from "react";
 import { PostItem } from "./PostItem";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
+import { toast } from "sonner";
 
 export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
   const [posts, setPosts] = useState(initialPosts);
@@ -17,16 +18,8 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
 
   const handlePublish = async (postId: string) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        throw new Error('No access token found');
-      }
       const data = await apiFetch(`/api/posts/${postId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify({ isPublished: true }),
       })
       
@@ -46,18 +39,13 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
 
   const handleEditPost = async (id: string, content: string): Promise<void> => {
     try {
-      const token = localStorage.getItem('accessToken');
-      
-      if (!token) {
-        throw new Error('No access token found');
-      }
-
       const data = await apiFetch(`/api/posts/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ content }),
       })
     
       if (!data) {
+        toast.error("Failed to update post");
         throw new Error("Failed to update post");
       }
       const updatedPosts = posts.map(post => 
