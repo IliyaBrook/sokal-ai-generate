@@ -22,10 +22,9 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
         method: 'PUT',
         body: JSON.stringify({ isPublished: true }),
       })
-      
       if (data) {
         const updatedPosts = posts.map(post => 
-          post.id === postId ? { ...post, isPublished: true } : post
+          post.id === postId ? data : post
         );
         setPosts(updatedPosts);
       }
@@ -39,17 +38,16 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
 
   const handleEditPost = async (id: string, content: string): Promise<void> => {
     try {
-      const data = await apiFetch(`/api/posts/${id}`, {
+      const data = await apiFetch<IPost>(`/api/posts/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ content }),
       })
-    
       if (!data) {
         toast.error("Failed to update post");
         throw new Error("Failed to update post");
       }
       const updatedPosts = posts.map(post => 
-        post.id === id ? { ...post, content } : post
+        post.id === id ? data : post
       );
       setPosts(updatedPosts);
     } catch (error) {

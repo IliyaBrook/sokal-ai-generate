@@ -169,11 +169,11 @@ export const PostItem = ({
       });
       
       if (updatedPost) {
-        setLocalScheduledDate(scheduledDateTime);
+        setLocalScheduledDate(updatedPost.scheduledPublishDate ? new Date(updatedPost.scheduledPublishDate) : undefined);
         post.scheduledPublishDate = updatedPost.scheduledPublishDate;
         
         if (onEdit) {
-          await onEdit(post.id, post.content);
+          await onEdit(post.id, updatedPost.content);
         }
         
         setShowScheduler(false);
@@ -197,11 +197,11 @@ export const PostItem = ({
       });
       
       if (updatedPost) {
-        setLocalScheduledDate(null);
-        post.scheduledPublishDate = undefined;
+        setLocalScheduledDate(updatedPost.scheduledPublishDate ? new Date(updatedPost.scheduledPublishDate) : null);
+        post.scheduledPublishDate = updatedPost.scheduledPublishDate;
         
         if (onEdit) {
-          await onEdit(post.id, post.content);
+          await onEdit(post.id, updatedPost.content);
         }
         
         toast.success("Publication schedule has been canceled");

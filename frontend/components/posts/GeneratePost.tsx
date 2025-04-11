@@ -67,7 +67,7 @@ export const GeneratePost = ({
         style: generatedPost.style,
       };
 
-      const savedPost = await apiFetch("/api/posts/save", {
+      const savedPost = await apiFetch<IPost>("/api/posts/save", {
         method: "POST",
         body: JSON.stringify(postData),
       });
@@ -76,7 +76,7 @@ export const GeneratePost = ({
         throw new Error("Failed to save post");
       }
 
-      onPostGenerated(savedPost as IPost);
+      onPostGenerated(savedPost);
       setTopic("");
       setStyle("");
       setIsDialogOpen(false);
