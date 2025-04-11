@@ -1,24 +1,22 @@
-import type {
-  IAuthResponse,
-  ISignUpData,
-} from '@sokal_ai_generate/shared-types'
 import {
   HttpException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import type {
+  IAuthResponse,
+  ISignUpData,
+} from '@sokal_ai_generate/shared-types';
 import * as bcrypt from 'bcrypt';
-import type { Model } from 'mongoose'
+import type { Model } from 'mongoose';
 
-import { UserSignInDto } from '../dto/user.dto'
 
-import { SignInDto, SignUpDto, UserDto } from '@/dto'
-import { TUserDocument, User } from '@/schemas'
-import type { IUser } from '@/types'
-import { TokenService } from './token.service'
-import { log } from 'console'
+import { SignInDto, SignUpDto, UserDto } from '@/dto';
+import { TUserDocument, User } from '@/schemas';
+import type { IUser } from '@/types';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class UserService {
@@ -151,11 +149,9 @@ export class UserService {
     const user = await this.findById(userData.id)
     if (user) {
       const userDto = new UserDto(user)
-      console.log('[refresh userDto]: ', userDto)
       const tokens = this.tokenService.generateTokens({
         ...userDto,
       })
-      console.log('[refresh tokens]: ', tokens)
       await this.tokenService.saveToken(
         userDto.id,
         tokens.refreshToken,

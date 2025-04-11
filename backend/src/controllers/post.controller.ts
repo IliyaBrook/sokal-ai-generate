@@ -4,12 +4,11 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  NotFoundException,
   Param,
   Post,
   Put,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common'
 
 import { CreatePostDto, PostDto, UpdatePostDto } from '@/dto'

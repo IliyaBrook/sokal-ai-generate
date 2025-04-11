@@ -1,6 +1,6 @@
-import { Exclude, Expose } from 'class-transformer'
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsDate } from 'class-validator'
-import { IPost, ICreatePostData, IGeneratePostData, IUpdatePostData } from '@sokal_ai_generate/shared-types'
+import { ICreatePostData, IGeneratePostData, IPost, IUpdatePostData } from '@sokal_ai_generate/shared-types'
+import { Expose } from 'class-transformer'
+import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class PostDto implements IPost {
   @Expose()

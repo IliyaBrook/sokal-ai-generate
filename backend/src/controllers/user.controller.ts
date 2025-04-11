@@ -142,7 +142,6 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getUsers(
-    @Req() req: RequestWithUser,
     @Query('page')
     page?: number,
     @Query('limit')
@@ -161,7 +160,6 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getUser(
-    @Req() req: RequestWithUser,
     @Param('id')
     id: string
   ) {

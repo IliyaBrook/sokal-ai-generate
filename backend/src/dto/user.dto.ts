@@ -1,6 +1,6 @@
-import { Exclude, Expose } from 'class-transformer'
-import { IsEmail, IsOptional, MinLength } from 'class-validator'
-import { IUser, IAuthResponse } from '@sokal_ai_generate/shared-types'
+import { IAuthResponse, IUser } from '@sokal_ai_generate/shared-types'
+import { Expose } from 'class-transformer'
+import { IsEmail, MinLength } from 'class-validator'
 
 export class UserDto implements Omit<IUser, 'password'> {
   @Expose()

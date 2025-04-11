@@ -7,7 +7,7 @@ import type { DeleteResult, Model } from 'mongoose'
 
 import { UserDto } from '@/dto'
 import { RefreshToken, TRefreshTokenDocument } from '@/schemas'
-import type { EnvironmentVariables, ITokenData, IUser } from '@/types'
+import type { EnvironmentVariables } from '@/types'
 
 @Injectable()
 export class TokenService {
@@ -53,7 +53,6 @@ export class TokenService {
         refreshToken,
         this.config.JWT_REFRESH_SECRET,
       )
-      console.log('validateRefreshToken result:', result)
       return result
     } catch (error) {
       console.log('validateRefreshToken error:', error)

@@ -2,16 +2,14 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import OpenAI from 'openai'
 
-import { CreatePostDto, GeneratePostDto, UpdatePostDto } from '@/dto'
+import { CreatePostDto, UpdatePostDto } from '@/dto'
 import { Post, TPostDocument } from '@/schemas'
 import { EnvironmentVariables } from '@/types'
 
 @Injectable()
 export class PostService {
   private readonly logger = new Logger(PostService.name)
-  private openai: OpenAI
 
   constructor(
     @InjectModel(Post.name)
@@ -22,7 +20,6 @@ export class PostService {
     if (!apiKey) {
       throw new Error('OPENAI_API_KEY is not configured')
     }
-    this.openai = new OpenAI({ apiKey })
   }
 
   async getPublicPosts(): Promise<TPostDocument[]> {

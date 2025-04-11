@@ -11,10 +11,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
-import { cn } from "@/lib";
 import { ICreatePostData, IPost } from "@/types";
 import { useState } from "react";
-import { toast } from "sonner";
 import { PostItem } from "./PostItem";
 
 export const GeneratePost = ({

@@ -70,7 +70,7 @@ export const PostItem = ({
     if (onPublish && typeof onPublish === "function") {
       setIsPublishing(true);
       try {
-        const result = await onPublish(post.id);
+        await onPublish(post.id);
         setIsPublished(true);
       } catch (error) {
         console.error("Error publishing post:", error);
