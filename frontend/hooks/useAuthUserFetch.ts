@@ -47,9 +47,18 @@ export const useAuthUserFetch = <T>(): FetchFunction<T> => {
         }
       }
       if (!response.ok) {
-        localStorage.removeItem('accessToken')
-        userData?.setUserData(null)
-        router.push('/')
+        const errorMessage = await response.json()
+        if (errorMessage && 'message' in errorMessage) {
+          if (errorMessage.statusCode === 400) {
+            const serverError = errorMessage.message.join("\n")
+            console.error("error message:", serverError)
+            throw new Error(serverError)
+          }
+        }else{
+          localStorage.removeItem("accessToken");
+          userData?.setUserData(null);
+          router.push("/");
+        }
       }
 
       const result = await response.json()
