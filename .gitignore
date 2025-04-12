@@ -54,3 +54,6 @@ coverage/
 *.pem
 *.key
 *.cert
+
+# other files
+cheatsheet
