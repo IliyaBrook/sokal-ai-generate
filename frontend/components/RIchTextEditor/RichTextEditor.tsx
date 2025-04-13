@@ -2,11 +2,12 @@ import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import ListItem from "@tiptap/extension-list-item";
 import TextAlign from "@tiptap/extension-text-align";
 import TextStyle from "@tiptap/extension-text-style";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { Editor, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { all, createLowlight } from "lowlight";
 import dynamic from 'next/dynamic';
 import "./RichTextEditor.scss";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 import css from 'highlight.js/lib/languages/css';
 import js from 'highlight.js/lib/languages/javascript';
@@ -23,14 +24,31 @@ lowlight.register('typescript', typescript)
 
 import "highlight.js/scss/atom-one-dark.scss";
 
+export interface RichTextEditorRef {
+  updateContent: (newContent: string) => void;
+  getEditor: () => Editor | null;
+}
+
 interface RichTextEditorProps {
   content: string;
   onUpdate?: (content: string) => void;
   mode?: "preview" | "published";
   editable?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
-const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview", editable }: RichTextEditorProps) => {
+const RichTextEditorWithNoSSR = forwardRef<RichTextEditorRef, RichTextEditorProps>(({ 
+  content, 
+  onUpdate, 
+  mode = "preview", 
+  editable,
+  onFocus,
+  onBlur 
+}, ref) => {
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const prevContentRef = useRef<string>(content);
+  
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -60,9 +78,86 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview", editable
         onUpdate(editor.getHTML());
       }
     },
+    onFocus: () => {
+      if (onFocus) {
+        onFocus();
+      }
+    },
+    onBlur: () => {
+      if (onBlur) {
+        onBlur();
+      }
+    },
     editable: editable !== undefined ? editable : mode === "published",
     immediatelyRender: false,
   });
+
+  // Экспортируем методы для управления редактором извне
+  useImperativeHandle(ref, () => ({
+    updateContent: (newContent: string) => {
+      if (editor && newContent !== prevContentRef.current) {
+        const currentSelection = editor.state.selection;
+        const isFocused = editor.isFocused;
+        const currentPos = currentSelection.$from.pos;
+        
+        // Сохраняем текущее состояние редактора
+        const hasSelection = !currentSelection.empty;
+        const selectionStart = hasSelection ? currentSelection.from : null;
+        const selectionEnd = hasSelection ? currentSelection.to : null;
+
+        // Обновляем содержимое
+        editor.commands.setContent(newContent, false);
+        prevContentRef.current = newContent;
+        
+        // Восстанавливаем фокус и позицию курсора, если редактор был в фокусе
+        if (isFocused) {
+          editor.commands.focus();
+          
+          if (hasSelection && selectionStart !== null && selectionEnd !== null) {
+            // Восстанавливаем выделение
+            editor.commands.setTextSelection({
+              from: Math.min(selectionStart, editor.state.doc.content.size),
+              to: Math.min(selectionEnd, editor.state.doc.content.size)
+            });
+          } else if (currentPos) {
+            // Восстанавливаем позицию курсора
+            const safePos = Math.min(currentPos, editor.state.doc.content.size);
+            editor.commands.setTextSelection(safePos);
+          }
+        }
+      }
+    },
+    getEditor: () => editor,
+  }), [editor]);
+
+  // Обновляем контент, если он изменился в пропсах и не равен предыдущему
+  useEffect(() => {
+    if (editor && content !== prevContentRef.current) {
+      prevContentRef.current = content;
+      
+      // Проверяем, не вызвано ли изменение контента нашим собственным редактором
+      const editorHtml = editor.getHTML();
+      if (content !== editorHtml) {
+        const isFocused = editor.isFocused;
+        const currentSelection = editor.state.selection;
+        
+        editor.commands.setContent(content, false);
+        
+        // Восстанавливаем фокус если редактор был в фокусе
+        if (isFocused) {
+          editor.commands.focus();
+          
+          // Пытаемся восстановить позицию курсора
+          if (!currentSelection.empty) {
+            editor.commands.setTextSelection({
+              from: Math.min(currentSelection.from, editor.state.doc.content.size),
+              to: Math.min(currentSelection.to, editor.state.doc.content.size)
+            });
+          }
+        }
+      }
+    }
+  }, [editor, content]);
 
   if (!editor) {
     return null;
@@ -72,7 +167,7 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview", editable
     `p-2 rounded cursor-pointer border border-gray-300 ${editor.isActive(buttonName, attributes) ? "bg-black text-white" : ""}`;
 
   return (
-    <div className="border rounded-lg p-4">
+    <div className="border rounded-lg p-4" ref={editorContainerRef}>
       {mode === "published" && <div className="flex gap-2 mb-4 flex-wrap">
         <button
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
@@ -189,7 +284,7 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview", editable
       />
     </div>
   );
-};
+});
 
 export const RichTextEditor = dynamic(
   () => Promise.resolve(RichTextEditorWithNoSSR),
