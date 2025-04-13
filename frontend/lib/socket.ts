@@ -97,10 +97,12 @@ export const joinPostEditing = (postId: string, userData: any) => {
 };
 
 const emitJoinPost = (postId: string, userData: any) => {
-  const userId = userData?.userData?.id || userData?.id || `anonymous-${socket.id}`;
-  const firstName = userData?.userData?.firstname || userData?.firstname || '';
-  const lastName = userData?.userData?.lastname || userData?.lastname || '';
-  const userName = firstName && lastName ? `${firstName} ${lastName}`.trim() : userData?.userData?.email || '';
+  // Проверяем разные формы данных пользователя
+  const user = userData?.userData || userData;
+  const userId = user?.id || `anonymous-${socket.id}`;
+  const firstName = user?.firstname || '';
+  const lastName = user?.lastname || '';
+  const userName = firstName && lastName ? `${firstName} ${lastName}`.trim() : user?.email || '';
   
   console.log(`🚪 Joining post editing room ${postId} as ${userName || 'Anonymous'} (${userId})`);
   
@@ -108,7 +110,13 @@ const emitJoinPost = (postId: string, userData: any) => {
     socket.emit('join-post', {
       postId,
       userId,
-      userName
+      userName,
+      user: { // Отправляем полную информацию о пользователе
+        id: userId,
+        firstname: firstName,
+        lastname: lastName,
+        email: user?.email
+      }
     });
   } catch (error) {
     console.error('🔴 Error joining post room:', error);
@@ -116,7 +124,8 @@ const emitJoinPost = (postId: string, userData: any) => {
 };
 
 export const leavePostEditing = (postId: string, userData: any) => {
-  const userId = userData?.userData?.id || userData?.id || `anonymous-${socket.id}`;
+  const user = userData?.userData || userData;
+  const userId = user?.id || `anonymous-${socket.id}`;
   
   if (socket.connected) {
     console.log(`🚪 Leaving post editing room: ${postId}`);

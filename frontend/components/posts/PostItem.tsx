@@ -127,7 +127,8 @@ export const PostItem = ({
   }, [liveContent, post.id]);
 
   const isLocalUpdate = useRef(false);
-
+  console.log("liveContent**********", liveContent)
+  
   // Когда liveContent обновляется через сокеты, обновляем editedContent
   useEffect(() => {
     if (liveView && liveContent && !isLocalUpdate.current) {
@@ -143,8 +144,10 @@ export const PostItem = ({
     } else {
       disconnect();
     }
-  }, [liveView]);
-
+    return () => {
+      disconnect();
+    };
+  }, [liveView, connect, disconnect]);
 
   useEffect(() => {
     if (contentUpdateTimeoutRef.current) {
@@ -397,7 +400,7 @@ export const PostItem = ({
         )}
         
         <RichTextEditor
-          key={`editor-${post.id}-${isEditable}-${liveView ? Date.now() : ''}`}
+          key={`editor-${post.id}`}
           content={displayContent}
           onUpdate={handleContentUpdate}
           mode={isEditable ? "published" : "preview"}
