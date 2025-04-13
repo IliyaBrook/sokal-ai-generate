@@ -27,6 +27,7 @@ import { Button } from "../ui";
 import { UserDataContext } from "@/contexts/UserData.context";
 import { ActiveEditors } from "./ActiveEditors";
 import { socket } from "@/lib/socket";
+import { CollaborationStatus } from "./CollaborationStatus";
 
 interface ShortLinkResponse {
   id: string
@@ -363,21 +364,11 @@ export const PostItem = ({
       </CardHeader>
       <CardContent>
         {liveUpdate && (
-          <div className="mb-4 border-b pb-3">
-            <div className="flex items-center mb-2">
-              <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'} mr-2`}></span>
-              <span className="text-sm font-medium">
-                {isConnected ? 'Collaborative editing active' : 'Connection lost. Trying to reconnect...'}
-              </span>
-            </div>
-            
-            {activeWatchers.length > 0 && (
-              <ActiveEditors 
-                editors={activeWatchers}
-                currentUserId={user?.id || `anonymous-${socket.id}`}
-              />
-            )}
-          </div>
+          <CollaborationStatus
+            isConnected={isConnected}
+            editors={activeWatchers}
+            currentUserId={user?.id || `anonymous-${socket.id}`}
+          />
         )}
         
         <RichTextEditor
