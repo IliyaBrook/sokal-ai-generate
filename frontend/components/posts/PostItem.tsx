@@ -18,7 +18,6 @@ import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { usePostEditing } from "@/hooks/usePostEditing";
 import { socket } from "@/lib/socket";
 import { IPost } from "@/types";
-import { format } from "date-fns";
 import "highlight.js/styles/atom-one-dark.css";
 import { usePathname } from "next/navigation";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -27,6 +26,7 @@ import { toast } from "sonner";
 import { RichTextEditor, RichTextEditorRef } from "../RIchTextEditor/RichTextEditor";
 import { Button } from "../ui";
 import { CollaborationStatus } from "./CollaborationStatus";
+import { PostStatus, PostStatusBadge } from "./PostStatusBadge";
 
 interface ShortLinkResponse {
   id: string
@@ -75,7 +75,7 @@ export const PostItem = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
   const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
-  const [showScheduler, setShowScheduler] = useState(showSchedule);
+  const [showScheduler, setShowScheduler] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
   const [scheduleTime, setScheduleTime] = useState(getCurrentTime());
   const [shortLink, setShortLink] = useState<string | undefined>(post.shortLink);
@@ -108,7 +108,7 @@ export const PostItem = ({
     initialContent: post.content,
     autoConnect: liveView,
   });
-
+console.log('***post:', post)
   useEffect(() => {
     if (liveContent) {
       console.log('📝 Content in PostItem:', 
@@ -193,8 +193,10 @@ export const PostItem = ({
       try {
         await onPublish(post.id);
         setIsPublished(true);
+        toast.success("Post published successfully");
       } catch (error) {
         console.error("Error publishing post:", error);
+        toast.error("Failed to publish post");
       } finally {
         setIsPublishing(false);
       }
@@ -380,15 +382,15 @@ export const PostItem = ({
     }
   };
 
-  const getPostStatus = () => {
-    if (isPublished) return "Published";
+  const getPostStatus = (): PostStatus => {
+    if (isPublished) return "published";
     if (post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()) {
-      return `Scheduled for ${format(new Date(post.scheduledPublishDate), "PPP HH:mm")}`;
+      return "scheduled";
     }
-    return "Draft";
+    return "draft";
   };
   
-  const isScheduled = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
+  const hasScheduledDate = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
   
   const isAuthorized = !!user?.id && !user?.id.startsWith('anonymous-');
   
@@ -398,27 +400,25 @@ export const PostItem = ({
   
   const isEditable = editable || (liveView && isAuthorized) || isEditing;
 
-  useEffect(() => {
-    console.log('PostItem debug:', {
-      id: post.id,
-      title: post.title,
-      isPublished,
-      showSchedule,
-      isScheduled,
-      isAuthorized,
-      scheduledPublishDate: post.scheduledPublishDate,
-      shouldShowScheduleButton: !isPublished && showSchedule && !isScheduled && isAuthorized
-    });
-  }, [post.id, post.title, isPublished, showSchedule, isScheduled, isAuthorized, post.scheduledPublishDate]);
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
         {showStatus && (
           <CardDescription>
-            {getPostStatus()}
+            <PostStatusBadge 
+              status={getPostStatus()} 
+              scheduledDate={post.scheduledPublishDate}
+            />
           </CardDescription>
+        )}
+        {post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date() && (
+          <div className="mt-2 flex items-center">
+            <PostStatusBadge 
+              status="scheduled" 
+              scheduledDate={post.scheduledPublishDate}
+            />
+          </div>
         )}
       </CardHeader>
       <CardContent>
@@ -502,19 +502,13 @@ export const PostItem = ({
             {new Date(post.createdAt).toLocaleDateString()}
           </span>
           
-          {isScheduled && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm">
-                Scheduled: {post.scheduledPublishDate ? format(new Date(post.scheduledPublishDate), "PPP HH:mm") : ""}
-              </span>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                onClick={handleCancelSchedule}
-              >
-                Cancel Schedule
-              </Button>
-            </div>
+          {hasScheduledDate && (
+            <PostStatusBadge 
+              status="scheduled"
+              scheduledDate={post.scheduledPublishDate}
+              showCancelButton={true}
+              onCancelSchedule={handleCancelSchedule}
+            />
           )}
           
           <div className="flex gap-2">
@@ -548,7 +542,7 @@ export const PostItem = ({
               </>
             )}
      
-            {showSchedule && isAuthorized && (
+            {showSchedule && isAuthorized && !isPublished && (
               <Button 
                 variant="outline" 
                 onClick={() => setShowScheduler(!showScheduler)}
@@ -566,7 +560,7 @@ export const PostItem = ({
               </Button>
             )}
             
-            {!isPublished && showPublish && !isScheduled && isAuthorized && !isSharedPage && (
+            {!isPublished && onPublish && (
               <Button onClick={handlePublish} disabled={isPublishing}>
                 {isPublishing ? "Publishing..." : "Publish"}
               </Button>

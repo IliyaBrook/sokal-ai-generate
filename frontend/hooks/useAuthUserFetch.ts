@@ -41,7 +41,6 @@ export const useAuthUserFetch = (): FetchFunction => {
           newHeaders['Authorization'] = `Bearer ${data.accessToken}`
           response = await fetch(url, fetchOptions)
         } else {
-          localStorage.removeItem('accessToken')
           userData?.setUserData(null)
           router.push('/')
         }
@@ -55,7 +54,6 @@ export const useAuthUserFetch = (): FetchFunction => {
             throw new Error(serverError)
           }
         }else{
-          localStorage.removeItem("accessToken");
           userData?.setUserData(null);
           router.push("/");
         }

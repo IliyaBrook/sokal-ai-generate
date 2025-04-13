@@ -1,7 +1,7 @@
 "use client"
 
 import { fetchWithRefresh } from '@/lib';
-import type { IAuthResponse, IUser } from '@sokal_ai_generate/shared-types';
+import type { IUser } from '@sokal_ai_generate/shared-types';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
   type Dispatch,

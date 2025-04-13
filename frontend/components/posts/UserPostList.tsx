@@ -1,11 +1,13 @@
 "use client";
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { IPost } from "@sokal_ai_generate/shared-types";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { PostItem } from "./PostItem";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { toast } from "sonner";
+import { PostItem } from "./PostItem";
+import { PostStatus, PostStatusBadge } from "./PostStatusBadge";
 
 const defaultPostItemProps = {
   showStatus: true,
@@ -16,9 +18,49 @@ const defaultPostItemProps = {
   editable: false
 }
 
+const PostItemWrapper = ({ post, isSharedPage, isScheduled, ...props }: { 
+  post: IPost; 
+  isSharedPage: boolean;
+  isScheduled: boolean;
+  [key: string]: any;
+}) => {
+  const getPostStatus = (post: IPost): PostStatus => {
+    if (post.isPublished) return "published";
+    if (post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()) {
+      return "scheduled";
+    }
+    return "draft";
+  };
+
+  const getPostStatusBadge = (post: IPost) => {
+    if (!isSharedPage) {
+      return (
+        <PostStatusBadge 
+          status={getPostStatus(post)}
+          scheduledDate={post.scheduledPublishDate}
+        />
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="relative">
+      <div className="absolute top-2 right-2 z-10">
+        {getPostStatusBadge(post)}
+      </div>
+      <PostItem 
+        post={post}
+        {...props}
+      />
+    </div>
+  );
+};
 
 export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
   const [posts, setPosts] = useState(initialPosts);
+  const pathname = usePathname();
+  const isSharedPage = pathname.includes('/shared/');
   
   useEffect(() => {
     setPosts(initialPosts);
@@ -74,9 +116,14 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
 
   const getScheduledPosts = () => {
     return Array.isArray(posts) 
-      ? posts.filter(post => 
-        !post.isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()
-      )
+      ? posts
+          .filter(post => 
+            !post.isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()
+          )
+          .sort((a, b) => {
+            if (!a.scheduledPublishDate || !b.scheduledPublishDate) return 0;
+            return new Date(a.scheduledPublishDate).getTime() - new Date(b.scheduledPublishDate).getTime();
+          })
       : [];
   };
 
@@ -119,11 +166,13 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                   <h2 className="text-xl font-semibold mb-4">Scheduled Posts</h2>
                   <div className="grid gap-6">
                     {scheduledPosts.map((post) => (
-                      <PostItem 
+                      <PostItemWrapper 
                         key={post.id} 
                         post={post} 
                         onPublish={handlePublish} 
                         onEdit={handleEditPost}
+                        isSharedPage={isSharedPage}
+                        isScheduled={true}
                         {...defaultPostItemProps}
                       />
                     ))}
@@ -136,11 +185,14 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                   <h2 className="text-xl font-semibold mb-4">Drafts</h2>
                   <div className="grid gap-6">
                     {draftPosts.map((post) => (
-                      <PostItem 
+                      <PostItemWrapper 
                         key={post.id} 
                         post={post} 
                         onPublish={handlePublish} 
                         onEdit={handleEditPost}
+                        isSharedPage={isSharedPage}
+                        isScheduled={false}
+                        
                         {...defaultPostItemProps}
                       />
                     ))}
@@ -153,12 +205,15 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
                   <h2 className="text-xl font-semibold mb-4">Published Posts</h2>
                   <div className="grid gap-6">
                     {publishedPosts.map((post) => (
-                      <PostItem 
+                      <PostItemWrapper 
                         key={post.id} 
                         post={post} 
                         onPublish={handlePublish} 
                         onEdit={handleEditPost}
+                        isSharedPage={isSharedPage}
+                        isScheduled={false}
                         {...defaultPostItemProps}
+                        showPublish={false}
                       />
                     ))}
                   </div>
@@ -175,11 +230,13 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
           ) : (
             <div className="grid gap-6">
               {scheduledPosts.map((post) => (
-                <PostItem 
+                <PostItemWrapper 
                   key={post.id} 
                   post={post} 
                   onPublish={handlePublish} 
                   onEdit={handleEditPost}
+                  isSharedPage={isSharedPage}
+                  isScheduled={true}
                   {...defaultPostItemProps}
                 />
               ))}
@@ -194,11 +251,13 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
           ) : (
             <div className="grid gap-6">
               {draftPosts.map((post) => (
-                <PostItem 
+                <PostItemWrapper 
                   key={post.id} 
                   post={post} 
                   onPublish={handlePublish} 
                   onEdit={handleEditPost}
+                  isSharedPage={isSharedPage}
+                  isScheduled={false}
                   {...defaultPostItemProps}
                 />
               ))}
@@ -213,12 +272,15 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
           ) : (
             <div className="grid gap-6">
               {publishedPosts.map((post) => (
-                <PostItem 
+                <PostItemWrapper 
                   key={post.id} 
                   post={post} 
                   onPublish={handlePublish} 
                   onEdit={handleEditPost}
+                  isSharedPage={isSharedPage}
+                  isScheduled={false}
                   {...defaultPostItemProps}
+                  showPublish={false}
                 />
               ))}
             </div>
