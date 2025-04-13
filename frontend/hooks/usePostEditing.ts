@@ -252,7 +252,6 @@ export function usePostEditing({
     }
   }, [debouncedContent, postId, user, isConnected]);
 
-  // Функция для ручного подключения
   const connect = useCallback(() => {
     console.log('🔌 Manual connect requested');
     connectSocket();
@@ -261,60 +260,49 @@ export function usePostEditing({
         console.log('🚪 Manually joining post room after connect:', postId);
         joinPostEditing(postId, user);
     } else if (!autoConnect && postId && !socket.connected) {
-        // Если сокет не подключен, joinPostEditing вызовет connectSocket и присоединится позже
         console.log('🚪 Manually joining post room (will connect first):', postId);
         joinPostEditing(postId, user);
     }
   }, [postId, user, autoConnect]);
 
-  // Функция для ручного отключения
+
   const disconnect = useCallback(() => {
     if (socket.connected && postId) {
       console.log(`🚪 Leaving post room manually: ${postId}`);
       leavePostEditing(postId, user);
-      // Можно также полностью отключить сокет, если он больше не нужен
-      // disconnectSocket();
     }
   }, [postId, user]);
 
-  // Функция для обновления контента извне (например, из RichTextEditor)
   const updateContent = useCallback((newContent: string) => {
-    // console.log('🖊️ updateContent called with:', newContent?.substring(0, 30) + '...');
-    // Не ставим флаг isUpdatingFromSocketRef.current = false здесь,
-    // он сбрасывается в эффекте отправки контента
     setContent(newContent);
   }, []);
 
-  // Функция для сохранения контента
   const saveContent = useCallback(async (): Promise<boolean> => {
     const userId = user?.id || `anonymous-${socket.id}`;
     setIsSaving(true);
 
-    // Попытка через сокет
     if (socket.connected) {
       console.log('💾 Requesting save via socket...');
       return new Promise<boolean>((resolve) => {
-        saveResolverRef.current = resolve; // Сохраняем резолвер для ответа от сокета
+        saveResolverRef.current = resolve;
 
         socket.emit('save-content', {
           postId,
-          content, // Отправляем текущее, не дебаунсированное значение
+          content, 
           userId,
           clientId: socket.id
         });
 
-        // Таймаут для операции сохранения
         const timeoutId = setTimeout(() => {
           if (saveResolverRef.current) {
             console.error('💾 Save operation timed out via socket.');
             toast.error('Save operation timed out');
             setIsSaving(false);
-            saveResolverRef.current(false); // Резолвим промис как false
+            saveResolverRef.current(false);
             saveResolverRef.current = null;
           }
-        }, 10000); // Увеличил таймаут до 10 секунд
+        }, 10000);
 
-        // Очистка таймаута, если ответ пришел раньше
         const originalResolver = saveResolverRef.current;
         saveResolverRef.current = (success: boolean) => {
             clearTimeout(timeoutId);
@@ -328,12 +316,11 @@ export function usePostEditing({
       });
     }
 
-    // Фолбэк через HTTP, если сокет не подключен
     console.log('💾 Socket not connected, using HTTP fallback to save...');
     try {
       const response = await apiFetch<{ success: boolean; message?: string; post?: IPost }>(`/api/posts/${postId}/save`, { // Предполагаем отдельный эндпоинт для сохранения
         method: 'PUT',
-        body: JSON.stringify({ content }), // Отправляем текущий контент
+        body: JSON.stringify({ content }),
       });
       if (response?.success) {
         toast.success('Post saved successfully (HTTP fallback)');
@@ -350,7 +337,7 @@ export function usePostEditing({
       setIsSaving(false);
       return false;
     }
-  }, [postId, content, user, apiFetch, isConnected]); // Добавили isConnected
+  }, [postId, content, user, apiFetch, isConnected]); 
 
   // console.log('🔄 usePostEditing render. Content:', content?.substring(0, 30) + '...');
 
