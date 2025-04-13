@@ -15,15 +15,17 @@ import {
 } from "@/components/ui";
 import { UserDataContext } from "@/contexts/UserData.context";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
+import { useDebounce } from "@/hooks/useDebounce";
 import { usePostEditing } from "@/hooks/usePostEditing";
 import { socket } from "@/lib/socket";
 import { IPost } from "@/types";
 import { format } from "date-fns";
 import "highlight.js/styles/atom-one-dark.css";
+import { usePathname } from "next/navigation";
 import { useContext, useEffect, useRef, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
-import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
+import { RichTextEditor, RichTextEditorRef } from "../RIchTextEditor/RichTextEditor";
 import { Button } from "../ui";
 import { CollaborationStatus } from "./CollaborationStatus";
 
@@ -82,7 +84,10 @@ export const PostItem = ({
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [isCreatingLink, setIsCreatingLink] = useState(false);
   const [isDeletingLink, setIsDeletingLink] = useState(false);
-
+  
+  const editorRef = useRef<RichTextEditorRef>(null);
+  const lastUpdateRequestRef = useRef<Promise<any> | null>(null);
+  
   const apiFetch = useAuthUserFetch();
   const contextData = useContext(UserDataContext);
   const user = contextData?.userData;
@@ -90,17 +95,7 @@ export const PostItem = ({
   // Сохраняем начальный контент из Shared для сравнения
   const initialContentRef = useRef(post.content);
   const contentUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Флаг для предотвращения повторного подключения к сокету
-  const isConnectedRef = useRef(false);
-
-  // Используем useEffect для логирования props, чтобы проверить, что передается правильно
-  useEffect(() => {
-    console.log('🔍 PostItem render:', 
-      post.id.substring(post.id.length - 6), 
-      isConnectedRef.current ? '(already connected)' : '(new)'
-    );
-  }, [post.id]);
+  const pathname = usePathname();
 
   const { 
     content: liveContent, 
@@ -127,12 +122,12 @@ export const PostItem = ({
   }, [liveContent, post.id]);
 
   const isLocalUpdate = useRef(false);
-  console.log("liveContent**********", liveContent)
   
-  // Когда liveContent обновляется через сокеты, обновляем editedContent
+  // Когда liveContent обновляется через сокеты, обновляем редактор напрямую
   useEffect(() => {
-    if (liveView && liveContent && !isLocalUpdate.current) {
-      console.log("Updating from socket:", liveContent?.substring(0, 30) + "...");
+    if (liveView && liveContent && !isLocalUpdate.current && editorRef.current) {
+      console.log("Updating editor content from socket:", liveContent?.substring(0, 30) + "...");
+      editorRef.current.updateContent(liveContent);
       setEditedContent(liveContent);
     }
     isLocalUpdate.current = false;
@@ -149,6 +144,7 @@ export const PostItem = ({
     };
   }, [liveView, connect, disconnect]);
 
+  // Обновляем базу данных при изменении контента через сокет
   useEffect(() => {
     if (contentUpdateTimeoutRef.current) {
       clearTimeout(contentUpdateTimeoutRef.current);
@@ -158,12 +154,23 @@ export const PostItem = ({
     if (liveView && liveContent && onEdit && !isLocalUpdate.current && liveContent !== initialContentRef.current) {
       contentUpdateTimeoutRef.current = setTimeout(async () => {
         try {
-          await onEdit(post.id, liveContent);
+          // Проверяем, нет ли уже выполняющегося запроса
+          if (lastUpdateRequestRef.current) {
+            await lastUpdateRequestRef.current;
+          }
+          
+          // Сохраняем текущий запрос
+          const updateRequest = onEdit(post.id, liveContent);
+          lastUpdateRequestRef.current = updateRequest;
+          
+          await updateRequest;
           console.log("📝 Database updated with socket content");
-          // После успешного обновления в базе, обновляем и наш reference
+          // После успешного обновления в базе, обновляем наш reference
           initialContentRef.current = liveContent;
+          lastUpdateRequestRef.current = null;
         } catch (error) {
           console.error("❌ Error updating database:", error);
+          lastUpdateRequestRef.current = null;
         }
       }, 2000);
     }
@@ -205,6 +212,16 @@ export const PostItem = ({
 
   const handleSave = async () => {
     try {
+      // Проверяем, изменился ли контент
+      const contentToSave = liveView ? liveContent : editedContent;
+      const initialContent = initialContentRef.current;
+      
+      if (contentToSave === initialContent) {
+        console.log("Content hasn't changed, skipping save");
+        setIsEditing(false);
+        return;
+      }
+      
       if (liveView) {
         // Для liveView используем сохранение через socket
         console.log("Saving through socket...");
@@ -213,7 +230,20 @@ export const PostItem = ({
           toast.success("Post updated");
           // Вызываем onEdit только для синхронизации с базой данных
           if (onEdit) {
-            await onEdit(post.id, liveContent || editedContent);
+            // Проверяем, нет ли уже выполняющегося запроса
+            if (lastUpdateRequestRef.current) {
+              await lastUpdateRequestRef.current;
+            }
+            
+            // Сохраняем текущий запрос
+            const updateRequest = onEdit(post.id, liveContent || editedContent);
+            lastUpdateRequestRef.current = updateRequest;
+            
+            await updateRequest;
+            
+            // Обновляем initialContentRef после сохранения
+            initialContentRef.current = liveContent || editedContent;
+            lastUpdateRequestRef.current = null;
           }
         } else {
           toast.error("Failed to save post");
@@ -221,7 +251,21 @@ export const PostItem = ({
       } else if (onEdit) {
         // Для стандартного режима - через API
         console.log("Saving through API...");
-        await onEdit(post.id, editedContent);
+        
+        // Проверяем, нет ли уже выполняющегося запроса
+        if (lastUpdateRequestRef.current) {
+          await lastUpdateRequestRef.current;
+        }
+        
+        // Сохраняем текущий запрос
+        const updateRequest = onEdit(post.id, editedContent);
+        lastUpdateRequestRef.current = updateRequest;
+        
+        await updateRequest;
+        
+        // Обновляем initialContentRef после сохранения
+        initialContentRef.current = editedContent;
+        lastUpdateRequestRef.current = null;
       }
       
       // Выключаем режим редактирования после сохранения
@@ -229,6 +273,7 @@ export const PostItem = ({
     } catch (error) {
       console.error("Error saving post:", error);
       toast.error("Failed to save post");
+      lastUpdateRequestRef.current = null;
     }
   };
 
@@ -366,18 +411,12 @@ export const PostItem = ({
   const isScheduled = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
   
   const isAuthorized = !!user?.id && !user?.id.startsWith('anonymous-');
-  const isAnonymous = !isAuthorized;
   
-  // Определяем, находимся ли мы на странице с шорт-ссылкой
-  const isSharedPage = typeof window !== 'undefined' && window.location.pathname.includes('/shared/');
+  const isSharedPage = pathname.includes('/shared/');
   
-  // Кнопка Edit видна только авторизованным пользователям и не на странице с шорт-ссылкой
   const displayEditButton = showEdit && onEdit && isAuthorized && !isEditing && !liveView && !isSharedPage;
   
-  // Определяем, можно ли редактировать контент:
-  // 1. Если передан проп editable напрямую, используем его
-  // 2. Если в режиме liveView - только для авторизованных пользователей
-  // 3. Если в режиме обычного редактирования - когда включен режим isEditing
+ 
   const isEditable = editable || (liveView && isAuthorized) || isEditing;
 
   return (
@@ -400,7 +439,7 @@ export const PostItem = ({
         )}
         
         <RichTextEditor
-          key={`editor-${post.id}`}
+          ref={editorRef}
           content={displayContent}
           onUpdate={handleContentUpdate}
           mode={isEditable ? "published" : "preview"}
