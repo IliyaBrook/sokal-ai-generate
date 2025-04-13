@@ -23,12 +23,14 @@ interface EditPayload {
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || ['http://localhost:3000', 'http://localhost:4200'],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST']
   },
-  namespace: '/post-edit',
+  namespace: '',
   transports: ['websocket', 'polling'],
+  path: '/socket.io',
+  allowEIO3: true
 })
 export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -45,7 +47,11 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   }
 
   handleConnection(client: Socket) {
+    const handshake = client.handshake;
     this.logger.log(`Client connected: ${client.id}`);
+    this.logger.log(`Connection from: ${handshake.address} via ${handshake.headers.origin || 'unknown'}`);
+    this.logger.log(`Transport: ${client.conn.transport.name}`);
+    this.logger.log(`Query params: ${JSON.stringify(handshake.query)}`);
   }
 
   handleDisconnect(client: Socket) {
@@ -85,7 +91,7 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
   private disconnectPreviousUserSessions(userId: string, postId: string, currentClientId: string) {
     if (userId.startsWith('anonymous-')) {
-      return; // Не отключаем анонимных пользователей
+      return;
     }
     
     const userSockets = this.userSocketsMap.get(userId);
@@ -94,15 +100,12 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         if (socketId !== currentClientId) {
           const socket = this.server.sockets.sockets.get(socketId);
           if (socket) {
-            // Отправляем уведомление о дублирующемся подключении
             socket.emit('duplicate-connection', {
               message: 'You have connected from another window. This session will be disconnected.'
             });
             
-            // Удаляем из комнаты редактирования
             socket.leave(`post:${postId}`);
             
-            // Удаляем из списка редакторов
             const editors = this.activeEditors.get(postId);
             if (editors) {
               const editorInfoToRemove = Array.from(editors).find(info => info.includes(socketId));
@@ -114,7 +117,6 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
               }
             }
             
-            // Удаляем из карты пользователей
             const userSocketsSet = this.userSocketsMap.get(userId);
             if (userSocketsSet) {
               userSocketsSet.delete(socketId);
@@ -123,7 +125,6 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         }
       });
       
-      // Обновляем список редакторов для всех клиентов в комнате
       const editors = this.activeEditors.get(postId);
       if (editors) {
         this.server.to(`post:${postId}`).emit('editors', Array.from(editors));
@@ -139,10 +140,8 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     const { postId, userId, userName } = payload;
     this.logger.log(`User ${userId} joined post ${postId}`);
     
-    // Отключаем предыдущие сессии пользователя
     this.disconnectPreviousUserSessions(userId, postId, client.id);
     
-    // Добавляем сокет в карту пользователей
     if (!this.userSocketsMap.has(userId)) {
       this.userSocketsMap.set(userId, new Set());
     }

@@ -1,29 +1,30 @@
 import { IAuthResponse } from "@sokal_ai_generate/shared-types";
 
-type authResponse = Omit<IAuthResponse, 'refreshToken'>
+type authResponse = Omit<IAuthResponse, "refreshToken">;
 
-interface IfetchWithRefresh <T> {
+interface IfetchWithRefresh<T> {
   url: string;
   options?: RequestInit;
-  onGetRefreshUserData: (data: authResponse) => void;
-  onGetData: (data: T) => void;
-  onFalseRefreshUserData: () => void;
-  onErrorMessage: (error: { message: string }) => void;
+  onGetRefreshUserData?: (data: authResponse) => void;
+  onGetData?: (data: T) => void;
+  onFalseRefreshUserData?: () => void;
+  onErrorMessage?: (error: { message: string }) => void;
 }
 
+
+let badRefreshRequest: boolean = false
 export const fetchWithRefresh = async <T>({
   url,
   options = {},
   onGetData,
   onGetRefreshUserData,
-  onFalseRefreshUserData,
   onErrorMessage,
 }: IfetchWithRefresh<T>) => {
   const token = localStorage.getItem("accessToken");
-  const defaultHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
   if (token) {
+    const defaultHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
     defaultHeaders["Authorization"] = `Bearer ${token}`;
     const fetchOptions: RequestInit = {
       ...options,
@@ -34,26 +35,38 @@ export const fetchWithRefresh = async <T>({
     };
     try {
       const response = await fetch(url, fetchOptions);
-
       if (response.ok) {
         const responseClone = response.clone();
         const data = await responseClone.json();
-        onGetData(data as T);
+        if (onGetData) {
+          onGetData(data as T);
+        }
       } else if (response.status === 401) {
         const refreshResponse = await fetch("/api/users/refresh");
+        badRefreshRequest = true
         if (refreshResponse.ok) {
+          badRefreshRequest = false
           const refreshResponseClone = refreshResponse.clone();
           const refreshedData: authResponse = await refreshResponseClone.json();
           const accessToken = refreshedData.accessToken;
           localStorage.setItem("accessToken", accessToken);
-          onGetRefreshUserData(refreshedData);
-        } else {
-          onFalseRefreshUserData();
+          if (onGetRefreshUserData) {
+            onGetRefreshUserData(refreshedData);
+          }
         }
       }
     } catch (error) {
       if (error instanceof Error) {
-        onErrorMessage({ message: error.message });
+        if (onErrorMessage) {
+          onErrorMessage({ message: error.message });
+        }
+      }
+    }finally{
+      if(badRefreshRequest){
+        localStorage.removeItem("accessToken");
+        await new Promise(resolve => setTimeout(resolve, 500));
+        window.location.href = "/";
+        badRefreshRequest = false
       }
     }
   }

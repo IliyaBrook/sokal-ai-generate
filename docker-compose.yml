@@ -27,6 +27,8 @@ services:
       JWT_REFRESH_SECRET: ${JWT_SECRET}
       DB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/sokal-ai-db?authSource=admin
       NODE_ENV: production
+      FRONTEND_URL: "http://localhost:80,http://frontend:3000"
+      SOCKET_TRANSPORT: "['websocket', 'polling']"
     depends_on:
       - mongodb
     networks:
@@ -39,7 +41,7 @@ services:
     ports:
       - "80:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend:4000
+      - NEXT_PUBLIC_API_URL=http://localhost:4001
       - NODE_ENV=production
     depends_on:
       - backend

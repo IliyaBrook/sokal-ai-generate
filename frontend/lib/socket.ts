@@ -2,17 +2,27 @@ import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
 
 const getSocketURL = (): string => {
-  const baseURL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+    const hostname = window.location.hostname;
+    const port = process.env.NODE_ENV === 'production' ? '4001' : '4000';
+    
+    return `${protocol}://${hostname}:${port}`;
+  }
+  
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  const baseURL = apiUrl.replace('/api', '');
+  
   console.log('🔌 Base Socket URL:', baseURL);
   return baseURL;
 };
 
-export const socket: Socket = io(getSocketURL() + '/post-edit', {
+export const socket: Socket = io(getSocketURL(), {
   autoConnect: false,
   transports: ['websocket', 'polling'],
-  reconnectionAttempts: 5,
+  reconnectionAttempts: 10,
   reconnectionDelay: 1000,
-  timeout: 10000,
+  timeout: 20000,
   forceNew: true,
   path: '/socket.io'
 });
@@ -51,26 +61,46 @@ socket.on('duplicate-connection', (data) => {
 });
 
 export const connectSocket = () => {
-  const socketUrl = getSocketURL() + '/post-edit';
+  const socketUrl = getSocketURL();
   
   console.log(`🔍 Socket connection info:
   - Socket URL: ${socketUrl}
+  - Environment: ${process.env.NODE_ENV || 'development'}
+  - Window location: ${typeof window !== 'undefined' ? window.location.href : 'SSR'}
   - Connected: ${socket.connected}
   - ID: ${socket.id || 'not connected'}`);
 
   if (!socket.connected) {
     console.log(`🔌 Connecting to ${socketUrl}...`);
-    socket.connect();
-    
-    setTimeout(() => {
-      console.log(`🔍 Socket connection status:
-      - Connected: ${socket.connected}
-      - Socket ID: ${socket.id || 'no id'}`);
+    try {
+      socket.io.opts.transports = ['websocket', 'polling'];
+      socket.io.opts.extraHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': 'true'
+      };
+      socket.connect();
       
-      if (!socket.connected) {
-        console.error('🔴 Socket failed to connect within timeout!');
-      }
-    }, 2000);
+      setTimeout(() => {
+        console.log(`🔍 Socket connection status:
+        - Connected: ${socket.connected}
+        - Socket ID: ${socket.id || 'no id'}`);
+        
+        if (!socket.connected) {
+          console.error('🔴 Socket failed to connect within timeout! Trying again with polling only...');
+          socket.io.opts.transports = ['polling'];
+          socket.connect();
+          
+          setTimeout(() => {
+            if (!socket.connected) {
+              console.error('🔴 Socket still failed to connect. Please check network settings.');
+              toast.error('Failed to connect to editing server. Please refresh the page.');
+            }
+          }, 3000);
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('🔴 Socket connection error:', error);
+    }
   } else {
     console.log('Socket already connected, id:', socket.id);
   }

@@ -2,6 +2,10 @@ FROM node:22-alpine
 
 WORKDIR /app
 
+RUN yarn config set network-timeout 300000 && \
+    yarn config set registry https://registry.npmjs.org/ && \
+    yarn config set network-concurrency 4
+
 COPY package.json yarn.lock ./
 COPY frontend/package.json ./frontend/
 COPY shared-types/package.json ./shared-types/
@@ -13,7 +17,9 @@ COPY frontend ./frontend
 COPY shared-types ./shared-types
 COPY configs ./configs
 
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --network-timeout 600000 || \
+    yarn install --frozen-lockfile --network-timeout 600000 || \
+    yarn install --frozen-lockfile --network-timeout 600000
 
 RUN yarn build:client
 

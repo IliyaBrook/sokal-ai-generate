@@ -27,7 +27,6 @@ import { Button } from "../ui";
 import { CollaborationStatus } from "./CollaborationStatus";
 import { PostStatusBadge } from "./PostStatusBadge";
 
-// Создаем контекст для управления активным редактированием
 interface EditingContextType {
   activeEditPostId: string | null;
   setActiveEditPostId: (id: string | null) => void;
@@ -96,7 +95,6 @@ export const PostItem = ({
   const contextData = useContext(UserDataContext);
   const user = contextData?.userData;
 
-  // Используем контекст для управления активным редактированием
   const editingContext = useContext(EditingContext);
 
   const initialContentRef = useRef(post.content);
@@ -117,7 +115,6 @@ export const PostItem = ({
     autoConnect: liveView,
   });
 
-  // Закрываем редактирование если активно другое редактирование
   useEffect(() => {
     if (editingContext.activeEditPostId && 
         editingContext.activeEditPostId !== post.id && 
@@ -126,7 +123,6 @@ export const PostItem = ({
     }
   }, [editingContext.activeEditPostId, post.id, isEditing]);
 
-  // При включении редактирования обновляем активный пост в контексте
   useEffect(() => {
     if (isEditing) {
       editingContext.setActiveEditPostId(post.id);
@@ -171,10 +167,8 @@ export const PostItem = ({
     }
 
     if (liveView && liveContent && onEdit && !isLocalUpdate.current && liveContent !== initialContentRef.current) {
-      // Используем единую переменную для отслеживания, идет ли обновление
       const isUpdating = lastUpdateRequestRef.current !== null;
       
-      // Если уже идет обновление, не создаем новый таймаут
       if (isUpdating) {
         console.log('Update already in progress, skipping timer creation');
         return;
@@ -245,7 +239,6 @@ export const PostItem = ({
         return;
       }
       
-      // Предотвращаем параллельные запросы
       if (lastUpdateRequestRef.current) {
         console.log("Update already in progress, waiting before save");
         await lastUpdateRequestRef.current;
@@ -281,7 +274,6 @@ export const PostItem = ({
       }
       
       setIsEditing(false);
-      // Сбрасываем активное редактирование в контексте
       if (editingContext.activeEditPostId === post.id) {
         editingContext.setActiveEditPostId(null);
       }
@@ -427,10 +419,8 @@ export const PostItem = ({
   
   const isSharedPage = pathname.includes('/shared/');
   
-  // Обновлена логика определения editable
   const isEditable = editable || (liveView && isAuthorized) || isEditing;
 
-  // Функция для переключения режима редактирования
   const toggleEditing = () => {
     if (isEditing) {
       setIsEditing(false);
