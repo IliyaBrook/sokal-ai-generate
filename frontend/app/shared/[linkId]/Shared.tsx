@@ -1,6 +1,6 @@
 'use client'
 
-import { PostItem } from "@/components/posts"
+import { PostItem, EditingContext } from "@/components/posts"
 import { UserDataContext } from "@/contexts/UserData.context"
 import { useAuthUserFetch } from "@/hooks"
 import { IPost } from "@/types"
@@ -16,6 +16,7 @@ export default function Shared({ linkId }: {linkId: string}) {
   const [isLoading, setIsLoading] = useState(true)
   const [currentPost, setCurrentPost] = useState<PostWithAuthor | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [activeEditPostId, setActiveEditPostId] = useState<string | null>(null)
   const apiFetch = useAuthUserFetch()
 
   useEffect(() => {
@@ -100,16 +101,17 @@ export default function Shared({ linkId }: {linkId: string}) {
   const isAuthor = contextData?.userData && contextData.userData.id === currentPost.authorId
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Shared Post from {currentPost.authorName}</h1>
-      <PostItem 
-          post={currentPost} 
-          showStatus
-          showEdit={!!contextData?.userData}
-          showShare={!!isAuthor}
-          onEdit={handleEditPost}
-          liveView
-        />
-    </div>
+    <EditingContext.Provider value={{ activeEditPostId, setActiveEditPostId }}>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-6">Shared Post from {currentPost.authorName}</h1>
+        <PostItem 
+            post={currentPost} 
+            showEdit={!!contextData?.userData}
+            showShare={!!isAuthor}
+            onEdit={handleEditPost}
+            liveView
+          />
+      </div>
+    </EditingContext.Provider>
   )
 }

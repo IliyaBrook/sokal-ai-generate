@@ -6,7 +6,7 @@ import { IPost } from "@sokal_ai_generate/shared-types";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { PostItem } from "./PostItem";
+import { PostItem, EditingContext } from "./PostItem";
 import { PostStatus, PostStatusBadge } from "./PostStatusBadge";
 
 const defaultPostItemProps = {
@@ -61,6 +61,7 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
   const [posts, setPosts] = useState(initialPosts);
   const pathname = usePathname();
   const isSharedPage = pathname.includes('/shared/');
+  const [activeEditPostId, setActiveEditPostId] = useState<string | null>(null);
   
   useEffect(() => {
     setPosts(initialPosts);
@@ -146,147 +147,149 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
   const draftPosts = getDraftPosts();
 
   return (
-    <div className="space-y-8">
-      <Tabs defaultValue="all_posts" className="mb-4">
-        <TabsList>
-          <TabsTrigger value="all_posts">All Posts</TabsTrigger>
-          <TabsTrigger value="scheduled_posts">Scheduled Posts</TabsTrigger>
-          <TabsTrigger value="drafts">Drafts</TabsTrigger>
-          <TabsTrigger value="published_posts">Published Posts</TabsTrigger>
-        </TabsList>
-        <TabsContent value="all_posts">
-          {!Array.isArray(posts) || posts.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">No posts found</p>
-            </div>
-          ) : (
-            <>
-              {scheduledPosts.length > 0 && (
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Scheduled Posts</h2>
-                  <div className="grid gap-6">
-                    {scheduledPosts.map((post) => (
-                      <PostItemWrapper 
-                        key={post.id} 
-                        post={post} 
-                        onPublish={handlePublish} 
-                        onEdit={handleEditPost}
-                        isSharedPage={isSharedPage}
-                        isScheduled={true}
-                        {...defaultPostItemProps}
-                      />
-                    ))}
+    <EditingContext.Provider value={{ activeEditPostId, setActiveEditPostId }}>
+      <div className="space-y-8">
+        <Tabs defaultValue="all_posts" className="mb-4">
+          <TabsList>
+            <TabsTrigger value="all_posts">All Posts</TabsTrigger>
+            <TabsTrigger value="scheduled_posts">Scheduled Posts</TabsTrigger>
+            <TabsTrigger value="drafts">Drafts</TabsTrigger>
+            <TabsTrigger value="published_posts">Published Posts</TabsTrigger>
+          </TabsList>
+          <TabsContent value="all_posts">
+            {!Array.isArray(posts) || posts.length === 0 ? (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-gray-500">No posts found</p>
+              </div>
+            ) : (
+              <>
+                {scheduledPosts.length > 0 && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Scheduled Posts</h2>
+                    <div className="grid gap-6">
+                      {scheduledPosts.map((post) => (
+                        <PostItemWrapper 
+                          key={post.id} 
+                          post={post} 
+                          onPublish={handlePublish} 
+                          onEdit={handleEditPost}
+                          isSharedPage={isSharedPage}
+                          isScheduled={true}
+                          {...defaultPostItemProps}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {draftPosts.length > 0 && (
-                <div className="mt-4">
-                  <h2 className="text-xl font-semibold mb-4">Drafts</h2>
-                  <div className="grid gap-6">
-                    {draftPosts.map((post) => (
-                      <PostItemWrapper 
-                        key={post.id} 
-                        post={post} 
-                        onPublish={handlePublish} 
-                        onEdit={handleEditPost}
-                        isSharedPage={isSharedPage}
-                        isScheduled={false}
-                        
-                        {...defaultPostItemProps}
-                      />
-                    ))}
+                {draftPosts.length > 0 && (
+                  <div className="mt-4">
+                    <h2 className="text-xl font-semibold mb-4">Drafts</h2>
+                    <div className="grid gap-6">
+                      {draftPosts.map((post) => (
+                        <PostItemWrapper 
+                          key={post.id} 
+                          post={post} 
+                          onPublish={handlePublish} 
+                          onEdit={handleEditPost}
+                          isSharedPage={isSharedPage}
+                          isScheduled={false}
+                          
+                          {...defaultPostItemProps}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {publishedPosts.length > 0 && (
-                <div className="mt-4">
-                  <h2 className="text-xl font-semibold mb-4">Published Posts</h2>
-                  <div className="grid gap-6">
-                    {publishedPosts.map((post) => (
-                      <PostItemWrapper 
-                        key={post.id} 
-                        post={post} 
-                        onPublish={handlePublish} 
-                        onEdit={handleEditPost}
-                        isSharedPage={isSharedPage}
-                        isScheduled={false}
-                        {...defaultPostItemProps}
-                        showPublish={false}
-                      />
-                    ))}
+                {publishedPosts.length > 0 && (
+                  <div className="mt-4">
+                    <h2 className="text-xl font-semibold mb-4">Published Posts</h2>
+                    <div className="grid gap-6">
+                      {publishedPosts.map((post) => (
+                        <PostItemWrapper 
+                          key={post.id} 
+                          post={post} 
+                          onPublish={handlePublish} 
+                          onEdit={handleEditPost}
+                          isSharedPage={isSharedPage}
+                          isScheduled={false}
+                          {...defaultPostItemProps}
+                          showPublish={false}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </>
-          )}
-        </TabsContent>
-        <TabsContent value="scheduled_posts">
-          {scheduledPosts.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">No scheduled posts found</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {scheduledPosts.map((post) => (
-                <PostItemWrapper 
-                  key={post.id} 
-                  post={post} 
-                  onPublish={handlePublish} 
-                  onEdit={handleEditPost}
-                  isSharedPage={isSharedPage}
-                  isScheduled={true}
-                  {...defaultPostItemProps}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="drafts">
-          {draftPosts.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">No draft posts found</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {draftPosts.map((post) => (
-                <PostItemWrapper 
-                  key={post.id} 
-                  post={post} 
-                  onPublish={handlePublish} 
-                  onEdit={handleEditPost}
-                  isSharedPage={isSharedPage}
-                  isScheduled={false}
-                  {...defaultPostItemProps}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="published_posts">
-          {publishedPosts.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">No published posts found</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {publishedPosts.map((post) => (
-                <PostItemWrapper 
-                  key={post.id} 
-                  post={post} 
-                  onPublish={handlePublish} 
-                  onEdit={handleEditPost}
-                  isSharedPage={isSharedPage}
-                  isScheduled={false}
-                  {...defaultPostItemProps}
-                  showPublish={false}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+                )}
+              </>
+            )}
+          </TabsContent>
+          <TabsContent value="scheduled_posts">
+            {scheduledPosts.length === 0 ? (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-gray-500">No scheduled posts found</p>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {scheduledPosts.map((post) => (
+                  <PostItemWrapper 
+                    key={post.id} 
+                    post={post} 
+                    onPublish={handlePublish} 
+                    onEdit={handleEditPost}
+                    isSharedPage={isSharedPage}
+                    isScheduled={true}
+                    {...defaultPostItemProps}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent value="drafts">
+            {draftPosts.length === 0 ? (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-gray-500">No draft posts found</p>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {draftPosts.map((post) => (
+                  <PostItemWrapper 
+                    key={post.id} 
+                    post={post} 
+                    onPublish={handlePublish} 
+                    onEdit={handleEditPost}
+                    isSharedPage={isSharedPage}
+                    isScheduled={false}
+                    {...defaultPostItemProps}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent value="published_posts">
+            {publishedPosts.length === 0 ? (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-gray-500">No published posts found</p>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {publishedPosts.map((post) => (
+                  <PostItemWrapper 
+                    key={post.id} 
+                    post={post} 
+                    onPublish={handlePublish} 
+                    onEdit={handleEditPost}
+                    isSharedPage={isSharedPage}
+                    isScheduled={false}
+                    {...defaultPostItemProps}
+                    showPublish={false}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </EditingContext.Provider>
   );
 };

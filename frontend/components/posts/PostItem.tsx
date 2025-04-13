@@ -19,13 +19,24 @@ import { socket } from "@/lib/socket";
 import { IPost } from "@/types";
 import "highlight.js/styles/atom-one-dark.css";
 import { usePathname } from "next/navigation";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, createContext } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
 import { RichTextEditor, RichTextEditorRef } from "../RIchTextEditor/RichTextEditor";
 import { Button } from "../ui";
 import { CollaborationStatus } from "./CollaborationStatus";
 import { PostStatusBadge } from "./PostStatusBadge";
+
+// Создаем контекст для управления активным редактированием
+interface EditingContextType {
+  activeEditPostId: string | null;
+  setActiveEditPostId: (id: string | null) => void;
+}
+
+export const EditingContext = createContext<EditingContextType>({
+  activeEditPostId: null,
+  setActiveEditPostId: () => {}
+});
 
 interface ShortLinkResponse {
   id: string
@@ -72,6 +83,7 @@ export const PostItem = ({
   const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
   const [showScheduler, setShowScheduler] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
+  const [isCancelingSchedule, setIsCancelingSchedule] = useState(false);
   const [scheduleTime, setScheduleTime] = useState(getCurrentTime());
   const [shortLink, setShortLink] = useState<string | undefined>(post.shortLink);
   const [shortLinkId, setShortLinkId] = useState<string | undefined>(undefined);
@@ -85,6 +97,9 @@ export const PostItem = ({
   const apiFetch = useAuthUserFetch();
   const contextData = useContext(UserDataContext);
   const user = contextData?.userData;
+
+  // Используем контекст для управления активным редактированием
+  const editingContext = useContext(EditingContext);
 
   const initialContentRef = useRef(post.content);
   const contentUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -103,7 +118,23 @@ export const PostItem = ({
     initialContent: post.content,
     autoConnect: liveView,
   });
-console.log('***post:', post)
+
+  // Закрываем редактирование если активно другое редактирование
+  useEffect(() => {
+    if (editingContext.activeEditPostId && 
+        editingContext.activeEditPostId !== post.id && 
+        isEditing) {
+      setIsEditing(false);
+    }
+  }, [editingContext.activeEditPostId, post.id, isEditing]);
+
+  // При включении редактирования обновляем активный пост в контексте
+  useEffect(() => {
+    if (isEditing) {
+      editingContext.setActiveEditPostId(post.id);
+    }
+  }, [isEditing, post.id, editingContext]);
+
   useEffect(() => {
     if (liveContent) {
       console.log('📝 Content in PostItem:', 
@@ -210,7 +241,6 @@ console.log('***post:', post)
       }
       
       if (liveView) {
-        console.log("Saving through socket...");
         const success = await saveContent();
         if (success) {
           toast.success("Post updated");
@@ -247,6 +277,10 @@ console.log('***post:', post)
       }
       
       setIsEditing(false);
+      // Сбрасываем активное редактирование в контексте
+      if (editingContext.activeEditPostId === post.id) {
+        editingContext.setActiveEditPostId(null);
+      }
     } catch (error) {
       console.error("Error saving post:", error);
       toast.error("Failed to save post");
@@ -354,6 +388,9 @@ console.log('***post:', post)
   };
 
   const handleCancelSchedule = async () => {
+    if (isCancelingSchedule) return;
+    
+    setIsCancelingSchedule(true);
     try {
       const updatedPost = await apiFetch<IPost>(`/api/posts/${post.id}`, {
         method: 'PUT',
@@ -374,6 +411,8 @@ console.log('***post:', post)
     } catch (error) {
       console.error("Error canceling schedule:", error);
       toast.error("Failed to cancel schedule. Please try again.");
+    } finally {
+      setIsCancelingSchedule(false);
     }
   };
 
@@ -384,9 +423,19 @@ console.log('***post:', post)
   
   const isSharedPage = pathname.includes('/shared/');
   
-  const displayEditButton = showEdit && onEdit && isAuthorized && !isEditing && !liveView && !isSharedPage;
-  
+  // Обновлена логика определения editable
   const isEditable = editable || (liveView && isAuthorized) || isEditing;
+
+  // Функция для переключения режима редактирования
+  const toggleEditing = () => {
+    if (isEditing) {
+      setIsEditing(false);
+      editingContext.setActiveEditPostId(null);
+    } else {
+      setIsEditing(true);
+      editingContext.setActiveEditPostId(post.id);
+    }
+  };
 
   return (
     <Card>
@@ -419,7 +468,10 @@ console.log('***post:', post)
             </Button>
             {isEditing && (
               <Button
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  setIsEditing(false);
+                  editingContext.setActiveEditPostId(null);
+                }}
               >
                 Cancel
               </Button>
@@ -477,7 +529,7 @@ console.log('***post:', post)
             <PostStatusBadge 
               status="scheduled"
               scheduledDate={post.scheduledPublishDate}
-              showCancelButton={true}
+              showCancelButton={!isCancelingSchedule}
               onCancelSchedule={handleCancelSchedule}
             />
           )}
@@ -522,12 +574,12 @@ console.log('***post:', post)
               </Button>
             )}
             
-            {displayEditButton && (
+            {!isSharedPage && (
               <Button
-                onClick={() => setIsEditing(true)}
+                onClick={toggleEditing}
                 variant="secondary"
               >
-                Edit
+                {isEditing ? "Cancel Edit" : "Edit"}
               </Button>
             )}
             

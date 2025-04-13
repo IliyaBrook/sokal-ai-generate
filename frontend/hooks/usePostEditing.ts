@@ -42,11 +42,6 @@ export function usePostEditing({
   const isUpdatingFromSocketRef = useRef(false);
 
   useEffect(() => {
-    console.log('🔄 usePostEditing init:', {
-      postId: postId.substring(postId.length - 6),
-      initialContent: initialContentRef.current?.substring(0, 30) + '...',
-      autoConnect
-    });
     isMountedRef.current = true;
 
     if (initialContent !== initialContentRef.current) {

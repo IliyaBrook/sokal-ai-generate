@@ -85,9 +85,15 @@ const RichTextEditorWithNoSSR = forwardRef<
         onBlur();
       }
     },
-    editable,
+    editable: editable,
     immediatelyRender: false,
   });
+
+  useEffect(() => {
+    if (editor && editor.isEditable !== editable) {
+      editor.setEditable(!!editable);
+    }
+  }, [editor, editable]);
 
   useImperativeHandle(
     ref,
