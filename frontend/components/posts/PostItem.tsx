@@ -402,22 +402,6 @@ console.log('***post:', post)
     <Card>
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
-        {showStatus && (
-          <CardDescription>
-            <PostStatusBadge 
-              status={getPostStatus()} 
-              scheduledDate={post.scheduledPublishDate}
-            />
-          </CardDescription>
-        )}
-        {post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date() && (
-          <div className="mt-2 flex items-center">
-            <PostStatusBadge 
-              status="scheduled" 
-              scheduledDate={post.scheduledPublishDate}
-            />
-          </div>
-        )}
       </CardHeader>
       <CardContent>
         {liveView && (
