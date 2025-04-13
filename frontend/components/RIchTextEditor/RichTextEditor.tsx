@@ -34,7 +34,6 @@ export interface RichTextEditorRef {
 interface RichTextEditorProps {
   content: string;
   onUpdate?: (content: string) => void;
-  mode?: "preview" | "published";
   editable?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -43,7 +42,7 @@ interface RichTextEditorProps {
 const RichTextEditorWithNoSSR = forwardRef<
   RichTextEditorRef,
   RichTextEditorProps
->(({ content, onUpdate, mode = "preview", editable, onFocus, onBlur }, ref) => {
+>(({ content, onUpdate, editable, onFocus, onBlur }, ref) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const prevContentRef = useRef<string>(content);
 
@@ -86,7 +85,7 @@ const RichTextEditorWithNoSSR = forwardRef<
         onBlur();
       }
     },
-    editable: editable !== undefined ? editable : mode === "published",
+    editable,
     immediatelyRender: false,
   });
 
@@ -166,7 +165,7 @@ const RichTextEditorWithNoSSR = forwardRef<
 
   return (
     <div className="border rounded-lg p-4" ref={editorContainerRef}>
-      {mode === "published" && (
+      {editable && (
         <div className="flex gap-2 mb-4 flex-wrap">
           <button
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}

@@ -46,7 +46,6 @@ interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   showEdit?: boolean;
   showShare?: boolean;
   showSchedule?: boolean;
-  showPublish?: boolean;
   liveView?: boolean;
   editable?: boolean;
 }
@@ -66,7 +65,6 @@ export const PostItem = ({
   showEdit = false,
   showShare = false,
   showSchedule = false,
-  showPublish = false,
   liveView = false,
   editable = false,
 }: PostItemProps) => {
@@ -434,7 +432,6 @@ console.log('***post:', post)
           ref={editorRef}
           content={displayContent}
           onUpdate={handleContentUpdate}
-          mode={isEditable ? "published" : "preview"}
           editable={isEditable}
         />
         
