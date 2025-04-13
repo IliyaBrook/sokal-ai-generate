@@ -1,5 +1,6 @@
 "use client"
 
+import { fetchWithRefresh } from '@/lib';
 import type { IAuthResponse, IUser } from '@sokal_ai_generate/shared-types';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
@@ -28,38 +29,21 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
   const pathname = usePathname()
 
   useLayoutEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      try {
-        fetch('/api/users/auth', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then((response) => {
-          if (response.ok) {
-            response.json().then((data) => {
-              setUserData(data)
-            })
-          } else if (response.status === 401) {
-            fetch('/api/users/refresh').then((res) => {
-              if (res.ok) {
-                res.json().then((data: IAuthResponse) => {
-                  const accessToken = data.accessToken
-                  localStorage.setItem('accessToken', accessToken)
-                  setUserData(data.user)
-                })
-              } else {
-                localStorage.removeItem('accessToken')
-                navigate.push('/')
-              }
-            })
-          }
-        })
-      } catch {
-        console.log('Not authorized')
+      fetchWithRefresh<IUser>({
+      url: '/api/users/auth',
+      onGetData: (data) => {
+        setUserData(data)
+      },
+      onGetRefreshUserData: (data) => {
+        setUserData(data.user)
+      },
+      onFalseRefreshUserData: () => {
         navigate.push('/')
+      },
+      onErrorMessage: (error) => {
+        console.log(error)
       }
-    }
+    })
   }, [pathname])
 
   const providedData = {

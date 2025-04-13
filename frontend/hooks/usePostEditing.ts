@@ -28,10 +28,9 @@ export function usePostEditing({
   initialContent,
   autoConnect = false,
 }: UsePostEditingOptions) {
-  // Используем ref для initialContent, чтобы избежать лишних перезапусков эффектов
   const initialContentRef = useRef(initialContent);
   const [content, setContent] = useState(initialContentRef.current);
-  const debouncedContent = useDebounce(content, 500); // Дебаунс для отправки
+  const debouncedContent = useDebounce(content, 500);
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [isSaving, setIsSaving] = useState(false);
   const [activeWatchers, setActiveWatchers] = useState<Watcher[]>([]);
@@ -39,10 +38,9 @@ export function usePostEditing({
   const user = contextData?.userData;
   const saveResolverRef = useRef<((value: boolean) => void) | null>(null);
   const apiFetch = useAuthUserFetch();
-  const isMountedRef = useRef(false); // Отслеживаем монтирование
-  const isUpdatingFromSocketRef = useRef(false); // Флаг для предотвращения эха
+  const isMountedRef = useRef(false);
+  const isUpdatingFromSocketRef = useRef(false);
 
-  // Логирование инициализации хука
   useEffect(() => {
     console.log('🔄 usePostEditing init:', {
       postId: postId.substring(postId.length - 6),
@@ -51,8 +49,6 @@ export function usePostEditing({
     });
     isMountedRef.current = true;
 
-    // Устанавливаем начальное содержимое, если оно изменилось (например, при смене поста)
-    // Сравниваем с ref, чтобы избежать установки того же значения
     if (initialContent !== initialContentRef.current) {
         console.log("🔄 Initial content changed, updating state.");
         initialContentRef.current = initialContent;
@@ -63,11 +59,9 @@ export function usePostEditing({
     return () => {
       isMountedRef.current = false;
     };
-  // Не добавляем initialContent в зависимости, используем ref
   }, [postId, autoConnect]);
 
   const parseWatchers = useCallback((watchersData: string[]) => {
-    // console.log('Parsing watchers data:', watchersData);
     const uniqueWatchersMap = new Map<string, Watcher>();
 
     watchersData.forEach((watcher) => {
@@ -112,20 +106,17 @@ export function usePostEditing({
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    // Устанавливаем начальное состояние подключения
     setIsConnected(socket.connected);
 
     console.log('🔄 Setting up connect/disconnect listeners. Current state:',
         socket.connected ? 'connected' : 'disconnected',
         'ID:', socket.id);
 
-    // Автоматическое подключение/присоединение
     if (autoConnect) {
       if (!socket.connected) {
         console.log('🔄 Auto connecting to socket...');
-        connectSocket(); // connectSocket сама проверит, нужно ли подключаться
+        connectSocket();
       }
-      // Присоединяемся, если сокет уже подключен или только что подключился (onConnect сработает)
       if (socket.connected && postId) {
          console.log('🚪 Auto joining post room:', postId);
          joinPostEditing(postId, user);
@@ -136,18 +127,14 @@ export function usePostEditing({
       console.log('🧹 Cleaning up connect/disconnect listeners.');
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      // Отключаемся от комнаты при размонтировании хука, если autoConnect был включен
       if (autoConnect && postId && socket.connected) {
          console.log(`🚪 Leaving post room on unmount: ${postId}`);
          leavePostEditing(postId, user);
       }
     };
-  // Зависимости: postId, user (если изменится), autoConnect
-  }, [postId, user, autoConnect]); // Убрали parseWatchers, т.к. он useCallback
+  }, [postId, user, autoConnect]);
 
-  // --- Эффект для обработки событий сокета ---
   useEffect(() => {
-    // Не выполняем, если хук не смонтирован
     if (!isMountedRef.current) return;
 
     const onJoinPostResponse = (data: { editors?: string[], content?: string }) => {
@@ -155,26 +142,22 @@ export function usePostEditing({
       if (data.editors) {
         setActiveWatchers(parseWatchers(data.editors));
       }
-      // Обновляем контент, если он пришел и отличается от текущего
-      // Используем ref для сравнения с самым последним состоянием
       if (data.content && data.content !== content) {
         console.log('📝 Updating content from join response:', data.content.substring(0, 30) + '...');
-        isUpdatingFromSocketRef.current = true; // Ставим флаг перед обновлением
+        isUpdatingFromSocketRef.current = true;
         setContent(data.content);
       }
     };
 
     const onContentUpdated = (data: { content: string, userId: string, clientId: string }) => {
-      // Игнорируем обновление, если оно пришло от нашего же клиента (эхо)
-      // Сравниваем clientId, так как userId может быть одинаковым (anonymous)
       if (data.clientId === socket.id) {
           console.log('📝 Ignoring self-echoed content-updated');
           return;
       }
 
       console.log('📝 Received content-updated from other client:', data.clientId, data.content?.substring(0, 30) + '...');
-      if (data.content && data.content !== content) { // Сравниваем с текущим состоянием
-        isUpdatingFromSocketRef.current = true; // Ставим флаг перед обновлением
+      if (data.content && data.content !== content) {
+        isUpdatingFromSocketRef.current = true; 
         setContent(data.content);
       } else {
         console.log('📝 Received content is same as current or empty, skipping update.');
@@ -191,7 +174,7 @@ export function usePostEditing({
       setIsSaving(false);
       if (saveResolverRef.current) {
         saveResolverRef.current(data.success);
-        saveResolverRef.current = null; // Очищаем ref после использования
+        saveResolverRef.current = null;
       }
       if (data.success) {
         toast.success('Post saved successfully');
@@ -223,7 +206,6 @@ export function usePostEditing({
 
   useEffect(() => {
     if (!isMountedRef.current || isUpdatingFromSocketRef.current) {
-        // Сбрасываем флаг после пропуска отправки
         if (isUpdatingFromSocketRef.current) {
             console.log("🚩 Resetting socket update flag");
             isUpdatingFromSocketRef.current = false;
@@ -318,7 +300,7 @@ export function usePostEditing({
 
     console.log('💾 Socket not connected, using HTTP fallback to save...');
     try {
-      const response = await apiFetch<{ success: boolean; message?: string; post?: IPost }>(`/api/posts/${postId}/save`, { // Предполагаем отдельный эндпоинт для сохранения
+      const response = await apiFetch<{ success: boolean; message?: string; post?: IPost }>(`/api/posts/${postId}/save`, {
         method: 'PUT',
         body: JSON.stringify({ content }),
       });
@@ -339,7 +321,6 @@ export function usePostEditing({
     }
   }, [postId, content, user, apiFetch, isConnected]); 
 
-  // console.log('🔄 usePostEditing render. Content:', content?.substring(0, 30) + '...');
 
   return {
     content,

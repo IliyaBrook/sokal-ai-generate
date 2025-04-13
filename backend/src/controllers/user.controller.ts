@@ -20,10 +20,8 @@ import { UserSignInResponseDto } from '../dto/user.dto'
 
 import { SignInDto, SignUpDto, UserDto } from '@/dto'
 import { JwtAuthGuard } from '@/guards'
-import { TokenService, UserService } from '@/services'
+import { refreshExpiredDays, TokenService, UserService } from '@/services'
 import type { IUser, RequestWithUser } from '@/types'
-
-const days30 = 30 * 24 * 60 * 60 * 1000
 
 @Controller('users')
 export class UserController {
@@ -43,7 +41,7 @@ export class UserController {
   ) {
     const signUpData = await this.userService.signUp(dto)
     res.cookie('refreshToken', signUpData.refreshToken, {
-      maxAge: days30,
+      maxAge: refreshExpiredDays,
       httpOnly: true,
     })
 
@@ -69,7 +67,7 @@ export class UserController {
   ) {
     const userData = await this.userService.signIn(dto)
     res.cookie('refreshToken', userData.refreshToken, {
-      maxAge: days30,
+      maxAge: refreshExpiredDays,
       httpOnly: true,
     })
     return new UserSignInResponseDto(userData.accessToken, userData)
@@ -122,7 +120,7 @@ export class UserController {
     const userData = await this.userService.refresh(refreshToken)
     
     res.cookie('refreshToken', userData.refreshToken, {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: refreshExpiredDays,
       httpOnly: true,
     })
     

@@ -75,7 +75,7 @@ export const PostItem = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
   const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
-  const [showScheduler, setShowScheduler] = useState(false);
+  const [showScheduler, setShowScheduler] = useState(showSchedule);
   const [isScheduling, setIsScheduling] = useState(false);
   const [scheduleTime, setScheduleTime] = useState(getCurrentTime());
   const [shortLink, setShortLink] = useState<string | undefined>(post.shortLink);
@@ -203,7 +203,6 @@ export const PostItem = ({
 
   const handleSave = async () => {
     try {
-      // Проверяем, изменился ли контент
       const contentToSave = liveView ? liveContent : editedContent;
       const initialContent = initialContentRef.current;
       
@@ -397,8 +396,20 @@ export const PostItem = ({
   
   const displayEditButton = showEdit && onEdit && isAuthorized && !isEditing && !liveView && !isSharedPage;
   
- 
   const isEditable = editable || (liveView && isAuthorized) || isEditing;
+
+  useEffect(() => {
+    console.log('PostItem debug:', {
+      id: post.id,
+      title: post.title,
+      isPublished,
+      showSchedule,
+      isScheduled,
+      isAuthorized,
+      scheduledPublishDate: post.scheduledPublishDate,
+      shouldShowScheduleButton: !isPublished && showSchedule && !isScheduled && isAuthorized
+    });
+  }, [post.id, post.title, isPublished, showSchedule, isScheduled, isAuthorized, post.scheduledPublishDate]);
 
   return (
     <Card>
@@ -536,8 +547,8 @@ export const PostItem = ({
                 )}
               </>
             )}
-            
-            {!isPublished && showSchedule && !isScheduled && isAuthorized && !isSharedPage && (
+     
+            {showSchedule && isAuthorized && (
               <Button 
                 variant="outline" 
                 onClick={() => setShowScheduler(!showScheduler)}

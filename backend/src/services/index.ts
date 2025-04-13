@@ -19,3 +19,4 @@ export { SharedService } from './shared.service'
 const services = [TokenService, UserService, PostService, GeneratePostService, SchedulerService, ShortLinkService, SharedService]
 export default services
   
+export const refreshExpiredDays = 30 * 24 * 60 * 60 * 1000 // 30 days
