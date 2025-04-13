@@ -64,12 +64,6 @@ export default function Shared({ linkId }: {linkId: string}) {
         toast.error("Failed to update post")
         throw new Error("Failed to update post")
       }
-      
-      setCurrentPost({
-        ...data,
-        authorName: currentPost?.authorName
-      })
-      toast.success("Post updated successfully")
     } catch (error) {
       console.error('Error updating post:', error)
       toast.error("Failed to update post")
@@ -109,6 +103,7 @@ export default function Shared({ linkId }: {linkId: string}) {
           showEdit={!!contextData?.userData}
           showShare={!!isAuthor}
           onEdit={handleEditPost}
+          liveView
         />
     </div>
   )

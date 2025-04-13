@@ -11,22 +11,20 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  DatePickerInput,
-  Badge
+  DatePickerInput
 } from "@/components/ui";
+import { UserDataContext } from "@/contexts/UserData.context";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { usePostEditing } from "@/hooks/usePostEditing";
+import { socket } from "@/lib/socket";
 import { IPost } from "@/types";
 import { format } from "date-fns";
 import "highlight.js/styles/atom-one-dark.css";
-import { useState, useRef, useEffect, useContext } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
 import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
 import { Button } from "../ui";
-import { UserDataContext } from "@/contexts/UserData.context";
-import { ActiveEditors } from "./ActiveEditors";
-import { socket } from "@/lib/socket";
 import { CollaborationStatus } from "./CollaborationStatus";
 
 interface ShortLinkResponse {
@@ -48,7 +46,8 @@ interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   showShare?: boolean;
   showSchedule?: boolean;
   showPublish?: boolean;
-  liveUpdate?: boolean;
+  liveView?: boolean;
+  editable?: boolean;
 }
 
 const getCurrentTime = () => {
@@ -67,7 +66,8 @@ export const PostItem = ({
   showShare = false,
   showSchedule = false,
   showPublish = false,
-  liveUpdate = false,
+  liveView = false,
+  editable = false,
 }: PostItemProps) => {
   const [isPublished, setIsPublished] = useState(post.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -108,10 +108,12 @@ export const PostItem = ({
     saveContent,
     isConnected,
     activeWatchers,
+    connect,
+    disconnect,
   } = usePostEditing({
     postId: post.id,
     initialContent: post.content,
-    autoConnect: liveUpdate,
+    autoConnect: liveView,
   });
 
   // Логируем информацию о liveContent для отладки
@@ -128,21 +130,29 @@ export const PostItem = ({
 
   // Когда liveContent обновляется через сокеты, обновляем editedContent
   useEffect(() => {
-    if (liveUpdate && liveContent && !isLocalUpdate.current) {
+    if (liveView && liveContent && !isLocalUpdate.current) {
       console.log("Updating from socket:", liveContent?.substring(0, 30) + "...");
       setEditedContent(liveContent);
     }
     isLocalUpdate.current = false;
-  }, [liveContent, liveUpdate]);
+  }, [liveContent, liveView]);
 
-  // Обновляем базу данных только при реальных изменениях контента
+  useEffect(() => {
+    if (liveView) {
+      connect();
+    } else {
+      disconnect();
+    }
+  }, [liveView]);
+
+
   useEffect(() => {
     if (contentUpdateTimeoutRef.current) {
       clearTimeout(contentUpdateTimeoutRef.current);
       contentUpdateTimeoutRef.current = null;
     }
 
-    if (liveUpdate && liveContent && onEdit && !isLocalUpdate.current && liveContent !== initialContentRef.current) {
+    if (liveView && liveContent && onEdit && !isLocalUpdate.current && liveContent !== initialContentRef.current) {
       contentUpdateTimeoutRef.current = setTimeout(async () => {
         try {
           await onEdit(post.id, liveContent);
@@ -160,21 +170,21 @@ export const PostItem = ({
         clearTimeout(contentUpdateTimeoutRef.current);
       }
     };
-  }, [liveContent, liveUpdate, onEdit, post.id]);
+  }, [liveContent, liveView, onEdit, post.id]);
 
   const handleContentUpdate = (newContent: string) => {
     isLocalUpdate.current = true;
     console.log("Local content update:", newContent?.substring(0, 30) + "...");
     setEditedContent(newContent);
     
-    if (liveUpdate) {
+    if (liveView) {
       console.log("Sending to socket:", newContent?.substring(0, 30) + "...");
       setLiveContent(newContent);
     }
   };
 
   // Используем liveContent в качестве отображаемого контента
-  const displayContent = liveUpdate && liveContent ? liveContent : editedContent;
+  const displayContent = liveView && liveContent ? liveContent : editedContent;
 
   const handlePublish = async () => {
     if (onPublish && typeof onPublish === "function") {
@@ -192,8 +202,8 @@ export const PostItem = ({
 
   const handleSave = async () => {
     try {
-      if (liveUpdate) {
-        // Для liveUpdate используем сохранение через socket
+      if (liveView) {
+        // Для liveView используем сохранение через socket
         console.log("Saving through socket...");
         const success = await saveContent();
         if (success) {
@@ -352,6 +362,21 @@ export const PostItem = ({
   
   const isScheduled = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
   
+  const isAuthorized = !!user?.id && !user?.id.startsWith('anonymous-');
+  const isAnonymous = !isAuthorized;
+  
+  // Определяем, находимся ли мы на странице с шорт-ссылкой
+  const isSharedPage = typeof window !== 'undefined' && window.location.pathname.includes('/shared/');
+  
+  // Кнопка Edit видна только авторизованным пользователям и не на странице с шорт-ссылкой
+  const displayEditButton = showEdit && onEdit && isAuthorized && !isEditing && !liveView && !isSharedPage;
+  
+  // Определяем, можно ли редактировать контент:
+  // 1. Если передан проп editable напрямую, используем его
+  // 2. Если в режиме liveView - только для авторизованных пользователей
+  // 3. Если в режиме обычного редактирования - когда включен режим isEditing
+  const isEditable = editable || (liveView && isAuthorized) || isEditing;
+
   return (
     <Card>
       <CardHeader>
@@ -363,7 +388,7 @@ export const PostItem = ({
         )}
       </CardHeader>
       <CardContent>
-        {liveUpdate && (
+        {liveView && (
           <CollaborationStatus
             isConnected={isConnected}
             editors={activeWatchers}
@@ -372,13 +397,14 @@ export const PostItem = ({
         )}
         
         <RichTextEditor
-          key={`editor-${post.id}-${isEditing || liveUpdate}-${liveUpdate ? Date.now() : ''}`}
+          key={`editor-${post.id}-${isEditable}-${liveView ? Date.now() : ''}`}
           content={displayContent}
           onUpdate={handleContentUpdate}
-          mode={isEditing || liveUpdate ? "published" : "preview"}
-          editable={isEditing || liveUpdate}
+          mode={isEditable ? "published" : "preview"}
+          editable={isEditable}
         />
-        {(isEditing || liveUpdate) && (
+        
+        {(isEditing || (isEditable && liveView && !isSharedPage)) && (
           <div className="flex gap-2 mt-4">
             <Button
               onClick={handleSave}
@@ -458,7 +484,7 @@ export const PostItem = ({
           )}
           
           <div className="flex gap-2">
-            {showShare && (
+            {showShare && !isSharedPage && (
               <>
                 {shortLink ? (
                   <>
@@ -487,7 +513,8 @@ export const PostItem = ({
                 )}
               </>
             )}
-            {!isPublished && showSchedule && !isScheduled && (
+            
+            {!isPublished && showSchedule && !isScheduled && isAuthorized && !isSharedPage && (
               <Button 
                 variant="outline" 
                 onClick={() => setShowScheduler(!showScheduler)}
@@ -495,16 +522,17 @@ export const PostItem = ({
                 Schedule
               </Button>
             )}
-            {showEdit && onEdit && (
+            
+            {displayEditButton && (
               <Button
                 onClick={() => setIsEditing(true)}
                 variant="secondary"
-                disabled={isEditing || liveUpdate}
               >
                 Edit
               </Button>
             )}
-            {!isPublished && showPublish && !isScheduled && (
+            
+            {!isPublished && showPublish && !isScheduled && isAuthorized && !isSharedPage && (
               <Button onClick={handlePublish} disabled={isPublishing}>
                 {isPublishing ? "Publishing..." : "Publish"}
               </Button>
