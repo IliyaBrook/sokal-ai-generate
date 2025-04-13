@@ -91,17 +91,14 @@ export function usePostEditing({
     });
 
     const result = Array.from(uniqueWatchersMap.values());
-    // console.log('Parsed watchers:', result);
     return result;
   }, []);
 
-  // --- Эффект для управления подключением к сокету ---
   useEffect(() => {
     const onConnect = () => {
       console.log('🎯 Socket connected in usePostEditing!', socket.id);
       setIsConnected(true);
-      // Повторно присоединяемся к комнате после восстановления соединения
-      if (postId && isMountedRef.current) { // Проверяем монтирование
+      if (postId && isMountedRef.current) { 
         console.log('🚪 Re-joining post room after connect:', postId);
         joinPostEditing(postId, user);
       }
@@ -110,7 +107,7 @@ export function usePostEditing({
     const onDisconnect = (reason: string) => {
       console.log('🔌 Socket disconnected in usePostEditing:', reason);
       setIsConnected(false);
-      setActiveWatchers([]); // Сбрасываем список редакторов при дисконнекте
+      setActiveWatchers([]);
     };
 
     socket.on('connect', onConnect);
@@ -208,8 +205,6 @@ export function usePostEditing({
       toast.info(`Post saved by another user at ${new Date(data.timestamp).toLocaleTimeString()}`);
     };
 
-    // Регистрируем обработчики
-    console.log(`🎧 Registering socket event listeners for post: ${postId.substring(postId.length - 6)}`);
     socket.on('join-post-response', onJoinPostResponse);
     socket.on('content-updated', onContentUpdated);
     socket.on('editors', onEditorsUpdated);
@@ -217,7 +212,6 @@ export function usePostEditing({
     socket.on('content-saved', onContentSaved);
 
     return () => {
-      // Снимаем обработчики при размонтировании или изменении postId/user
       console.log(`🎧 Unregistering socket event listeners for post: ${postId.substring(postId.length - 6)}`);
       socket.off('join-post-response', onJoinPostResponse);
       socket.off('content-updated', onContentUpdated);
@@ -225,13 +219,9 @@ export function usePostEditing({
       socket.off('save-content-response', onSaveContentResponse);
       socket.off('content-saved', onContentSaved);
     };
-  // Зависимости: postId, user, parseWatchers (useCallback)
-  // Убрали content!
   }, [postId, user, parseWatchers]);
 
-  // --- Эффект для отправки обновлений контента через сокет ---
   useEffect(() => {
-    // Не отправляем, если хук не смонтирован или если обновление пришло от сокета
     if (!isMountedRef.current || isUpdatingFromSocketRef.current) {
         // Сбрасываем флаг после пропуска отправки
         if (isUpdatingFromSocketRef.current) {
@@ -241,9 +231,7 @@ export function usePostEditing({
         return;
     }
 
-    // Не отправляем начальный контент или если контент не изменился с момента последнего дебаунса
     if (debouncedContent === initialContentRef.current && content === initialContentRef.current) {
-      // console.log('🖋️ Skipping initial/unchanged content send');
       return;
     }
 
@@ -254,25 +242,21 @@ export function usePostEditing({
       console.log('📤 Sending content-update via socket:', debouncedContent?.substring(0, 30) + '...');
       socket.emit('content-update', {
         postId,
-        content: debouncedContent, // Отправляем дебаунсированное значение
+        content: debouncedContent,
         userId,
         userName,
-        clientId: socket.id // Отправляем ID клиента для предотвращения эха
+        clientId: socket.id
       });
-      // Обновляем ref после отправки, чтобы следующее сравнение было корректным
-      // initialContentRef.current = debouncedContent; // Возможно, это не нужно, т.к. initialContentRef - для начального значения
     } else {
        console.warn('📤 Socket not connected, cannot send content update.');
     }
-  // Зависимость от debouncedContent гарантирует отправку после паузы
-  }, [debouncedContent, postId, user, isConnected]); // Добавили isConnected
+  }, [debouncedContent, postId, user, isConnected]);
 
   // Функция для ручного подключения
   const connect = useCallback(() => {
     console.log('🔌 Manual connect requested');
-    connectSocket(); // Функция connectSocket сама проверит, нужно ли подключаться
-    // Присоединение произойдет автоматически в эффекте управления подключением, если autoConnect=true,
-    // или нужно будет вызвать joinPostEditing отдельно, если autoConnect=false
+    connectSocket();
+
     if (!autoConnect && postId && socket.connected) {
         console.log('🚪 Manually joining post room after connect:', postId);
         joinPostEditing(postId, user);

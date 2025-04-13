@@ -35,12 +35,12 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   server: Server;
   
   private readonly logger = new Logger(PostEditGateway.name);
-  private activeEditors: Map<string, Set<string>> = new Map(); // postId -> Set of userIds
-  private userSocketsMap: Map<string, Set<string>> = new Map(); // userId -> Set of socketIds
+  private activeEditors: Map<string, Set<string>> = new Map();
+  private userSocketsMap: Map<string, Set<string>> = new Map();
 
   constructor(private readonly postService: PostService) {}
   
-  afterInit(server: Server) {
+  afterInit() {
     this.logger.log('Post edit websocket gateway initialized');
   }
 
@@ -146,11 +146,10 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     if (!this.userSocketsMap.has(userId)) {
       this.userSocketsMap.set(userId, new Set());
     }
-    this.userSocketsMap.get(userId).add(client.id);
+    this.userSocketsMap.get(userId)?.add(client.id);
     
     // Join the room for this post
     client.join(`post:${postId}`);
-    
     // Add to active editors
     if (!this.activeEditors.has(postId)) {
       this.activeEditors.set(postId, new Set());
