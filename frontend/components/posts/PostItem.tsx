@@ -7,7 +7,6 @@ import {
   AlertDialogTitle,
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -26,7 +25,7 @@ import { toast } from "sonner";
 import { RichTextEditor, RichTextEditorRef } from "../RIchTextEditor/RichTextEditor";
 import { Button } from "../ui";
 import { CollaborationStatus } from "./CollaborationStatus";
-import { PostStatus, PostStatusBadge } from "./PostStatusBadge";
+import { PostStatusBadge } from "./PostStatusBadge";
 
 interface ShortLinkResponse {
   id: string
@@ -42,7 +41,6 @@ interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
   onPublish?: ((postId: string) => Promise<any> | undefined);
   onEdit?: (id: string, content: string) => Promise<void>;
-  showStatus?: boolean;
   showEdit?: boolean;
   showShare?: boolean;
   showSchedule?: boolean;
@@ -61,7 +59,6 @@ export const PostItem = ({
   post,
   onPublish,
   onEdit,
-  showStatus = false,
   showEdit = false,
   showShare = false,
   showSchedule = false,
@@ -380,14 +377,7 @@ console.log('***post:', post)
     }
   };
 
-  const getPostStatus = (): PostStatus => {
-    if (isPublished) return "published";
-    if (post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()) {
-      return "scheduled";
-    }
-    return "draft";
-  };
-  
+ 
   const hasScheduledDate = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
   
   const isAuthorized = !!user?.id && !user?.id.startsWith('anonymous-');
