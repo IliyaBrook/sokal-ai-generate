@@ -67,8 +67,15 @@ export function usePostEditing({
       // Создаем уникальный ключ на основе комбинации userId и clientId
       const uniqueKey = `${userId}:${clientId}`;
       
+      // Проверяем, есть ли информация о пользователе
+      let isAnonymous = userId.startsWith('anonymous-');
+      
       // Добавляем в Map, автоматически исключая дубликаты
-      uniqueWatchersMap.set(uniqueKey, { userId, clientId, userName });
+      uniqueWatchersMap.set(uniqueKey, { 
+        userId, 
+        clientId, 
+        userName: isAnonymous ? undefined : userName 
+      });
     });
     
     // Преобразуем Map в массив объектов

@@ -1,61 +1,91 @@
-import { Badge } from "@/components/ui";
-import { useMemo } from "react";
+import React from 'react';
+import { Badge } from '@/components/ui';
 
-interface Editor {
+interface Watcher {
   userId: string;
   clientId: string;
-  userName?: string;
+  username?: string;
 }
 
 interface CollaborationStatusProps {
   isConnected: boolean;
-  editors: Editor[];
+  editors: Watcher[];
   currentUserId: string;
 }
 
-export function CollaborationStatus({ 
-  isConnected, 
-  editors, 
-  currentUserId 
-}: CollaborationStatusProps) {
-  // Фильтруем, чтобы не показывать текущего пользователя в списке
-  const otherEditors = useMemo(() => {
-    return editors.filter(editor => editor.userId !== currentUserId);
-  }, [editors, currentUserId]);
-
+export const CollaborationStatus: React.FC<CollaborationStatusProps> = ({
+  isConnected,
+  editors: watchers,
+  currentUserId,
+}) => {
+  // Фильтруем список наблюдателей, исключая текущего пользователя
+  const otherWatchers = watchers.filter(watcher => watcher.userId !== currentUserId);
+  // Разделяем пользователей на авторизованных и анонимных
+  const authenticatedWatchers = otherWatchers.filter(watcher => !watcher.userId.startsWith('anonymous-'));
+  const anonymousWatchers = otherWatchers.filter(watcher => watcher.userId.startsWith('anonymous-'));
+  
   return (
-    <div className="mb-4 border-b pb-3">
-      <div className="flex items-center gap-2">
-        <Badge
-          variant={isConnected ? "secondary" : "destructive"}
-          className={isConnected ? "animate-pulse" : ""}
-        >
-          {isConnected ? 'Connected' : 'Disconnected'}
-        </Badge>
-        
-        {otherEditors.length > 0 && (
-          <Badge variant="outline">
-            {otherEditors.length} {otherEditors.length === 1 ? 'user' : 'users'} online
+    <div className="mb-4 border rounded-md p-3 bg-muted/30">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <Badge 
+            variant={isConnected ? "secondary" : "destructive"}
+            className="animate-pulse"
+          >
+            {isConnected ? 'Connected' : 'Disconnected'}
           </Badge>
-        )}
+        </div>
+        
+        <Badge variant="outline" className="flex items-center gap-1">
+          <span className="h-2 w-2 rounded-full bg-green-500"></span>
+          <span>{otherWatchers.length + 1} online</span>
+        </Badge>
       </div>
       
-      {otherEditors.length > 0 && (
-        <div className="mt-2">
-          <p className="text-xs text-gray-500 mb-1">Editors online:</p>
-          <div className="flex flex-wrap gap-1">
-            {otherEditors.map((editor) => (
-              <Badge 
-                key={editor.clientId}
-                variant="outline"
-                className="text-xs"
-              >
-                {editor.userName || `User ${editor.userId.substring(0, 4)}`}
-              </Badge>
-            ))}
-          </div>
+      <div className="text-sm font-medium mb-2">
+        {isConnected 
+          ? 'Collaborative viewing active' 
+          : 'Connection lost. Trying to reconnect...'}
+      </div>
+      
+      {otherWatchers.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {authenticatedWatchers.length > 0 && (
+            <div>
+              <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span>Authorized users ({authenticatedWatchers.length}):</span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {authenticatedWatchers.map((watcher) => (
+                  <Badge key={watcher.clientId} variant="secondary" className="text-xs flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    {watcher.username || watcher.userId.substring(0, 8)}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {anonymousWatchers.length > 0 && (
+            <div>
+              <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                <span>Anonymous viewers ({anonymousWatchers.length}):</span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {anonymousWatchers.map((watcher) => (
+                  <Badge key={watcher.clientId} variant="outline" className="text-xs flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    Guest {watcher.clientId.substring(0, 4)}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
-} 
+}; 

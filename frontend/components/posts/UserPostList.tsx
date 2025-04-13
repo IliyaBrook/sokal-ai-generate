@@ -6,227 +6,72 @@ import { useEffect, useState } from "react";
 import { PostItem } from "./PostItem";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { toast } from "sonner";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
-export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
-  const [posts, setPosts] = useState(initialPosts);
-  
-  useEffect(() => {
-    setPosts(initialPosts);
-  }, [initialPosts]);
+interface UserPostListProps {
+  posts: IPost[];
+  isLoading?: boolean;
+  onPublish?: (postId: string) => Promise<any>;
+  onEdit?: (id: string, content: string) => Promise<void>;
+}
 
-  const apiFetch = useAuthUserFetch()
+export const UserPostList = ({ posts = [], isLoading = false, onPublish, onEdit }: UserPostListProps) => {
+  const [publishingPostId, setPublishingPostId] = useState<string | null>(null);
 
   const handlePublish = async (postId: string) => {
+    setPublishingPostId(postId);
+    
     try {
-      const data = await apiFetch<IPost>(`/api/posts/${postId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ isPublished: true }),
-      })
-      if (data) {
-        const updatedPosts = posts.map(post => 
-          post.id === postId ? data : post
-        );
-        setPosts(updatedPosts);
+      if (onPublish) {
+        await onPublish(postId);
       }
-      
-      return data;
-    } catch (error) {
-      console.error('Error publishing post:', error);
-      throw error;
+    } finally {
+      setPublishingPostId(null);
     }
+  };
+
+  if (isLoading) {
+    return <div className="grid gap-4 mt-4">
+      {[...Array(3)].map((_, i) => (
+        <Card key={i} className="animate-pulse">
+          <CardHeader>
+            <div className="h-6 w-2/3 bg-gray-200 rounded mb-2"></div>
+            <div className="h-4 w-1/3 bg-gray-200 rounded"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-24 bg-gray-200 rounded"></div>
+          </CardContent>
+          <CardFooter>
+            <div className="h-10 w-1/4 bg-gray-200 rounded"></div>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>;
   }
 
-  const handleEditPost = async (id: string, content: string): Promise<void> => {
-    try {
-      const data = await apiFetch<IPost>(`/api/posts/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ content }),
-      })
-      if (!data) {
-        toast.error("Failed to update post");
-        throw new Error("Failed to update post");
-      }
-      const updatedPosts = posts.map(post => 
-        post.id === id ? data : post
-      );
-      setPosts(updatedPosts);
-    } catch (error) {
-      console.error('Error updating post:', error);
-      throw error;
-    }
+  if (posts.length === 0) {
+    return <div className="text-center my-8">
+      <p className="text-gray-500">You haven't created any posts yet.</p>
+    </div>;
   }
-
-  const getScheduledPosts = () => {
-    return Array.isArray(posts) 
-      ? posts.filter(post => 
-        !post.isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()
-      )
-      : [];
-  }
-
-  const getPublishedPosts = () => {
-    return Array.isArray(posts)
-      ? posts.filter(post => post.isPublished)
-      : [];
-  }
-
-  const getDraftPosts = () => {
-    return Array.isArray(posts)
-      ? posts.filter(post => 
-        !post.isPublished && (!post.scheduledPublishDate || new Date(post.scheduledPublishDate) <= new Date())
-      )
-      : [];
-  }
-
-  const scheduledPosts = getScheduledPosts();
-  const publishedPosts = getPublishedPosts();
-  const draftPosts = getDraftPosts();
 
   return (
-    <div className="space-y-8">
-      <Tabs defaultValue="all_posts" className="mb-4">
-        <TabsList>
-          <TabsTrigger value="all_posts">All Posts</TabsTrigger>
-          <TabsTrigger value="scheduled_posts">Scheduled Posts</TabsTrigger>
-          <TabsTrigger value="drafts">Drafts</TabsTrigger>
-          <TabsTrigger value="published_posts">Published Posts</TabsTrigger>
-        </TabsList>
-        <TabsContent value="all_posts">
-          {!Array.isArray(posts) || posts.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">No posts found</p>
-            </div>
-          ) : (
-            <>
-              {scheduledPosts.length > 0 && (
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Scheduled Posts</h2>
-                  <div className="grid gap-6">
-                    {scheduledPosts.map((post) => (
-                      <PostItem 
-                        key={post.id} 
-                        post={post} 
-                        onPublish={handlePublish} 
-                        onEdit={handleEditPost}
-                        showStatus
-                        showEdit
-                        showShare
-                        showSchedule
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {draftPosts.length > 0 && (
-                <div className="mt-4">
-                  <h2 className="text-xl font-semibold mb-4">Drafts</h2>
-                  <div className="grid gap-6">
-                    {draftPosts.map((post) => (
-                      <PostItem 
-                        key={post.id} 
-                        post={post} 
-                        onPublish={handlePublish} 
-                        onEdit={handleEditPost}
-                        showStatus
-                        showEdit
-                        showShare
-                        showSchedule
-                        showPublish
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {publishedPosts.length > 0 && (
-                <div className="mt-4">
-                  <h2 className="text-xl font-semibold mb-4">Published Posts</h2>
-                  <div className="grid gap-6">
-                    {publishedPosts.map((post) => (
-                      <PostItem 
-                        key={post.id} 
-                        post={post} 
-                        onPublish={handlePublish} 
-                        onEdit={handleEditPost}
-                        showStatus
-                        showEdit
-                        showShare
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </TabsContent>
-        <TabsContent value="scheduled_posts">
-          {scheduledPosts.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">No scheduled posts found</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {scheduledPosts.map((post) => (
-                <PostItem 
-                  key={post.id} 
-                  post={post} 
-                  onPublish={handlePublish} 
-                  onEdit={handleEditPost}
-                  showStatus
-                  showEdit
-                  showShare
-                  showSchedule
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="drafts">
-          {draftPosts.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">No draft posts found</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {draftPosts.map((post) => (
-                <PostItem 
-                  key={post.id} 
-                  post={post} 
-                  onPublish={handlePublish} 
-                  onEdit={handleEditPost}
-                  showStatus
-                  showEdit
-                  showShare
-                  showSchedule
-                  showPublish
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="published_posts">
-          {publishedPosts.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">No published posts found</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {publishedPosts.map((post) => (
-                <PostItem 
-                  key={post.id} 
-                  post={post} 
-                  onPublish={handlePublish} 
-                  onEdit={handleEditPost}
-                  showStatus
-                  showEdit
-                  showShare
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+    <div className="grid gap-6 mt-4">
+      {posts.map((post: IPost) => (
+        <PostItem 
+          key={post.id}
+          post={post}
+          onPublish={handlePublish}
+          onEdit={onEdit}
+          showStatus
+          showEdit
+          showShare
+          showSchedule
+          showPublish
+          liveView={true}
+          editable={true}
+        />
+      ))}
     </div>
-  )
-}
+  );
+};
