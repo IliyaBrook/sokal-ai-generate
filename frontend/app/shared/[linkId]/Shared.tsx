@@ -29,11 +29,11 @@ export default function Shared({ linkId }: {linkId: string}) {
         })
         
         if (!response.ok) {
+          toast.error("Failed to load post. It may have been deleted or the link has expired.")
           throw new Error(`HTTP error! status: ${response.status}`)
         }
 
         const data = await response.json()
-        console.log("data:", data)
         if (!data.post) {
           throw new Error("Post not found")
         }

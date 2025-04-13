@@ -99,7 +99,6 @@ const RichTextEditorWithNoSSR = forwardRef<
           const isFocused = editor.isFocused;
           const currentPos = currentSelection.$from.pos;
 
-          // Сохраняем текущее состояние редактора
           const hasSelection = !currentSelection.empty;
           const selectionStart = hasSelection ? currentSelection.from : null;
           const selectionEnd = hasSelection ? currentSelection.to : null;

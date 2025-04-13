@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { toast } from 'sonner';
 
 const getSocketURL = (): string => {
   const baseURL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
@@ -6,7 +7,6 @@ const getSocketURL = (): string => {
   return baseURL;
 };
 
-// Создаем соединение с правильным namespace
 export const socket: Socket = io(getSocketURL() + '/post-edit', {
   autoConnect: false,
   transports: ['websocket', 'polling'],
@@ -17,7 +17,6 @@ export const socket: Socket = io(getSocketURL() + '/post-edit', {
   path: '/socket.io'
 });
 
-// Детальное логирование всех важных событий
 socket.on('connect', () => {
   console.log(`🟢 Socket connected! ID: ${socket.id}`);
 });
@@ -42,6 +41,15 @@ socket.on('error', (error: Error) => {
   console.error('🔴 Socket error:', error);
 });
 
+socket.on('duplicate-connection', (data) => {
+  console.warn('🔴 Duplicate connection detected:', data.message);
+  toast.warning('You have connected from another window. This session will be disconnected.');
+  
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 3000);
+});
+
 export const connectSocket = () => {
   const socketUrl = getSocketURL() + '/post-edit';
   
@@ -54,7 +62,6 @@ export const connectSocket = () => {
     console.log(`🔌 Connecting to ${socketUrl}...`);
     socket.connect();
     
-    // Проверка подключения через 2 секунды
     setTimeout(() => {
       console.log(`🔍 Socket connection status:
       - Connected: ${socket.connected}
@@ -83,7 +90,6 @@ export const joinPostEditing = (postId: string, userData: any) => {
     console.log('Socket not connected, connecting before joining room');
     connectSocket();
     
-    // Даем время на подключение перед отправкой join-post
     setTimeout(() => {
       if (socket.connected) {
         emitJoinPost(postId, userData);
@@ -97,7 +103,6 @@ export const joinPostEditing = (postId: string, userData: any) => {
 };
 
 const emitJoinPost = (postId: string, userData: any) => {
-  // Проверяем разные формы данных пользователя
   const user = userData?.userData || userData;
   const userId = user?.id || `anonymous-${socket.id}`;
   const firstName = user?.firstname || '';
@@ -111,7 +116,7 @@ const emitJoinPost = (postId: string, userData: any) => {
       postId,
       userId,
       userName,
-      user: { // Отправляем полную информацию о пользователе
+      user: {
         id: userId,
         firstname: firstName,
         lastname: lastName,

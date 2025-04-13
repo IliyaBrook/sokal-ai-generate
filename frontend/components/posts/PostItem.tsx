@@ -15,7 +15,6 @@ import {
 } from "@/components/ui";
 import { UserDataContext } from "@/contexts/UserData.context";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
-import { useDebounce } from "@/hooks/useDebounce";
 import { usePostEditing } from "@/hooks/usePostEditing";
 import { socket } from "@/lib/socket";
 import { IPost } from "@/types";
@@ -92,7 +91,6 @@ export const PostItem = ({
   const contextData = useContext(UserDataContext);
   const user = contextData?.userData;
 
-  // Сохраняем начальный контент из Shared для сравнения
   const initialContentRef = useRef(post.content);
   const contentUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
@@ -111,7 +109,6 @@ export const PostItem = ({
     autoConnect: liveView,
   });
 
-  // Логируем информацию о liveContent для отладки
   useEffect(() => {
     if (liveContent) {
       console.log('📝 Content in PostItem:', 
@@ -123,7 +120,6 @@ export const PostItem = ({
 
   const isLocalUpdate = useRef(false);
   
-  // Когда liveContent обновляется через сокеты, обновляем редактор напрямую
   useEffect(() => {
     if (liveView && liveContent && !isLocalUpdate.current && editorRef.current) {
       console.log("Updating editor content from socket:", liveContent?.substring(0, 30) + "...");
@@ -144,7 +140,6 @@ export const PostItem = ({
     };
   }, [liveView, connect, disconnect]);
 
-  // Обновляем базу данных при изменении контента через сокет
   useEffect(() => {
     if (contentUpdateTimeoutRef.current) {
       clearTimeout(contentUpdateTimeoutRef.current);
@@ -154,18 +149,15 @@ export const PostItem = ({
     if (liveView && liveContent && onEdit && !isLocalUpdate.current && liveContent !== initialContentRef.current) {
       contentUpdateTimeoutRef.current = setTimeout(async () => {
         try {
-          // Проверяем, нет ли уже выполняющегося запроса
           if (lastUpdateRequestRef.current) {
             await lastUpdateRequestRef.current;
           }
           
-          // Сохраняем текущий запрос
           const updateRequest = onEdit(post.id, liveContent);
           lastUpdateRequestRef.current = updateRequest;
           
           await updateRequest;
           console.log("📝 Database updated with socket content");
-          // После успешного обновления в базе, обновляем наш reference
           initialContentRef.current = liveContent;
           lastUpdateRequestRef.current = null;
         } catch (error) {
@@ -193,7 +185,6 @@ export const PostItem = ({
     }
   };
 
-  // Используем liveContent в качестве отображаемого контента
   const displayContent = liveView && liveContent ? liveContent : editedContent;
 
   const handlePublish = async () => {
@@ -223,25 +214,20 @@ export const PostItem = ({
       }
       
       if (liveView) {
-        // Для liveView используем сохранение через socket
         console.log("Saving through socket...");
         const success = await saveContent();
         if (success) {
           toast.success("Post updated");
-          // Вызываем onEdit только для синхронизации с базой данных
           if (onEdit) {
-            // Проверяем, нет ли уже выполняющегося запроса
             if (lastUpdateRequestRef.current) {
               await lastUpdateRequestRef.current;
             }
             
-            // Сохраняем текущий запрос
             const updateRequest = onEdit(post.id, liveContent || editedContent);
             lastUpdateRequestRef.current = updateRequest;
             
             await updateRequest;
             
-            // Обновляем initialContentRef после сохранения
             initialContentRef.current = liveContent || editedContent;
             lastUpdateRequestRef.current = null;
           }
@@ -249,26 +235,21 @@ export const PostItem = ({
           toast.error("Failed to save post");
         }
       } else if (onEdit) {
-        // Для стандартного режима - через API
         console.log("Saving through API...");
         
-        // Проверяем, нет ли уже выполняющегося запроса
         if (lastUpdateRequestRef.current) {
           await lastUpdateRequestRef.current;
         }
         
-        // Сохраняем текущий запрос
         const updateRequest = onEdit(post.id, editedContent);
         lastUpdateRequestRef.current = updateRequest;
         
         await updateRequest;
         
-        // Обновляем initialContentRef после сохранения
         initialContentRef.current = editedContent;
         lastUpdateRequestRef.current = null;
       }
       
-      // Выключаем режим редактирования после сохранения
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving post:", error);

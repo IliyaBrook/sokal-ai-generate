@@ -18,11 +18,8 @@ export const CollaborationStatus: React.FC<CollaborationStatusProps> = ({
   editors: watchers,
   currentUserId,
 }) => {
-  // Фильтруем список наблюдателей, исключая текущего пользователя
   const otherWatchers = watchers.filter(watcher => watcher.userId !== currentUserId);
-  // Находим текущего пользователя в списке
   const currentUser = watchers.find(watcher => watcher.userId === currentUserId);
-  // Разделяем пользователей на авторизованных и анонимных
   const authenticatedWatchers = otherWatchers.filter(watcher => !watcher.userId.startsWith('anonymous-'));
   const anonymousWatchers = otherWatchers.filter(watcher => watcher.userId.startsWith('anonymous-'));
   
@@ -51,7 +48,6 @@ export const CollaborationStatus: React.FC<CollaborationStatusProps> = ({
           : 'Connection lost. Trying to reconnect...'}
       </div>
       
-      {/* Текущий пользователь */}
       {currentUser && (
         <div className="mt-2 mb-2">
           <div className="text-xs text-muted-foreground mb-1">

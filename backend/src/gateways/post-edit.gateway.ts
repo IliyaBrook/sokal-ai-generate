@@ -36,12 +36,12 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   
   private readonly logger = new Logger(PostEditGateway.name);
   private activeEditors: Map<string, Set<string>> = new Map(); // postId -> Set of userIds
+  private userSocketsMap: Map<string, Set<string>> = new Map(); // userId -> Set of socketIds
 
   constructor(private readonly postService: PostService) {}
   
-  afterInit() {
-    this.logger.log('WebSocket Gateway initialized');
-    this.logger.log(`WebSocket Gateway namespace: /post-edit`);
+  afterInit(server: Server) {
+    this.logger.log('Post edit websocket gateway initialized');
   }
 
   handleConnection(client: Socket) {
@@ -52,6 +52,20 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     this.logger.log(`Client disconnected: ${client.id}`);
     // Clean up active editors when client disconnects
     this.removeFromAllRooms(client);
+    
+    // Remove from userSocketsMap
+    this.removeSocketFromUserMap(client.id);
+  }
+  
+  private removeSocketFromUserMap(socketId: string) {
+    Array.from(this.userSocketsMap.entries()).forEach(([userId, socketIds]) => {
+      if (socketIds.has(socketId)) {
+        socketIds.delete(socketId);
+        if (socketIds.size === 0) {
+          this.userSocketsMap.delete(userId);
+        }
+      }
+    });
   }
 
   private removeFromAllRooms(client: Socket) {
@@ -69,6 +83,54 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     });
   }
 
+  private disconnectPreviousUserSessions(userId: string, postId: string, currentClientId: string) {
+    if (userId.startsWith('anonymous-')) {
+      return; // Не отключаем анонимных пользователей
+    }
+    
+    const userSockets = this.userSocketsMap.get(userId);
+    if (userSockets && userSockets.size > 0) {
+      userSockets.forEach(socketId => {
+        if (socketId !== currentClientId) {
+          const socket = this.server.sockets.sockets.get(socketId);
+          if (socket) {
+            // Отправляем уведомление о дублирующемся подключении
+            socket.emit('duplicate-connection', {
+              message: 'You have connected from another window. This session will be disconnected.'
+            });
+            
+            // Удаляем из комнаты редактирования
+            socket.leave(`post:${postId}`);
+            
+            // Удаляем из списка редакторов
+            const editors = this.activeEditors.get(postId);
+            if (editors) {
+              const editorInfoToRemove = Array.from(editors).find(info => info.includes(socketId));
+              if (editorInfoToRemove) {
+                editors.delete(editorInfoToRemove);
+                if (editors.size === 0) {
+                  this.activeEditors.delete(postId);
+                }
+              }
+            }
+            
+            // Удаляем из карты пользователей
+            const userSocketsSet = this.userSocketsMap.get(userId);
+            if (userSocketsSet) {
+              userSocketsSet.delete(socketId);
+            }
+          }
+        }
+      });
+      
+      // Обновляем список редакторов для всех клиентов в комнате
+      const editors = this.activeEditors.get(postId);
+      if (editors) {
+        this.server.to(`post:${postId}`).emit('editors', Array.from(editors));
+      }
+    }
+  }
+
   @SubscribeMessage('join-post')
   handleJoinPost(
     @ConnectedSocket() client: Socket,
@@ -76,6 +138,15 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   ): WsResponse<any> {
     const { postId, userId, userName } = payload;
     this.logger.log(`User ${userId} joined post ${postId}`);
+    
+    // Отключаем предыдущие сессии пользователя
+    this.disconnectPreviousUserSessions(userId, postId, client.id);
+    
+    // Добавляем сокет в карту пользователей
+    if (!this.userSocketsMap.has(userId)) {
+      this.userSocketsMap.set(userId, new Set());
+    }
+    this.userSocketsMap.get(userId).add(client.id);
     
     // Join the room for this post
     client.join(`post:${postId}`);
