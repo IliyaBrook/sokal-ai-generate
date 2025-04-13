@@ -11,6 +11,7 @@ import {
   jwtProvider,
 } from '@/providers'
 import services from '@/services'
+import { PostEditGateway } from './gateways/post-edit.gateway';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import services from '@/services'
   ],
   controllers,
   providers: [
-        GeneratePostService, 
+    GeneratePostService, 
+    PostEditGateway,
     ...services,
     ...guards
   ],
