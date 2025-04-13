@@ -5,22 +5,24 @@ import TextStyle from "@tiptap/extension-text-style";
 import { Editor, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { all, createLowlight } from "lowlight";
-import dynamic from 'next/dynamic';
-import "./RichTextEditor.scss";
+import dynamic from "next/dynamic";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import "./RichTextEditor.scss";
 
-import css from 'highlight.js/lib/languages/css';
-import js from 'highlight.js/lib/languages/javascript';
-import { default as ts, default as typescript } from 'highlight.js/lib/languages/typescript';
-import html from 'highlight.js/lib/languages/xml';
+import css from "highlight.js/lib/languages/css";
+import js from "highlight.js/lib/languages/javascript";
+import {
+  default as ts,
+  default as typescript,
+} from "highlight.js/lib/languages/typescript";
+import html from "highlight.js/lib/languages/xml";
 
-// const lowlight = createLowlight(common);
 const lowlight = createLowlight(all);
-lowlight.register('html', html)
-lowlight.register('css', css)
-lowlight.register('js', js)
-lowlight.register('ts', ts)
-lowlight.register('typescript', typescript)
+lowlight.register("html", html);
+lowlight.register("css", css);
+lowlight.register("js", js);
+lowlight.register("ts", ts);
+lowlight.register("typescript", typescript);
 
 import "highlight.js/scss/atom-one-dark.scss";
 
@@ -38,17 +40,13 @@ interface RichTextEditorProps {
   onBlur?: () => void;
 }
 
-const RichTextEditorWithNoSSR = forwardRef<RichTextEditorRef, RichTextEditorProps>(({ 
-  content, 
-  onUpdate, 
-  mode = "preview", 
-  editable,
-  onFocus,
-  onBlur 
-}, ref) => {
+const RichTextEditorWithNoSSR = forwardRef<
+  RichTextEditorRef,
+  RichTextEditorProps
+>(({ content, onUpdate, mode = "preview", editable, onFocus, onBlur }, ref) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const prevContentRef = useRef<string>(content);
-  
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -74,7 +72,7 @@ const RichTextEditorWithNoSSR = forwardRef<RichTextEditorRef, RichTextEditorProp
     ],
     content,
     onUpdate: ({ editor }) => {
-      if (onUpdate && typeof onUpdate === 'function') {
+      if (onUpdate && typeof onUpdate === "function") {
         onUpdate(editor.getHTML());
       }
     },
@@ -92,66 +90,67 @@ const RichTextEditorWithNoSSR = forwardRef<RichTextEditorRef, RichTextEditorProp
     immediatelyRender: false,
   });
 
-  // Экспортируем методы для управления редактором извне
-  useImperativeHandle(ref, () => ({
-    updateContent: (newContent: string) => {
-      if (editor && newContent !== prevContentRef.current) {
-        const currentSelection = editor.state.selection;
-        const isFocused = editor.isFocused;
-        const currentPos = currentSelection.$from.pos;
-        
-        // Сохраняем текущее состояние редактора
-        const hasSelection = !currentSelection.empty;
-        const selectionStart = hasSelection ? currentSelection.from : null;
-        const selectionEnd = hasSelection ? currentSelection.to : null;
+  useImperativeHandle(
+    ref,
+    () => ({
+      updateContent: (newContent: string) => {
+        if (editor && newContent !== prevContentRef.current) {
+          const currentSelection = editor.state.selection;
+          const isFocused = editor.isFocused;
+          const currentPos = currentSelection.$from.pos;
 
-        // Обновляем содержимое
-        editor.commands.setContent(newContent, false);
-        prevContentRef.current = newContent;
-        
-        // Восстанавливаем фокус и позицию курсора, если редактор был в фокусе
-        if (isFocused) {
-          editor.commands.focus();
-          
-          if (hasSelection && selectionStart !== null && selectionEnd !== null) {
-            // Восстанавливаем выделение
-            editor.commands.setTextSelection({
-              from: Math.min(selectionStart, editor.state.doc.content.size),
-              to: Math.min(selectionEnd, editor.state.doc.content.size)
-            });
-          } else if (currentPos) {
-            // Восстанавливаем позицию курсора
-            const safePos = Math.min(currentPos, editor.state.doc.content.size);
-            editor.commands.setTextSelection(safePos);
+          // Сохраняем текущее состояние редактора
+          const hasSelection = !currentSelection.empty;
+          const selectionStart = hasSelection ? currentSelection.from : null;
+          const selectionEnd = hasSelection ? currentSelection.to : null;
+
+          editor.commands.setContent(newContent, false);
+          prevContentRef.current = newContent;
+
+          if (isFocused) {
+            editor.commands.focus();
+
+            if (
+              hasSelection &&
+              selectionStart !== null &&
+              selectionEnd !== null
+            ) {
+              editor.commands.setTextSelection({
+                from: Math.min(selectionStart, editor.state.doc.content.size),
+                to: Math.min(selectionEnd, editor.state.doc.content.size),
+              });
+            } else if (currentPos) {
+              const safePos = Math.min(
+                currentPos,
+                editor.state.doc.content.size
+              );
+              editor.commands.setTextSelection(safePos);
+            }
           }
         }
-      }
-    },
-    getEditor: () => editor,
-  }), [editor]);
+      },
+      getEditor: () => editor,
+    }),
+    [editor]
+  );
 
-  // Обновляем контент, если он изменился в пропсах и не равен предыдущему
   useEffect(() => {
     if (editor && content !== prevContentRef.current) {
       prevContentRef.current = content;
-      
-      // Проверяем, не вызвано ли изменение контента нашим собственным редактором
       const editorHtml = editor.getHTML();
       if (content !== editorHtml) {
         const isFocused = editor.isFocused;
         const currentSelection = editor.state.selection;
-        
         editor.commands.setContent(content, false);
-        
-        // Восстанавливаем фокус если редактор был в фокусе
         if (isFocused) {
           editor.commands.focus();
-          
-          // Пытаемся восстановить позицию курсора
           if (!currentSelection.empty) {
             editor.commands.setTextSelection({
-              from: Math.min(currentSelection.from, editor.state.doc.content.size),
-              to: Math.min(currentSelection.to, editor.state.doc.content.size)
+              from: Math.min(
+                currentSelection.from,
+                editor.state.doc.content.size
+              ),
+              to: Math.min(currentSelection.to, editor.state.doc.content.size),
             });
           }
         }
@@ -168,115 +167,121 @@ const RichTextEditorWithNoSSR = forwardRef<RichTextEditorRef, RichTextEditorProp
 
   return (
     <div className="border rounded-lg p-4" ref={editorContainerRef}>
-      {mode === "published" && <div className="flex gap-2 mb-4 flex-wrap">
-        <button
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={getActiveButtonStyles("codeBlock")}
-        >
-          Code
-        </button>
+      {mode === "published" && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <button
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            className={getActiveButtonStyles("codeBlock")}
+          >
+            Code
+          </button>
 
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={getActiveButtonStyles("bold")}
-        >
-          Bold
-        </button>
-        <button
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run()
-          }
-          className={getActiveButtonStyles("heading", { level: 1 })}
-        >
-          H1
-        </button>
-        <button
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          className={getActiveButtonStyles("heading", { level: 2 })}
-        >
-          H2
-        </button>
-        <button
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run()
-          }
-          className={getActiveButtonStyles("heading", { level: 3 })}
-        >
-          H3
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={getActiveButtonStyles("italic")}
-        >
-          Italic
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={getActiveButtonStyles("strike")}
-        >
-          Strike
-        </button>
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={getActiveButtonStyles("bold")}
+          >
+            Bold
+          </button>
+          <button
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 1 }).run()
+            }
+            className={getActiveButtonStyles("heading", { level: 1 })}
+          >
+            H1
+          </button>
+          <button
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
+            }
+            className={getActiveButtonStyles("heading", { level: 2 })}
+          >
+            H2
+          </button>
+          <button
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 3 }).run()
+            }
+            className={getActiveButtonStyles("heading", { level: 3 })}
+          >
+            H3
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={getActiveButtonStyles("italic")}
+          >
+            Italic
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            className={getActiveButtonStyles("strike")}
+          >
+            Strike
+          </button>
 
-        <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={getActiveButtonStyles("bulletList")}
-        >
-          Bullet List
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={getActiveButtonStyles("orderedList")}
-        >
-          Numbered List
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={getActiveButtonStyles("blockquote")}
-        >
-          Quote
-        </button>
+          <button
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={getActiveButtonStyles("bulletList")}
+          >
+            Bullet List
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={getActiveButtonStyles("orderedList")}
+          >
+            Numbered List
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            className={getActiveButtonStyles("blockquote")}
+          >
+            Quote
+          </button>
 
-        <button
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          className={getActiveButtonStyles("textAlign", { textAlign: "left" })}
-        >
-          Left
-        </button>
-        <button
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          className={getActiveButtonStyles("textAlign", {
-            textAlign: "center",
-          })}
-        >
-          Center
-        </button>
-        <button
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          className={getActiveButtonStyles("textAlign", { textAlign: "right" })}
-        >
-          Right
-        </button>
-        <button
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className={getActiveButtonStyles("horizontalRule")}
-        >
-          Horizontal rule
-        </button>
-        <button
-          onClick={() => editor.chain().focus().unsetAllMarks().run()}
-          className={getActiveButtonStyles("unsetAllMarks")}
-        >
-          Clear marks
-        </button>
-        <button
-          onClick={() => editor.chain().focus().clearNodes().run()}
-          className={getActiveButtonStyles("clearNodes")}
-        >
-          Clear nodes
-        </button>
-      </div>}
+          <button
+            onClick={() => editor.chain().focus().setTextAlign("left").run()}
+            className={getActiveButtonStyles("textAlign", {
+              textAlign: "left",
+            })}
+          >
+            Left
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign("center").run()}
+            className={getActiveButtonStyles("textAlign", {
+              textAlign: "center",
+            })}
+          >
+            Center
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign("right").run()}
+            className={getActiveButtonStyles("textAlign", {
+              textAlign: "right",
+            })}
+          >
+            Right
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            className={getActiveButtonStyles("horizontalRule")}
+          >
+            Horizontal rule
+          </button>
+          <button
+            onClick={() => editor.chain().focus().unsetAllMarks().run()}
+            className={getActiveButtonStyles("unsetAllMarks")}
+          >
+            Clear marks
+          </button>
+          <button
+            onClick={() => editor.chain().focus().clearNodes().run()}
+            className={getActiveButtonStyles("clearNodes")}
+          >
+            Clear nodes
+          </button>
+        </div>
+      )}
 
       <EditorContent
         editor={editor}
