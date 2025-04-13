@@ -46,11 +46,6 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
-    this.logger.log(`Client handshake: ${JSON.stringify({
-      headers: client.handshake.headers,
-      query: client.handshake.query,
-      auth: client.handshake.auth,
-    }, null, 2)}`);
   }
 
   handleDisconnect(client: Socket) {
@@ -174,22 +169,5 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         data: { success: false, error: error.message } 
       };
     }
-  }
-
-  @SubscribeMessage('test-connection')
-  handleTestConnection(
-    @ConnectedSocket() client: Socket,
-    // @MessageBody() payload: any
-  ): WsResponse<any> {
-    this.logger.log(`Test connection from client ${client.id}`);
-    return { 
-      event: 'test-connection-response', 
-      data: { 
-        success: true, 
-        message: 'Connection successful',
-        clientId: client.id,
-        timestamp: new Date().toISOString()
-      } 
-    };
   }
 } 

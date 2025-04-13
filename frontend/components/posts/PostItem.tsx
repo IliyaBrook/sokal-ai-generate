@@ -11,17 +11,22 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  DatePickerInput
+  DatePickerInput,
+  Badge
 } from "@/components/ui";
-import { useAuthUserFetch } from "@/hooks";
+import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
+import { usePostEditing } from "@/hooks/usePostEditing";
 import { IPost } from "@/types";
 import { format } from "date-fns";
 import "highlight.js/styles/atom-one-dark.css";
-import { useState } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
 import { RichTextEditor } from "../RIchTextEditor/RichTextEditor";
 import { Button } from "../ui";
+import { UserDataContext } from "@/contexts/UserData.context";
+import { ActiveEditors } from "./ActiveEditors";
+import { socket } from "@/lib/socket";
 
 interface ShortLinkResponse {
   id: string
@@ -42,6 +47,7 @@ interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   showShare?: boolean;
   showSchedule?: boolean;
   showPublish?: boolean;
+  liveUpdate?: boolean;
 }
 
 const getCurrentTime = () => {
@@ -59,7 +65,8 @@ export const PostItem = ({
   showEdit = false,
   showShare = false,
   showSchedule = false,
-  showPublish = false
+  showPublish = false,
+  liveUpdate = false,
 }: PostItemProps) => {
   const [isPublished, setIsPublished] = useState(post.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -76,10 +83,97 @@ export const PostItem = ({
   const [isDeletingLink, setIsDeletingLink] = useState(false);
 
   const apiFetch = useAuthUserFetch();
+  const contextData = useContext(UserDataContext);
+  const user = contextData?.userData;
 
-  const [localScheduledDate, setLocalScheduledDate] = useState<Date | undefined | null>(
-    post.scheduledPublishDate ? new Date(post.scheduledPublishDate) : undefined
-  );
+  // Сохраняем начальный контент из Shared для сравнения
+  const initialContentRef = useRef(post.content);
+  const contentUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Флаг для предотвращения повторного подключения к сокету
+  const isConnectedRef = useRef(false);
+
+  // Используем useEffect для логирования props, чтобы проверить, что передается правильно
+  useEffect(() => {
+    console.log('🔍 PostItem render:', 
+      post.id.substring(post.id.length - 6), 
+      isConnectedRef.current ? '(already connected)' : '(new)'
+    );
+  }, [post.id]);
+
+  const { 
+    content: liveContent, 
+    updateContent: setLiveContent,
+    saveContent,
+    isConnected,
+    activeWatchers,
+  } = usePostEditing({
+    postId: post.id,
+    initialContent: post.content,
+    autoConnect: liveUpdate,
+  });
+
+  // Логируем информацию о liveContent для отладки
+  useEffect(() => {
+    if (liveContent) {
+      console.log('📝 Content in PostItem:', 
+        post.id.substring(post.id.length - 6),
+        liveContent.substring(0, 30) + '...'
+      );
+    }
+  }, [liveContent, post.id]);
+
+  const isLocalUpdate = useRef(false);
+
+  // Когда liveContent обновляется через сокеты, обновляем editedContent
+  useEffect(() => {
+    if (liveUpdate && liveContent && !isLocalUpdate.current) {
+      console.log("Updating from socket:", liveContent?.substring(0, 30) + "...");
+      setEditedContent(liveContent);
+    }
+    isLocalUpdate.current = false;
+  }, [liveContent, liveUpdate]);
+
+  // Обновляем базу данных только при реальных изменениях контента
+  useEffect(() => {
+    if (contentUpdateTimeoutRef.current) {
+      clearTimeout(contentUpdateTimeoutRef.current);
+      contentUpdateTimeoutRef.current = null;
+    }
+
+    if (liveUpdate && liveContent && onEdit && !isLocalUpdate.current && liveContent !== initialContentRef.current) {
+      contentUpdateTimeoutRef.current = setTimeout(async () => {
+        try {
+          await onEdit(post.id, liveContent);
+          console.log("📝 Database updated with socket content");
+          // После успешного обновления в базе, обновляем и наш reference
+          initialContentRef.current = liveContent;
+        } catch (error) {
+          console.error("❌ Error updating database:", error);
+        }
+      }, 2000);
+    }
+    
+    return () => {
+      if (contentUpdateTimeoutRef.current) {
+        clearTimeout(contentUpdateTimeoutRef.current);
+      }
+    };
+  }, [liveContent, liveUpdate, onEdit, post.id]);
+
+  const handleContentUpdate = (newContent: string) => {
+    isLocalUpdate.current = true;
+    console.log("Local content update:", newContent?.substring(0, 30) + "...");
+    setEditedContent(newContent);
+    
+    if (liveUpdate) {
+      console.log("Sending to socket:", newContent?.substring(0, 30) + "...");
+      setLiveContent(newContent);
+    }
+  };
+
+  // Используем liveContent в качестве отображаемого контента
+  const displayContent = liveUpdate && liveContent ? liveContent : editedContent;
 
   const handlePublish = async () => {
     if (onPublish && typeof onPublish === "function") {
@@ -96,9 +190,31 @@ export const PostItem = ({
   };
 
   const handleSave = async () => {
-    if (onEdit) {
-      await onEdit(post.id, editedContent);
+    try {
+      if (liveUpdate) {
+        // Для liveUpdate используем сохранение через socket
+        console.log("Saving through socket...");
+        const success = await saveContent();
+        if (success) {
+          toast.success("Post updated");
+          // Вызываем onEdit только для синхронизации с базой данных
+          if (onEdit) {
+            await onEdit(post.id, liveContent || editedContent);
+          }
+        } else {
+          toast.error("Failed to save post");
+        }
+      } else if (onEdit) {
+        // Для стандартного режима - через API
+        console.log("Saving through API...");
+        await onEdit(post.id, editedContent);
+      }
+      
+      // Выключаем режим редактирования после сохранения
       setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving post:", error);
+      toast.error("Failed to save post");
     }
   };
 
@@ -184,7 +300,6 @@ export const PostItem = ({
       });
       
       if (updatedPost) {
-        setLocalScheduledDate(updatedPost.scheduledPublishDate ? new Date(updatedPost.scheduledPublishDate) : undefined);
         post.scheduledPublishDate = updatedPost.scheduledPublishDate;
         
         if (onEdit) {
@@ -212,7 +327,6 @@ export const PostItem = ({
       });
       
       if (updatedPost) {
-        setLocalScheduledDate(updatedPost.scheduledPublishDate ? new Date(updatedPost.scheduledPublishDate) : null);
         post.scheduledPublishDate = updatedPost.scheduledPublishDate;
         
         if (onEdit) {
@@ -229,13 +343,13 @@ export const PostItem = ({
 
   const getPostStatus = () => {
     if (isPublished) return "Published";
-    if (localScheduledDate && new Date(localScheduledDate) > new Date()) {
-      return `Scheduled for ${format(new Date(localScheduledDate), "PPP HH:mm")}`;
+    if (post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()) {
+      return `Scheduled for ${format(new Date(post.scheduledPublishDate), "PPP HH:mm")}`;
     }
     return "Draft";
   };
   
-  const isScheduled = !isPublished && localScheduledDate && new Date(localScheduledDate) > new Date();
+  const isScheduled = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
   
   return (
     <Card>
@@ -248,13 +362,32 @@ export const PostItem = ({
         )}
       </CardHeader>
       <CardContent>
+        {liveUpdate && (
+          <div className="mb-4 border-b pb-3">
+            <div className="flex items-center mb-2">
+              <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'} mr-2`}></span>
+              <span className="text-sm font-medium">
+                {isConnected ? 'Collaborative editing active' : 'Connection lost. Trying to reconnect...'}
+              </span>
+            </div>
+            
+            {activeWatchers.length > 0 && (
+              <ActiveEditors 
+                editors={activeWatchers}
+                currentUserId={user?.id || `anonymous-${socket.id}`}
+              />
+            )}
+          </div>
+        )}
+        
         <RichTextEditor
-          key={isEditing ? `richTextEditor-published-${post.id}` : `richTextEditor-preview-${post.id}`}
-          content={editedContent}
-          onUpdate={setEditedContent}
-          mode={isEditing ? "published" : "preview"}
+          key={`editor-${post.id}-${isEditing || liveUpdate}-${liveUpdate ? Date.now() : ''}`}
+          content={displayContent}
+          onUpdate={handleContentUpdate}
+          mode={isEditing || liveUpdate ? "published" : "preview"}
+          editable={isEditing || liveUpdate}
         />
-        {isEditing && (
+        {(isEditing || liveUpdate) && (
           <div className="flex gap-2 mt-4">
             <Button
               onClick={handleSave}
@@ -262,11 +395,13 @@ export const PostItem = ({
             >
               Save
             </Button>
-            <Button
-              onClick={() => setIsEditing(false)}
-            >
-              Cancel
-            </Button>
+            {isEditing && (
+              <Button
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </Button>
+            )}
           </div>
         )}
         
@@ -319,7 +454,7 @@ export const PostItem = ({
           {isScheduled && (
             <div className="flex items-center gap-2">
               <span className="text-sm">
-                Scheduled: {localScheduledDate ? format(new Date(localScheduledDate), "PPP HH:mm") : ""}
+                Scheduled: {post.scheduledPublishDate ? format(new Date(post.scheduledPublishDate), "PPP HH:mm") : ""}
               </span>
               <Button 
                 variant="destructive" 
@@ -373,7 +508,7 @@ export const PostItem = ({
               <Button
                 onClick={() => setIsEditing(true)}
                 variant="secondary"
-                disabled={isEditing}
+                disabled={isEditing || liveUpdate}
               >
                 Edit
               </Button>

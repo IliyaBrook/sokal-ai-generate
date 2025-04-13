@@ -27,9 +27,10 @@ interface RichTextEditorProps {
   content: string;
   onUpdate?: (content: string) => void;
   mode?: "preview" | "published";
+  editable?: boolean;
 }
 
-const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview" }: RichTextEditorProps) => {
+const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview", editable }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -59,7 +60,7 @@ const RichTextEditorWithNoSSR = ({ content, onUpdate, mode = "preview" }: RichTe
         onUpdate(editor.getHTML());
       }
     },
-    editable: mode === "published",
+    editable: editable !== undefined ? editable : mode === "published",
     immediatelyRender: false,
   });
 
