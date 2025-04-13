@@ -64,6 +64,11 @@ export default function Shared({ linkId }: {linkId: string}) {
         toast.error("Failed to update post")
         throw new Error("Failed to update post")
       }
+      
+      // setCurrentPost({
+      //   ...data,
+      //   authorName: currentPost?.authorName
+      // })
     } catch (error) {
       console.error('Error updating post:', error)
       toast.error("Failed to update post")

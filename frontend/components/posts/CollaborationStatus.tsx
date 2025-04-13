@@ -20,6 +20,8 @@ export const CollaborationStatus: React.FC<CollaborationStatusProps> = ({
 }) => {
   // Фильтруем список наблюдателей, исключая текущего пользователя
   const otherWatchers = watchers.filter(watcher => watcher.userId !== currentUserId);
+  // Находим текущего пользователя в списке
+  const currentUser = watchers.find(watcher => watcher.userId === currentUserId);
   // Разделяем пользователей на авторизованных и анонимных
   const authenticatedWatchers = otherWatchers.filter(watcher => !watcher.userId.startsWith('anonymous-'));
   const anonymousWatchers = otherWatchers.filter(watcher => watcher.userId.startsWith('anonymous-'));
@@ -39,7 +41,7 @@ export const CollaborationStatus: React.FC<CollaborationStatusProps> = ({
         
         <Badge variant="outline" className="flex items-center gap-1">
           <span className="h-2 w-2 rounded-full bg-green-500"></span>
-          <span>{otherWatchers.length + 1} online</span>
+          <span>{watchers.length} online</span>
         </Badge>
       </div>
       
@@ -48,6 +50,21 @@ export const CollaborationStatus: React.FC<CollaborationStatusProps> = ({
           ? 'Collaborative viewing active' 
           : 'Connection lost. Trying to reconnect...'}
       </div>
+      
+      {/* Текущий пользователь */}
+      {currentUser && (
+        <div className="mt-2 mb-2">
+          <div className="text-xs text-muted-foreground mb-1">
+            You are connected as:
+          </div>
+          <Badge variant="default" className="text-xs flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+            {currentUser.username || (currentUser.userId.startsWith('anonymous-') 
+              ? `Guest ${currentUser.clientId.substring(0, 4)}` 
+              : currentUser.userId.substring(0, 8))}
+          </Badge>
+        </div>
+      )}
       
       {otherWatchers.length > 0 && (
         <div className="mt-3 space-y-2">
