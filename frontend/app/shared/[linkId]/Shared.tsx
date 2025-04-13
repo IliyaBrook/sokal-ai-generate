@@ -106,7 +106,6 @@ export default function Shared({ linkId }: {linkId: string}) {
         <h1 className="text-2xl font-bold mb-6">Shared Post from {currentPost.authorName}</h1>
         <PostItem 
             post={currentPost} 
-            showEdit={!!contextData?.userData}
             showShare={!!isAuthor}
             onEdit={handleEditPost}
             liveView

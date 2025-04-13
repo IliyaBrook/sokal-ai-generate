@@ -36,12 +36,14 @@ export const fetchWithRefresh = async <T>({
       const response = await fetch(url, fetchOptions);
 
       if (response.ok) {
-        const data = await response.json();
+        const responseClone = response.clone();
+        const data = await responseClone.json();
         onGetData(data as T);
       } else if (response.status === 401) {
         const refreshResponse = await fetch("/api/users/refresh");
         if (refreshResponse.ok) {
-          const refreshedData: authResponse = await refreshResponse.json();
+          const refreshResponseClone = refreshResponse.clone();
+          const refreshedData: authResponse = await refreshResponseClone.json();
           const accessToken = refreshedData.accessToken;
           localStorage.setItem("accessToken", accessToken);
           onGetRefreshUserData(refreshedData);

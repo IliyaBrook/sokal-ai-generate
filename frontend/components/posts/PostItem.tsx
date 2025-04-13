@@ -52,7 +52,6 @@ interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
   onPublish?: ((postId: string) => Promise<any> | undefined);
   onEdit?: (id: string, content: string) => Promise<void>;
-  showEdit?: boolean;
   showShare?: boolean;
   showSchedule?: boolean;
   liveView?: boolean;
@@ -70,7 +69,6 @@ export const PostItem = ({
   post,
   onPublish,
   onEdit,
-  showEdit = false,
   showShare = false,
   showSchedule = false,
   liveView = false,
@@ -173,12 +171,19 @@ export const PostItem = ({
     }
 
     if (liveView && liveContent && onEdit && !isLocalUpdate.current && liveContent !== initialContentRef.current) {
+      // Используем единую переменную для отслеживания, идет ли обновление
+      const isUpdating = lastUpdateRequestRef.current !== null;
+      
+      // Если уже идет обновление, не создаем новый таймаут
+      if (isUpdating) {
+        console.log('Update already in progress, skipping timer creation');
+        return;
+      }
+      
+      console.log('Creating content update timeout');
       contentUpdateTimeoutRef.current = setTimeout(async () => {
         try {
-          if (lastUpdateRequestRef.current) {
-            await lastUpdateRequestRef.current;
-          }
-          
+          console.log('Executing content update');
           const updateRequest = onEdit(post.id, liveContent);
           lastUpdateRequestRef.current = updateRequest;
           
@@ -240,15 +245,18 @@ export const PostItem = ({
         return;
       }
       
+      // Предотвращаем параллельные запросы
+      if (lastUpdateRequestRef.current) {
+        console.log("Update already in progress, waiting before save");
+        await lastUpdateRequestRef.current;
+      }
+      
       if (liveView) {
         const success = await saveContent();
         if (success) {
           toast.success("Post updated");
           if (onEdit) {
-            if (lastUpdateRequestRef.current) {
-              await lastUpdateRequestRef.current;
-            }
-            
+            console.log("Saving through API after socket save...");
             const updateRequest = onEdit(post.id, liveContent || editedContent);
             lastUpdateRequestRef.current = updateRequest;
             
@@ -262,10 +270,6 @@ export const PostItem = ({
         }
       } else if (onEdit) {
         console.log("Saving through API...");
-        
-        if (lastUpdateRequestRef.current) {
-          await lastUpdateRequestRef.current;
-        }
         
         const updateRequest = onEdit(post.id, editedContent);
         lastUpdateRequestRef.current = updateRequest;
