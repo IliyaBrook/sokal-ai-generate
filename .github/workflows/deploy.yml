@@ -77,16 +77,18 @@ jobs:
           
       - name: Install Docker on server (if needed)
         run: |
-          ssh root@${{ secrets.SERVER_IP }} "if ! command -v docker &> /dev/null; then apt update && apt install -y docker.io docker-compose && systemctl enable docker && systemctl start docker; fi"
+          SERVER_IP="${{ secrets.SERVER_IP }}"
+          ssh root@$SERVER_IP "if ! command -v docker &> /dev/null; then apt update && apt install -y docker.io docker-compose && systemctl enable docker && systemctl start docker; fi"
           
       - name: Deploy to Hetzner
         run: |
           # Create project directory
-          ssh root@${{ secrets.SERVER_IP }} "mkdir -p /root/sokal-ai-generate"
+          SERVER_IP="${{ secrets.SERVER_IP }}"
+          ssh root@$SERVER_IP "mkdir -p /root/sokal-ai-generate"
           
           # Copy necessary files
-          scp docker-compose.yml .env .dockerignore root@${{ secrets.SERVER_IP }}:/root/sokal-ai-generate/
-          scp -r backend frontend shared-types configs root@${{ secrets.SERVER_IP }}:/root/sokal-ai-generate/
+          scp docker-compose.yml .env .dockerignore root@$SERVER_IP:/root/sokal-ai-generate/
+          scp -r backend frontend shared-types configs root@$SERVER_IP:/root/sokal-ai-generate/
           
           # Run docker-compose on the server
-          ssh root@${{ secrets.SERVER_IP }} "cd /root/sokal-ai-generate && docker-compose down && docker-compose up -d --build" 
+          ssh root@$SERVER_IP "cd /root/sokal-ai-generate && docker-compose down && docker-compose up -d --build" 
