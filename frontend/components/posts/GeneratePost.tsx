@@ -134,6 +134,7 @@ export const GeneratePost = ({
             <div className="my-4 max-h-[60vh] overflow-y-auto">
               <PostItem
                 post={generatedPost}
+                editable={false}
               />
             </div>
           )}

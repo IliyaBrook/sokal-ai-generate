@@ -4,12 +4,6 @@ import type { EnvironmentVariables } from '@/types'
 
 export const configProvider =
   ConfigModule.forRoot<EnvironmentVariables>({
-    envFilePath: ['.env.production', '.env.development', '.env'],
+    envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env'],
     isGlobal: true,
-    ignoreEnvFile: false,
-    cache: false,
   })
-
-
-
-  
