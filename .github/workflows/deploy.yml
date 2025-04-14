@@ -8,6 +8,36 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Test Secrets
+        run: |
+          echo "Checking if secrets are available..."
+          # Проверка наличия SERVER_IP (без вывода значения)
+          if [ -n "${{ secrets.SERVER_IP }}" ]; then
+            echo "SERVER_IP is set and has length: ${#${{ secrets.SERVER_IP }}}"
+            echo "First 3 characters: ${${{ secrets.SERVER_IP }}:0:3}..."
+          else
+            echo "SERVER_IP is not set!"
+          fi
+          
+          # Проверка других секретов (без вывода значений)
+          echo "SSH_PRIVATE_KEY set: ${{ secrets.SSH_PRIVATE_KEY != '' }}"
+          echo "SSH_KNOWN_HOSTS set: ${{ secrets.SSH_KNOWN_HOSTS != '' }}"
+          echo "MONGO_USERNAME set: ${{ secrets.MONGO_USERNAME != '' }}"
+          echo "MONGO_PASSWORD set: ${{ secrets.MONGO_PASSWORD != '' }}"
+          echo "SERVER_PORT set: ${{ secrets.SERVER_PORT != '' }}"
+          
+          # Альтернативный способ проверки сетевых подключений
+          echo "Trying to ping 157.180.25.1 to check network..."
+          ping -c 3 157.180.25.1 || true
+          
+          # Проверка SSH команды
+          echo "SSH command info:"
+          ssh -V
+          
+          # Вывод информации об окружении
+          echo "Environment details:"
+          uname -a
+          
       - name: Checkout code
         uses: actions/checkout@v4
 
