@@ -62,6 +62,14 @@ jobs:
           echo "Creating project directory..."
           ssh -o StrictHostKeyChecking=no root@157.180.25.1 "mkdir -p /root/sokal-ai-generate"
           
+          # Clean up Docker resources
+          echo "Cleaning up Docker resources..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "docker system prune -af --volumes"
+          
+          # Check disk space
+          echo "Checking disk space..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "df -h"
+          
           # Copy necessary files with verbose output
           echo "Copying files to server..."
           scp -v -r ./* ./.env ./.dockerignore root@157.180.25.1:/root/sokal-ai-generate/
