@@ -11,6 +11,8 @@ COPY backend/package.json ./backend/
 COPY shared-types/package.json ./shared-types/
 COPY configs/package.json ./configs/
 
+COPY backend/.env.production ./backend/
+
 COPY backend ./backend
 COPY shared-types ./shared-types
 COPY configs ./configs
