@@ -11,24 +11,46 @@ jobs:
       - name: Test Secrets
         run: |
           echo "Checking if secrets are available..."
-          # Проверка наличия SERVER_IP (без вывода значения)
+          # Безопасные проверки секретов (без вывода значений)
           if [ -n "${{ secrets.SERVER_IP }}" ]; then
-            echo "SERVER_IP is set and has length: ${#${{ secrets.SERVER_IP }}}"
-            echo "First 3 characters: ${${{ secrets.SERVER_IP }}:0:3}..."
+            echo "SERVER_IP is set ✓"
           else
-            echo "SERVER_IP is not set!"
+            echo "SERVER_IP is not set! ✗"
           fi
           
-          # Проверка других секретов (без вывода значений)
-          echo "SSH_PRIVATE_KEY set: ${{ secrets.SSH_PRIVATE_KEY != '' }}"
-          echo "SSH_KNOWN_HOSTS set: ${{ secrets.SSH_KNOWN_HOSTS != '' }}"
-          echo "MONGO_USERNAME set: ${{ secrets.MONGO_USERNAME != '' }}"
-          echo "MONGO_PASSWORD set: ${{ secrets.MONGO_PASSWORD != '' }}"
-          echo "SERVER_PORT set: ${{ secrets.SERVER_PORT != '' }}"
+          if [ -n "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "SSH_PRIVATE_KEY is set ✓"
+          else
+            echo "SSH_PRIVATE_KEY is not set! ✗"
+          fi
           
-          # Альтернативный способ проверки сетевых подключений
-          echo "Trying to ping 157.180.25.1 to check network..."
-          ping -c 3 157.180.25.1 || true
+          if [ -n "${{ secrets.SSH_KNOWN_HOSTS }}" ]; then
+            echo "SSH_KNOWN_HOSTS is set ✓"
+          else
+            echo "SSH_KNOWN_HOSTS is not set! ✗"
+          fi
+          
+          if [ -n "${{ secrets.MONGO_USERNAME }}" ]; then
+            echo "MONGO_USERNAME is set ✓"
+          else
+            echo "MONGO_USERNAME is not set! ✗"
+          fi
+          
+          if [ -n "${{ secrets.MONGO_PASSWORD }}" ]; then
+            echo "MONGO_PASSWORD is set ✓"
+          else
+            echo "MONGO_PASSWORD is not set! ✗"
+          fi
+          
+          if [ -n "${{ secrets.SERVER_PORT }}" ]; then
+            echo "SERVER_PORT is set ✓"
+          else
+            echo "SERVER_PORT is not set! ✗"
+          fi
+          
+          # Проверка сетевых подключений
+          echo "Testing network connectivity to 157.180.25.1..."
+          ping -c 3 157.180.25.1 || echo "Ping failed"
           
           # Проверка SSH команды
           echo "SSH command info:"
@@ -46,6 +68,20 @@ jobs:
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          
+      - name: Debug SSH connection
+        run: |
+          echo "Debugging SSH connection to 157.180.25.1..."
+          # Проверка SSH соединения с известным IP
+          ssh -v -o StrictHostKeyChecking=no root@157.180.25.1 "echo 'SSH connection successful'" || echo "SSH connection failed"
+          
+          # Проверка содержимого known_hosts
+          echo "Checking ~/.ssh/known_hosts..."
+          cat ~/.ssh/known_hosts || echo "No known_hosts file"
+          
+          # Проверка прав доступа
+          echo "Checking SSH directory permissions..."
+          ls -la ~/.ssh/
           
       - name: Create root .env file
         run: |
@@ -107,18 +143,20 @@ jobs:
           
       - name: Install Docker on server (if needed)
         run: |
-          SERVER_IP="${{ secrets.SERVER_IP }}"
-          ssh root@$SERVER_IP "if ! command -v docker &> /dev/null; then apt update && apt install -y docker.io docker-compose && systemctl enable docker && systemctl start docker; fi"
+          echo "Installing Docker on server 157.180.25.1..."
+          ssh root@157.180.25.1 "if ! command -v docker &> /dev/null; then apt update && apt install -y docker.io docker-compose && systemctl enable docker && systemctl start docker; fi"
           
       - name: Deploy to Hetzner
         run: |
           # Create project directory
-          SERVER_IP="${{ secrets.SERVER_IP }}"
-          ssh root@$SERVER_IP "mkdir -p /root/sokal-ai-generate"
+          echo "Creating project directory on 157.180.25.1..."
+          ssh root@157.180.25.1 "mkdir -p /root/sokal-ai-generate"
           
           # Copy necessary files
-          scp docker-compose.yml .env .dockerignore root@$SERVER_IP:/root/sokal-ai-generate/
-          scp -r backend frontend shared-types configs root@$SERVER_IP:/root/sokal-ai-generate/
+          echo "Copying files to server..."
+          scp docker-compose.yml .env .dockerignore root@157.180.25.1:/root/sokal-ai-generate/
+          scp -r backend frontend shared-types configs root@157.180.25.1:/root/sokal-ai-generate/
           
           # Run docker-compose on the server
-          ssh root@$SERVER_IP "cd /root/sokal-ai-generate && docker-compose down && docker-compose up -d --build" 
+          echo "Starting containers on server..."
+          ssh root@157.180.25.1 "cd /root/sokal-ai-generate && docker-compose down && docker-compose up -d --build" 
