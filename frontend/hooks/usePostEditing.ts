@@ -89,7 +89,7 @@ export function usePostEditing({
       }
     };
 
-    const onDisconnect = (reason: string) => {
+    const onDisconnect = () => {
       setIsConnected(false);
       setActiveWatchers([]);
     };
