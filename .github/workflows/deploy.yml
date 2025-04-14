@@ -54,7 +54,7 @@ jobs:
           echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> backend/.env.production
           echo "DB_URL=mongodb://${{ secrets.MONGO_USERNAME }}:${{ secrets.MONGO_PASSWORD }}@mongodb:27017/sokal-ai-db?authSource=admin" >> backend/.env.production
           echo "NODE_ENV=production" >> backend/.env.production
-          echo "FRONTEND_URL=http://localhost:80,http://frontend:3000" >> backend/.env.production
+          echo "FRONTEND_URL=http://localhost:80,http://frontend:3000,http://157.180.25.1,http://157.180.25.1:80" >> backend/.env.production
           echo "SOCKET_TRANSPORT=['websocket', 'polling']" >> backend/.env.production
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> backend/.env.production
           

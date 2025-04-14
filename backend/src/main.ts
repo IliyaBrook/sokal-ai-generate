@@ -22,7 +22,9 @@ async function bootstrap() {
         'http://localhost:4200',
         'http://localhost',
         'http://localhost:80',
-        'http://frontend:3000'
+        'http://frontend:3000',
+        'http://157.180.25.1',
+        'http://157.180.25.1:80'
       ];
       
       // Check if origin is allowed
