@@ -13,7 +13,6 @@ const getSocketURL = (): string => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
   const baseURL = apiUrl.replace('/api', '');
   
-  console.log('🔌 Base Socket URL:', baseURL);
   return baseURL;
 };
 

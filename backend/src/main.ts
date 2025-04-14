@@ -27,7 +27,6 @@ async function bootstrap() {
         'http://157.180.25.1:80'
       ];
       
-      // Check if origin is allowed
       const isAllowed = allowedOrigins.includes(origin) || origin.startsWith('http://localhost:');
       
       if (isAllowed) {

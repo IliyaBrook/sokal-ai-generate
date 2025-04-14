@@ -149,10 +149,6 @@ export const PostItem = ({
       !isLocalUpdate.current &&
       editorRef.current
     ) {
-      console.log(
-        "Updating editor content from socket:",
-        liveContent?.substring(0, 30) + "..."
-      );
       editorRef.current.updateContent(liveContent);
       setEditedContent(liveContent);
     }
@@ -186,23 +182,18 @@ export const PostItem = ({
       const isUpdating = lastUpdateRequestRef.current !== null;
 
       if (isUpdating) {
-        console.log("Update already in progress, skipping timer creation");
         return;
       }
 
-      console.log("Creating content update timeout");
       contentUpdateTimeoutRef.current = setTimeout(async () => {
         try {
-          console.log("Executing content update");
           const updateRequest = onEdit(post.id, liveContent);
           lastUpdateRequestRef.current = updateRequest;
 
           await updateRequest;
-          console.log("📝 Database updated with socket content");
           initialContentRef.current = liveContent;
           lastUpdateRequestRef.current = null;
         } catch (error) {
-          console.error("❌ Error updating database:", error);
           lastUpdateRequestRef.current = null;
         }
       }, 2000);
@@ -217,11 +208,9 @@ export const PostItem = ({
 
   const handleContentUpdate = (newContent: string) => {
     isLocalUpdate.current = true;
-    console.log("Local content update:", newContent?.substring(0, 30) + "...");
     setEditedContent(newContent);
 
     if (liveView) {
-      console.log("Sending to socket:", newContent?.substring(0, 30) + "...");
       setLiveContent(newContent);
     }
   };
@@ -238,7 +227,6 @@ export const PostItem = ({
           id: `publish-${Date.now()}`,
         });
       } catch (error) {
-        console.error("Error publishing post:", error);
         toast.error("Failed to publish post", {
           id: `publish-error-${Date.now()}`,
         });
@@ -254,13 +242,11 @@ export const PostItem = ({
       const initialContent = initialContentRef.current;
 
       if (contentToSave === initialContent) {
-        console.log("Content hasn't changed, skipping save");
         setIsEditing(false);
         return;
       }
 
       if (lastUpdateRequestRef.current) {
-        console.log("Update already in progress, waiting before save");
         await lastUpdateRequestRef.current;
       }
 
@@ -269,7 +255,6 @@ export const PostItem = ({
         if (success) {
           toast.success("Post updated", { id: `save-${Date.now()}` });
           if (onEdit) {
-            console.log("Saving through API after socket save...");
             const updateRequest = onEdit(post.id, liveContent || editedContent);
             lastUpdateRequestRef.current = updateRequest;
 
@@ -284,8 +269,6 @@ export const PostItem = ({
           });
         }
       } else if (onEdit) {
-        console.log("Saving through API...");
-
         const updateRequest = onEdit(post.id, editedContent);
         lastUpdateRequestRef.current = updateRequest;
 
@@ -300,7 +283,6 @@ export const PostItem = ({
         editingContext.setActiveEditPostId(null);
       }
     } catch (error) {
-      console.error("Error saving post:", error);
       toast.error("Failed to save post", { id: `save-error-${Date.now()}` });
       lastUpdateRequestRef.current = null;
     }

@@ -45,7 +45,6 @@ export function usePostEditing({
     isMountedRef.current = true;
 
     if (initialContent !== initialContentRef.current) {
-        console.log("🔄 Initial content changed, updating state.");
         initialContentRef.current = initialContent;
         setContent(initialContent);
     }
@@ -62,7 +61,6 @@ export function usePostEditing({
     watchersData.forEach((watcher) => {
       const parts = watcher.split(':');
       if (parts.length < 2) {
-        console.warn('Invalid watcher format:', watcher);
         return;
       }
 
@@ -85,16 +83,13 @@ export function usePostEditing({
 
   useEffect(() => {
     const onConnect = () => {
-      console.log('🎯 Socket connected in usePostEditing!', socket.id);
       setIsConnected(true);
       if (postId && isMountedRef.current) { 
-        console.log('🚪 Re-joining post room after connect:', postId);
         joinPostEditing(postId, user);
       }
     };
 
     const onDisconnect = (reason: string) => {
-      console.log('🔌 Socket disconnected in usePostEditing:', reason);
       setIsConnected(false);
       setActiveWatchers([]);
     };
@@ -103,27 +98,19 @@ export function usePostEditing({
     socket.on('disconnect', onDisconnect);
     setIsConnected(socket.connected);
 
-    console.log('🔄 Setting up connect/disconnect listeners. Current state:',
-        socket.connected ? 'connected' : 'disconnected',
-        'ID:', socket.id);
-
     if (autoConnect) {
       if (!socket.connected) {
-        console.log('🔄 Auto connecting to socket...');
         connectSocket();
       }
       if (socket.connected && postId) {
-         console.log('🚪 Auto joining post room:', postId);
          joinPostEditing(postId, user);
       }
     }
 
     return () => {
-      console.log('🧹 Cleaning up connect/disconnect listeners.');
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       if (autoConnect && postId && socket.connected) {
-         console.log(`🚪 Leaving post room on unmount: ${postId}`);
          leavePostEditing(postId, user);
       }
     };
@@ -133,12 +120,10 @@ export function usePostEditing({
     if (!isMountedRef.current) return;
 
     const onJoinPostResponse = (data: { editors?: string[], content?: string }) => {
-      console.log('📣 Received join-post-response:', data);
       if (data.editors) {
         setActiveWatchers(parseWatchers(data.editors));
       }
       if (data.content && data.content !== content) {
-        console.log('📝 Updating content from join response:', data.content.substring(0, 30) + '...');
         isUpdatingFromSocketRef.current = true;
         setContent(data.content);
       }
@@ -146,11 +131,9 @@ export function usePostEditing({
 
     const onContentUpdated = (data: { content: string, userId: string, clientId: string }) => {
       if (data.clientId === socket.id) {
-          console.log('📝 Ignoring self-echoed content-updated');
           return;
       }
 
-      console.log('📝 Received content-updated from other client:', data.clientId, data.content?.substring(0, 30) + '...');
       if (data.content && data.content !== content) {
         isUpdatingFromSocketRef.current = true; 
         setContent(data.content);
@@ -160,12 +143,10 @@ export function usePostEditing({
     };
 
     const onEditorsUpdated = (editorsData: string[]) => {
-      console.log('👀 Received editors update:', editorsData);
       setActiveWatchers(parseWatchers(editorsData));
     };
 
     const onSaveContentResponse = (data: { success: boolean, error?: string }) => {
-      console.log('💾 Received save-content-response:', data);
       setIsSaving(false);
       if (saveResolverRef.current) {
         saveResolverRef.current(data.success);
@@ -179,7 +160,6 @@ export function usePostEditing({
     };
 
     const onContentSaved = (data: { timestamp: string }) => {
-      console.log('📌 Received content-saved:', data);
       toast.info(`Post saved by another user at ${new Date(data.timestamp).toLocaleTimeString()}`);
     };
 
@@ -190,7 +170,6 @@ export function usePostEditing({
     socket.on('content-saved', onContentSaved);
 
     return () => {
-      console.log(`🎧 Unregistering socket event listeners for post: ${postId.substring(postId.length - 6)}`);
       socket.off('join-post-response', onJoinPostResponse);
       socket.off('content-updated', onContentUpdated);
       socket.off('editors', onEditorsUpdated);
@@ -202,7 +181,6 @@ export function usePostEditing({
   useEffect(() => {
     if (!isMountedRef.current || isUpdatingFromSocketRef.current) {
         if (isUpdatingFromSocketRef.current) {
-            console.log("🚩 Resetting socket update flag");
             isUpdatingFromSocketRef.current = false;
         }
         return;
