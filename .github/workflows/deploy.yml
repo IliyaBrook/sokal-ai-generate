@@ -69,20 +69,20 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           
-      - name: Debug SSH connection
+      - name: Debug SSH connection with verbose output
         run: |
-          echo "Debugging SSH connection to 157.180.25.1..."
-          # Проверка SSH соединения с известным IP
-          ssh -v -o StrictHostKeyChecking=no root@157.180.25.1 "echo 'SSH connection successful'" || echo "SSH connection failed"
+          echo "Debugging SSH connection..."
+          echo "Setting up SSH config with verbose logging"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           
-          # Проверка содержимого known_hosts
-          echo "Checking ~/.ssh/known_hosts..."
-          cat ~/.ssh/known_hosts || echo "No known_hosts file"
+          echo "StrictHostKeyChecking no" > ~/.ssh/config
+          echo "LogLevel DEBUG3" >> ~/.ssh/config
           
-          # Проверка прав доступа
-          echo "Checking SSH directory permissions..."
-          ls -la ~/.ssh/
-          
+          # Попытка подключения
+          echo "Testing SSH connection to 157.180.25.1"
+          timeout 10 ssh -v root@157.180.25.1 "echo 'Connection successful'" || echo "Connection timed out"
+
       - name: Create root .env file
         run: |
           echo "MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}" > .env
@@ -94,11 +94,66 @@ jobs:
           echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
           
+      - name: Set Server IP manually
+        run: |
+          echo "Setting SERVER_IP manually to 157.180.25.1"
+          echo "SERVER_IP=157.180.25.1" >> $GITHUB_ENV
+          
       - name: Create frontend .env.production file
         run: |
-          echo "NEXT_PUBLIC_API_URL=http://${{ secrets.SERVER_IP }}:${{ secrets.SERVER_PORT }}/api" > frontend/.env.production
+          echo "NEXT_PUBLIC_API_URL=http://157.180.25.1:${{ secrets.SERVER_PORT }}/api" > frontend/.env.production
           
-      - name: Create docker-compose.yml
+      - name: Create missing package.json in root
+        run: |
+          echo "Creating root package.json file..."
+          cat > package.json << 'EOL'
+          {
+            "name": "sokal_ai_generate",
+            "private": true,
+            "version": "1.0.0",
+            "description": "Sokal_ai AI-Powered Content Generator",
+            "main": "index.js",
+            "repository": "https://github.com/IliyaBrook/sokal_ai_generate",
+            "author": "iliyabrook <iliyabrook1987@gmail.com>",
+            "license": "MIT",
+            "engines": {
+              "node": ">=22.0.0 <23.0.0"
+            },
+            "scripts": {
+              "watch:types": "yarn --cwd shared-types watch",
+              "start:production": "yarn build && cross-env PORT=80 yarn --cwd backend start",
+              "build": "yarn build:server && yarn build:client",
+              "build:server": "cross-env DISABLE_ESLINT=true yarn --cwd backend build",
+              "build:client": "yarn --cwd frontend build --no-lint",
+              "dev": "concurrently \"yarn watch:types\" \"yarn --cwd backend start:dev\" \"yarn --cwd frontend dev\"",
+              "dev:server": "yarn --cwd backend start:dev",
+              "dev:client": "yarn --cwd frontend dev",
+              "lint": "yarn lint:server && yarn lint:client",
+              "lint:server": "yarn --cwd backend lint",
+              "lint:client": "yarn --cwd frontend lint",
+              "format": "yarn format:server && yarn format:client",
+              "format:server": "yarn --cwd backend format",
+              "format:client": "yarn --cwd frontend format"
+            },
+            "workspaces": [
+              "frontend",
+              "backend",
+              "shared-types",
+              "configs"
+            ],
+            "dependencies": {
+              "bcryptjs": "^3.0.2",
+              "cross-env": "^7.0.3"
+            },
+            "devDependencies": {
+              "concurrently": "^9.1.2"
+            }
+          }
+          EOL
+          echo "Creating yarn.lock file..."
+          touch yarn.lock
+
+      - name: Create docker-compose.yml with correct context
         run: |
           cat > docker-compose.yml << 'EOL'
           version: '3.8'
@@ -119,6 +174,8 @@ jobs:
               build:
                 context: .
                 dockerfile: backend/Dockerfile
+                args:
+                  - NODE_ENV=production
               restart: always
               depends_on:
                 - mongodb
@@ -131,6 +188,8 @@ jobs:
               build:
                 context: .
                 dockerfile: frontend/Dockerfile
+                args:
+                  - NODE_ENV=production
               restart: always
               depends_on:
                 - backend
@@ -146,17 +205,23 @@ jobs:
           echo "Installing Docker on server 157.180.25.1..."
           ssh root@157.180.25.1 "if ! command -v docker &> /dev/null; then apt update && apt install -y docker.io docker-compose && systemctl enable docker && systemctl start docker; fi"
           
-      - name: Deploy to Hetzner
+      - name: Deploy to Hetzner with detailed logging
         run: |
-          # Create project directory
-          echo "Creating project directory on 157.180.25.1..."
-          ssh root@157.180.25.1 "mkdir -p /root/sokal-ai-generate"
+          echo "Deploying to server 157.180.25.1..."
           
-          # Copy necessary files
+          # Create project directory with verbose output
+          echo "Creating project directory..."
+          ssh -v -o StrictHostKeyChecking=no root@157.180.25.1 "mkdir -p /root/sokal-ai-generate"
+          
+          # Copy necessary files with verbose output
           echo "Copying files to server..."
-          scp docker-compose.yml .env .dockerignore root@157.180.25.1:/root/sokal-ai-generate/
-          scp -r backend frontend shared-types configs root@157.180.25.1:/root/sokal-ai-generate/
+          scp -v docker-compose.yml .env .dockerignore root@157.180.25.1:/root/sokal-ai-generate/
+          scp -v -r backend frontend shared-types configs root@157.180.25.1:/root/sokal-ai-generate/
+          
+          # Check if files were copied successfully
+          echo "Verifying copied files..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "ls -la /root/sokal-ai-generate"
           
           # Run docker-compose on the server
           echo "Starting containers on server..."
-          ssh root@157.180.25.1 "cd /root/sokal-ai-generate && docker-compose down && docker-compose up -d --build" 
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "cd /root/sokal-ai-generate && docker-compose down && docker-compose up -d --build" 
