@@ -55,6 +55,7 @@ interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   showSchedule?: boolean;
   liveView?: boolean;
   editable?: boolean;
+  showEdit?: boolean;
 }
 
 const getCurrentTime = () => {
@@ -72,6 +73,7 @@ export const PostItem = ({
   showSchedule = false,
   liveView = false,
   editable = false,
+  showEdit = true,
 }: PostItemProps) => {
   const [isPublished, setIsPublished] = useState(post.isPublished);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -128,15 +130,6 @@ export const PostItem = ({
       editingContext.setActiveEditPostId(post.id);
     }
   }, [isEditing, post.id, editingContext]);
-
-  useEffect(() => {
-    if (liveContent) {
-      console.log('📝 Content in PostItem:', 
-        post.id.substring(post.id.length - 6),
-        liveContent.substring(0, 30) + '...'
-      );
-    }
-  }, [liveContent, post.id]);
 
   const isLocalUpdate = useRef(false);
   
@@ -568,7 +561,7 @@ export const PostItem = ({
               </Button>
             )}
             
-            {!isSharedPage && (
+            {!isSharedPage && showEdit && (
               <Button
                 onClick={toggleEditing}
                 variant="secondary"

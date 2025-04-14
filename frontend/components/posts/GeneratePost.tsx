@@ -135,6 +135,7 @@ export const GeneratePost = ({
               <PostItem
                 post={generatedPost}
                 editable={false}
+                showEdit={false}
               />
             </div>
           )}
