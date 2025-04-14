@@ -151,10 +151,10 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
       <div className="space-y-8">
         <Tabs defaultValue="all_posts" className="mb-4">
           <TabsList>
-            <TabsTrigger value="all_posts">All Posts</TabsTrigger>
-            <TabsTrigger value="scheduled_posts">Scheduled Posts</TabsTrigger>
-            <TabsTrigger value="drafts">Drafts</TabsTrigger>
-            <TabsTrigger value="published_posts">Published Posts</TabsTrigger>
+            <TabsTrigger value="all_posts" className="cursor-pointer">All Posts</TabsTrigger>
+            <TabsTrigger value="scheduled_posts" className="cursor-pointer">Scheduled Posts</TabsTrigger>
+            <TabsTrigger value="drafts" className="cursor-pointer">Drafts</TabsTrigger>
+            <TabsTrigger value="published_posts" className="cursor-pointer">Published Posts</TabsTrigger>
           </TabsList>
           <TabsContent value="all_posts">
             {!Array.isArray(posts) || posts.length === 0 ? (

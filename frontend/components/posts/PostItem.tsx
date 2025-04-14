@@ -10,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  DatePickerInput
+  DatePickerInput,
 } from "@/components/ui";
 import { UserDataContext } from "@/contexts/UserData.context";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
@@ -22,10 +22,14 @@ import { usePathname } from "next/navigation";
 import { useContext, useEffect, useRef, useState, createContext } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
-import { RichTextEditor, RichTextEditorRef } from "../RIchTextEditor/RichTextEditor";
+import {
+  RichTextEditor,
+  RichTextEditorRef,
+} from "../RIchTextEditor/RichTextEditor";
 import { Button } from "../ui";
 import { CollaborationStatus } from "./CollaborationStatus";
 import { PostStatusBadge } from "./PostStatusBadge";
+import { useRouter } from "next/navigation";
 
 interface EditingContextType {
   activeEditPostId: string | null;
@@ -34,22 +38,22 @@ interface EditingContextType {
 
 export const EditingContext = createContext<EditingContextType>({
   activeEditPostId: null,
-  setActiveEditPostId: () => {}
+  setActiveEditPostId: () => {},
 });
 
 interface ShortLinkResponse {
-  id: string
-  code: string
-  targetType: string
-  targetId: string
-  url: string
-  createdAt: Date
-  expiresAt?: Date
+  id: string;
+  code: string;
+  targetType: string;
+  targetId: string;
+  url: string;
+  createdAt: Date;
+  expiresAt?: Date;
 }
 
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
-  onPublish?: ((postId: string) => Promise<any> | undefined);
+  onPublish?: (postId: string) => Promise<any> | undefined;
   onEdit?: (id: string, content: string) => Promise<void>;
   showShare?: boolean;
   showSchedule?: boolean;
@@ -60,8 +64,8 @@ interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const getCurrentTime = () => {
   const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 };
 
@@ -84,15 +88,18 @@ export const PostItem = ({
   const [isScheduling, setIsScheduling] = useState(false);
   const [isCancelingSchedule, setIsCancelingSchedule] = useState(false);
   const [scheduleTime, setScheduleTime] = useState(getCurrentTime());
-  const [shortLink, setShortLink] = useState<string | undefined>(post.shortLink);
+  const [shortLink, setShortLink] = useState<string | undefined>(
+    post.shortLink
+  );
   const [shortLinkId, setShortLinkId] = useState<string | undefined>(undefined);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [isCreatingLink, setIsCreatingLink] = useState(false);
   const [isDeletingLink, setIsDeletingLink] = useState(false);
-  
+  const router = useRouter();
+
   const editorRef = useRef<RichTextEditorRef>(null);
   const lastUpdateRequestRef = useRef<Promise<any> | null>(null);
-  
+
   const apiFetch = useAuthUserFetch();
   const contextData = useContext(UserDataContext);
   const user = contextData?.userData;
@@ -103,8 +110,8 @@ export const PostItem = ({
   const contentUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
 
-  const { 
-    content: liveContent, 
+  const {
+    content: liveContent,
     updateContent: setLiveContent,
     saveContent,
     isConnected,
@@ -118,9 +125,11 @@ export const PostItem = ({
   });
 
   useEffect(() => {
-    if (editingContext.activeEditPostId && 
-        editingContext.activeEditPostId !== post.id && 
-        isEditing) {
+    if (
+      editingContext.activeEditPostId &&
+      editingContext.activeEditPostId !== post.id &&
+      isEditing
+    ) {
       setIsEditing(false);
     }
   }, [editingContext.activeEditPostId, post.id, isEditing]);
@@ -132,10 +141,18 @@ export const PostItem = ({
   }, [isEditing, post.id, editingContext]);
 
   const isLocalUpdate = useRef(false);
-  
+
   useEffect(() => {
-    if (liveView && liveContent && !isLocalUpdate.current && editorRef.current) {
-      console.log("Updating editor content from socket:", liveContent?.substring(0, 30) + "...");
+    if (
+      liveView &&
+      liveContent &&
+      !isLocalUpdate.current &&
+      editorRef.current
+    ) {
+      console.log(
+        "Updating editor content from socket:",
+        liveContent?.substring(0, 30) + "..."
+      );
       editorRef.current.updateContent(liveContent);
       setEditedContent(liveContent);
     }
@@ -159,21 +176,27 @@ export const PostItem = ({
       contentUpdateTimeoutRef.current = null;
     }
 
-    if (liveView && liveContent && onEdit && !isLocalUpdate.current && liveContent !== initialContentRef.current) {
+    if (
+      liveView &&
+      liveContent &&
+      onEdit &&
+      !isLocalUpdate.current &&
+      liveContent !== initialContentRef.current
+    ) {
       const isUpdating = lastUpdateRequestRef.current !== null;
-      
+
       if (isUpdating) {
-        console.log('Update already in progress, skipping timer creation');
+        console.log("Update already in progress, skipping timer creation");
         return;
       }
-      
-      console.log('Creating content update timeout');
+
+      console.log("Creating content update timeout");
       contentUpdateTimeoutRef.current = setTimeout(async () => {
         try {
-          console.log('Executing content update');
+          console.log("Executing content update");
           const updateRequest = onEdit(post.id, liveContent);
           lastUpdateRequestRef.current = updateRequest;
-          
+
           await updateRequest;
           console.log("📝 Database updated with socket content");
           initialContentRef.current = liveContent;
@@ -184,7 +207,7 @@ export const PostItem = ({
         }
       }, 2000);
     }
-    
+
     return () => {
       if (contentUpdateTimeoutRef.current) {
         clearTimeout(contentUpdateTimeoutRef.current);
@@ -196,7 +219,7 @@ export const PostItem = ({
     isLocalUpdate.current = true;
     console.log("Local content update:", newContent?.substring(0, 30) + "...");
     setEditedContent(newContent);
-    
+
     if (liveView) {
       console.log("Sending to socket:", newContent?.substring(0, 30) + "...");
       setLiveContent(newContent);
@@ -211,10 +234,14 @@ export const PostItem = ({
       try {
         await onPublish(post.id);
         setIsPublished(true);
-        toast.success("Post published successfully");
+        toast.success("Post published successfully", {
+          id: `publish-${Date.now()}`,
+        });
       } catch (error) {
         console.error("Error publishing post:", error);
-        toast.error("Failed to publish post");
+        toast.error("Failed to publish post", {
+          id: `publish-error-${Date.now()}`,
+        });
       } finally {
         setIsPublishing(false);
       }
@@ -225,54 +252,56 @@ export const PostItem = ({
     try {
       const contentToSave = liveView ? liveContent : editedContent;
       const initialContent = initialContentRef.current;
-      
+
       if (contentToSave === initialContent) {
         console.log("Content hasn't changed, skipping save");
         setIsEditing(false);
         return;
       }
-      
+
       if (lastUpdateRequestRef.current) {
         console.log("Update already in progress, waiting before save");
         await lastUpdateRequestRef.current;
       }
-      
+
       if (liveView) {
         const success = await saveContent();
         if (success) {
-          toast.success("Post updated");
+          toast.success("Post updated", { id: `save-${Date.now()}` });
           if (onEdit) {
             console.log("Saving through API after socket save...");
             const updateRequest = onEdit(post.id, liveContent || editedContent);
             lastUpdateRequestRef.current = updateRequest;
-            
+
             await updateRequest;
-            
+
             initialContentRef.current = liveContent || editedContent;
             lastUpdateRequestRef.current = null;
           }
         } else {
-          toast.error("Failed to save post");
+          toast.error("Failed to save post", {
+            id: `save-error-${Date.now()}`,
+          });
         }
       } else if (onEdit) {
         console.log("Saving through API...");
-        
+
         const updateRequest = onEdit(post.id, editedContent);
         lastUpdateRequestRef.current = updateRequest;
-        
+
         await updateRequest;
-        
+
         initialContentRef.current = editedContent;
         lastUpdateRequestRef.current = null;
       }
-      
+
       setIsEditing(false);
       if (editingContext.activeEditPostId === post.id) {
         editingContext.setActiveEditPostId(null);
       }
     } catch (error) {
       console.error("Error saving post:", error);
-      toast.error("Failed to save post");
+      toast.error("Failed to save post", { id: `save-error-${Date.now()}` });
       lastUpdateRequestRef.current = null;
     }
   };
@@ -281,26 +310,30 @@ export const PostItem = ({
     setIsCreatingLink(true);
     try {
       const response = await apiFetch<ShortLinkResponse>(`/api/short`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
-          targetType: 'post',
-          targetId: post.id
+          targetType: "post",
+          targetId: post.id,
         }),
       });
-      
+
       if (response && response.url) {
         const url = response.url;
-        const code = url.split('/').pop();
+        const code = url.split("/").pop();
         const formattedUrl = `${window.location.origin}/shared/${code}`;
-        
+
         setShortLink(formattedUrl);
         setShortLinkId(response.id);
         setShowLinkDialog(true);
-        toast.success("Share link created successfully");
+        toast.success("Share link created successfully", {
+          id: `link-create-${Date.now()}`,
+        });
       }
     } catch (error) {
       console.error("Error creating share link:", error);
-      toast.error("Failed to create share link. Please try again.");
+      toast.error("Failed to create share link. Please try again.", {
+        id: `link-create-error-${Date.now()}`,
+      });
     } finally {
       setIsCreatingLink(false);
     }
@@ -308,24 +341,33 @@ export const PostItem = ({
 
   const handleDeleteShortLink = async () => {
     if (!shortLinkId) {
-      toast.error("Cannot delete link: missing link ID");
+      toast.error("Cannot delete link: missing link ID", {
+        id: `link-delete-error-${Date.now()}`,
+      });
       return;
     }
-    
+
     setIsDeletingLink(true);
     try {
-      const response = await apiFetch<ShortLinkResponse>(`/api/short/${shortLinkId}`, {
-        method: 'DELETE',
-      });
-      
+      const response = await apiFetch<ShortLinkResponse>(
+        `/api/short/${shortLinkId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
       if (response) {
         setShortLink(undefined);
         setShortLinkId(undefined);
-        toast.success("Share link deleted successfully");
+        toast.success("Share link deleted successfully", {
+          id: `link-delete-${Date.now()}`,
+        });
       }
     } catch (error) {
       console.error("Error deleting share link:", error);
-      toast.error("Failed to delete share link. Please try again.");
+      toast.error("Failed to delete share link. Please try again.", {
+        id: `link-delete-error-${Date.now()}`,
+      });
     } finally {
       setIsDeletingLink(false);
     }
@@ -333,44 +375,51 @@ export const PostItem = ({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Link copied to clipboard");
+    toast.success("Link copied to clipboard", { id: `copy-${Date.now()}` });
   };
 
   const handleSchedule = async () => {
     if (!scheduleDate) return;
-    
+
     const scheduledDateTime = new Date(scheduleDate);
     const [hours, minutes] = scheduleTime.split(":").map(Number);
     scheduledDateTime.setHours(hours, minutes);
-    
+
     const now = new Date();
     if (scheduledDateTime < now) {
-      toast.error("Cannot schedule for a past time. Please select a future time.");
+      toast.error(
+        "Cannot schedule for a past time. Please select a future time.",
+        { id: `schedule-error-${Date.now()}` }
+      );
       return;
     }
-    
+
     setIsScheduling(true);
     try {
       const updatedPost = await apiFetch<IPost>(`/api/posts/${post.id}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({
-          scheduledPublishDate: scheduledDateTime
+          scheduledPublishDate: scheduledDateTime,
         }),
       });
-      
+
       if (updatedPost) {
         post.scheduledPublishDate = updatedPost.scheduledPublishDate;
-        
+
         if (onEdit) {
           await onEdit(post.id, updatedPost.content);
         }
-        
+
         setShowScheduler(false);
-        toast.success("Post scheduled successfully");
+        toast.success("Post scheduled successfully", {
+          id: `schedule-${Date.now()}`,
+        });
       }
     } catch (error) {
       console.error("Error scheduling post:", error);
-      toast.error("Failed to schedule post. Please try again.");
+      toast.error("Failed to schedule post. Please try again.", {
+        id: `schedule-error-${Date.now()}`,
+      });
     } finally {
       setIsScheduling(false);
     }
@@ -378,40 +427,46 @@ export const PostItem = ({
 
   const handleCancelSchedule = async () => {
     if (isCancelingSchedule) return;
-    
+
     setIsCancelingSchedule(true);
     try {
       const updatedPost = await apiFetch<IPost>(`/api/posts/${post.id}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({
-          scheduledPublishDate: null
+          scheduledPublishDate: null,
         }),
       });
-      
+
       if (updatedPost) {
         post.scheduledPublishDate = updatedPost.scheduledPublishDate;
-        
+
         if (onEdit) {
           await onEdit(post.id, updatedPost.content);
         }
-        
-        toast.success("Publication schedule has been canceled");
+
+        toast.success("Publication schedule has been canceled", {
+          id: `cancel-schedule-${Date.now()}`,
+        });
       }
     } catch (error) {
       console.error("Error canceling schedule:", error);
-      toast.error("Failed to cancel schedule. Please try again.");
+      toast.error("Failed to cancel schedule. Please try again.", {
+        id: `cancel-schedule-error-${Date.now()}`,
+      });
     } finally {
       setIsCancelingSchedule(false);
     }
   };
 
- 
-  const hasScheduledDate = !isPublished && post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date();
-  
-  const isAuthorized = !!user?.id && !user?.id.startsWith('anonymous-');
-  
-  const isSharedPage = pathname.includes('/shared/');
-  
+  const hasScheduledDate =
+    !isPublished &&
+    post.scheduledPublishDate &&
+    new Date(post.scheduledPublishDate) > new Date();
+
+  const isAuthorized = !!user?.id && !user?.id.startsWith("anonymous-");
+
+  const isSharedPage = pathname.includes("/shared/");
+
   const isEditable = editable || (liveView && isAuthorized) || isEditing;
 
   const toggleEditing = () => {
@@ -437,20 +492,17 @@ export const PostItem = ({
             currentUserId={user?.id || `anonymous-${socket.id}`}
           />
         )}
-        
+
         <RichTextEditor
           ref={editorRef}
           content={displayContent}
           onUpdate={handleContentUpdate}
           editable={isEditable}
         />
-        
+
         {(isEditing || (isEditable && liveView && !isSharedPage)) && (
           <div className="flex gap-2 mt-4">
-            <Button
-              onClick={handleSave}
-              variant="secondary"
-            >
+            <Button onClick={handleSave} variant="secondary">
               Save
             </Button>
             {isEditing && (
@@ -465,20 +517,22 @@ export const PostItem = ({
             )}
           </div>
         )}
-        
+
         {showScheduler && (
           <div className="mt-4 border p-4 rounded">
             <h3 className="text-lg font-medium mb-2">Schedule Publication</h3>
-            
+
             <div className="grid gap-4">
               <div>
                 <label className="block text-sm mb-1">Date</label>
                 <DatePickerInput
                   selected={scheduleDate}
-                  onChange={(date: Date | null) => date && setScheduleDate(date)}
+                  onChange={(date: Date | null) =>
+                    date && setScheduleDate(date)
+                  }
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm mb-1">Time</label>
                 <input
@@ -489,19 +543,19 @@ export const PostItem = ({
                 />
               </div>
               <div className="flex gap-2">
-                <Button 
-                  onClick={handleSchedule} 
+                <Button
+                  onClick={handleSchedule}
                   disabled={!scheduleDate || isScheduling}
                 >
                   {isScheduling ? "Scheduling..." : "Schedule"}
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => setShowScheduler(false)}
                 >
                   Cancel
                 </Button>
-              </div>             
+              </div>
             </div>
           </div>
         )}
@@ -511,16 +565,16 @@ export const PostItem = ({
           <span className="text-sm text-gray-500">
             {new Date(post.createdAt).toLocaleDateString()}
           </span>
-          
+
           {hasScheduledDate && (
-            <PostStatusBadge 
+            <PostStatusBadge
               status="scheduled"
               scheduledDate={post.scheduledPublishDate}
               showCancelButton={!isCancelingSchedule}
               onCancelSchedule={handleCancelSchedule}
             />
           )}
-          
+
           <div className="flex gap-2">
             {showShare && !isSharedPage && (
               <>
@@ -551,25 +605,22 @@ export const PostItem = ({
                 )}
               </>
             )}
-     
+
             {showSchedule && isAuthorized && !isPublished && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowScheduler(!showScheduler)}
               >
                 Schedule
               </Button>
             )}
-            
+
             {!isSharedPage && showEdit && (
-              <Button
-                onClick={toggleEditing}
-                variant="secondary"
-              >
+              <Button onClick={toggleEditing} variant="secondary">
                 {isEditing ? "Cancel Edit" : "Edit"}
               </Button>
             )}
-            
+
             {!isPublished && onPublish && (
               <Button onClick={handlePublish} disabled={isPublishing}>
                 {isPublishing ? "Publishing..." : "Publish"}
@@ -578,36 +629,46 @@ export const PostItem = ({
           </div>
         </div>
       </CardFooter>
-      
+
       <AlertDialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Share Post</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="mt-4">
-            <p className="text-sm text-gray-500 mb-2">Share this link with others:</p>
+            <p className="text-sm text-gray-500 mb-2">
+              Share this link with others:
+            </p>
             <div className="flex items-center gap-2">
-              <input 
-                type="text" 
-                value={shortLink} 
-                readOnly 
+              <input
+                type="text"
+                value={shortLink}
+                readOnly
                 className="flex-1 p-2 border rounded"
               />
-              <Button onClick={() => copyToClipboard(shortLink || '')}>
+              <Button onClick={() => copyToClipboard(shortLink || "")}>
                 Copy
               </Button>
             </div>
             <div className="mt-4 flex justify-between">
-              <Button variant="outline" onClick={() => setShowLinkDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowLinkDialog(false)}
+              >
                 Close
               </Button>
-              <Button 
-                variant="default" 
-                onClick={handleCreateShortLink}
-                disabled={isCreatingLink}
-              >
-                {isCreatingLink ? "Creating..." : "Generate New Link"}
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => router.push(shortLink || "")}>
+                  Go to
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleCreateShortLink}
+                  disabled={isCreatingLink}
+                >
+                  {isCreatingLink ? "Creating..." : "Generate New Link"}
+                </Button>
+              </div>
             </div>
           </div>
         </AlertDialogContent>

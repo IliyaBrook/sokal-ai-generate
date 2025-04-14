@@ -561,12 +561,16 @@ The application is containerized using Docker for consistent deployment across e
 
 ```txt
 SERVER_PORT=4000
+PORT=4000
 MONGO_USERNAME=your_mongo_username
 MONGO_PASSWORD=your_mongo_password
 JWT_SECRET=your_jwt_secret
 JWT_ACCESS_SECRET=your_jwt_access_secret
 JWT_REFRESH_SECRET=your_jwt_refresh_secret
 OPENAI_API_KEY=your_openai_api_key
+DB_URL=mongodb://your_mongo_username:your_mongo_password@localhost:27018/sokal-ai-db?authSource=admin
+FRONTEND_URL=http://localhost:80,http://frontend:3000
+NODE_ENV=production
 ```
 
 2. For development, create `backend/.env.development` with similar variables.

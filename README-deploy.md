@@ -59,6 +59,9 @@ JWT_SECRET=your_jwt_secret_key
 JWT_ACCESS_SECRET=your_jwt_access_secret
 JWT_REFRESH_SECRET=your_jwt_refresh_secret
 OPENAI_API_KEY=your_openai_api_key
+DB_URL=mongodb://your_mongo_username:your_secure_password@localhost:27018/sokal-ai-db?authSource=admin
+FRONTEND_URL=http://localhost:80,http://frontend:3000
+NODE_ENV=production
 ```
 
 Additionally, ensure `frontend/.env.production` contains:
@@ -71,18 +74,28 @@ NEXT_PUBLIC_API_URL=http://backend:4000/api
 A GitHub Actions workflow is provided to automatically deploy your application when you push to the main branch. To use it:
 
 1. Add the following secrets to your GitHub repository:
-   - `SERVER_IP`: Your server's IP address
+   - `SERVER_IP`: Your server's IP address (currently hardcoded to 157.180.25.1 in workflow)
    - `SSH_PRIVATE_KEY`: Your SSH private key
    - `SSH_KNOWN_HOSTS`: Output of `ssh-keyscan -H your_server_ip`
    - `MONGO_USERNAME`: MongoDB username
    - `MONGO_PASSWORD`: MongoDB password
-   - `SERVER_PORT`: Server port (typically 4000)
+   - `SERVER_PORT`: Server port (4000)
    - `JWT_SECRET`: JWT secret key
    - `JWT_ACCESS_SECRET`: JWT access token secret
    - `JWT_REFRESH_SECRET`: JWT refresh token secret
    - `OPENAI_API_KEY`: Your OpenAI API key
 
 2. Push to the main branch to trigger a deployment
+
+Note: The CI/CD workflow currently has a hardcoded server IP (157.180.25.1). If you're using a different server, update the IP in `.github/workflows/deploy.yml`.
+
+## Docker Compose Configuration
+
+The Docker Compose setup includes:
+
+- MongoDB (exposed on port 27018)
+- Backend (exposed on port 4001)
+- Frontend (exposed on port 80)
 
 ## Domain Setup (Optional)
 
