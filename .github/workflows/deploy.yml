@@ -153,58 +153,6 @@ jobs:
           echo "Creating yarn.lock file..."
           touch yarn.lock
 
-      - name: Create docker-compose.yml with correct context
-        run: |
-          cat > docker-compose.yml << 'EOL'
-          version: '3.8'
-          
-          services:
-            mongodb:
-              image: mongo:latest
-              restart: always
-              environment:
-                MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-                MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-              volumes:
-                - mongodb_data:/data/db
-              ports:
-                - "27017:27017"
-            
-            backend:
-              build:
-                context: .
-                dockerfile: backend/Dockerfile
-              restart: always
-              depends_on:
-                - mongodb
-              ports:
-                - "${SERVER_PORT}:${SERVER_PORT}"
-              environment:
-                - NODE_ENV=production
-                - MONGO_USERNAME=${MONGO_USERNAME}
-                - MONGO_PASSWORD=${MONGO_PASSWORD}
-                - SERVER_PORT=${SERVER_PORT}
-                - JWT_SECRET=${JWT_SECRET}
-                - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
-                - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
-                - OPENAI_API_KEY=${OPENAI_API_KEY}
-            
-            frontend:
-              build:
-                context: .
-                dockerfile: frontend/Dockerfile
-              restart: always
-              depends_on:
-                - backend
-              ports:
-                - "80:3000"
-              environment:
-                - NODE_ENV=production
-          
-          volumes:
-            mongodb_data:
-          EOL
-          
       - name: Install Docker on server (if needed)
         run: |
           echo "Installing Docker on server 157.180.25.1..."
