@@ -19,6 +19,8 @@ RUN yarn install --frozen-lockfile --network-timeout 600000 || \
     yarn install --frozen-lockfile --network-timeout 600000 || \
     yarn install --frozen-lockfile --network-timeout 600000
 
+RUN yarn --cwd shared-types build
+
 RUN yarn build:server
 
 RUN chown -R node:node /app/backend
