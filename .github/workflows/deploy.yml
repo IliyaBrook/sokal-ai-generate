@@ -11,7 +11,7 @@ jobs:
       - name: Test Secrets
         run: |
           echo "Checking if secrets are available..."
-          # Безопасные проверки секретов (без вывода значений)
+          # Safe secret checks (without displaying values)
           if [ -n "${{ secrets.SERVER_IP }}" ]; then
             echo "SERVER_IP is set ✓"
           else
@@ -48,15 +48,15 @@ jobs:
             echo "SERVER_PORT is not set! ✗"
           fi
           
-          # Проверка сетевых подключений
+          # Network connectivity check
           echo "Testing network connectivity to 157.180.25.1..."
           ping -c 3 157.180.25.1 || echo "Ping failed"
           
-          # Проверка SSH команды
+          # SSH command check
           echo "SSH command info:"
           ssh -V
           
-          # Вывод информации об окружении
+          # Environment information
           echo "Environment details:"
           uname -a
           
@@ -79,7 +79,7 @@ jobs:
           echo "StrictHostKeyChecking no" > ~/.ssh/config
           echo "LogLevel DEBUG3" >> ~/.ssh/config
           
-          # Попытка подключения
+          # Connection attempt
           echo "Testing SSH connection to 157.180.25.1"
           timeout 10 ssh -v root@157.180.25.1 "echo 'Connection successful'" || echo "Connection timed out"
 
@@ -221,6 +221,57 @@ jobs:
           # Check if files were copied successfully
           echo "Verifying copied files..."
           ssh -o StrictHostKeyChecking=no root@157.180.25.1 "ls -la /root/sokal-ai-generate"
+          
+          # Create package.json on the server directly
+          echo "Creating package.json on server..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "cat > /root/sokal-ai-generate/package.json << 'EOL'
+          {
+            \"name\": \"sokal_ai_generate\",
+            \"private\": true,
+            \"version\": \"1.0.0\",
+            \"description\": \"Sokal_ai AI-Powered Content Generator\",
+            \"main\": \"index.js\",
+            \"repository\": \"https://github.com/IliyaBrook/sokal_ai_generate\",
+            \"author\": \"iliyabrook <iliyabrook1987@gmail.com>\",
+            \"license\": \"MIT\",
+            \"engines\": {
+              \"node\": \">=22.0.0 <23.0.0\"
+            },
+            \"scripts\": {
+              \"watch:types\": \"yarn --cwd shared-types watch\",
+              \"start:production\": \"yarn build && cross-env PORT=80 yarn --cwd backend start\",
+              \"build\": \"yarn build:server && yarn build:client\",
+              \"build:server\": \"cross-env DISABLE_ESLINT=true yarn --cwd backend build\",
+              \"build:client\": \"yarn --cwd frontend build --no-lint\",
+              \"dev\": \"concurrently \\\"yarn watch:types\\\" \\\"yarn --cwd backend start:dev\\\" \\\"yarn --cwd frontend dev\\\"\",
+              \"dev:server\": \"yarn --cwd backend start:dev\",
+              \"dev:client\": \"yarn --cwd frontend dev\",
+              \"lint\": \"yarn lint:server && yarn lint:client\",
+              \"lint:server\": \"yarn --cwd backend lint\",
+              \"lint:client\": \"yarn --cwd frontend lint\",
+              \"format\": \"yarn format:server && yarn format:client\",
+              \"format:server\": \"yarn --cwd backend format\",
+              \"format:client\": \"yarn --cwd frontend format\"
+            },
+            \"workspaces\": [
+              \"frontend\",
+              \"backend\",
+              \"shared-types\",
+              \"configs\"
+            ],
+            \"dependencies\": {
+              \"bcryptjs\": \"^3.0.2\",
+              \"cross-env\": \"^7.0.3\"
+            },
+            \"devDependencies\": {
+              \"concurrently\": \"^9.1.2\"
+            }
+          }
+          EOL"
+          
+          # Create empty yarn.lock file on server
+          echo "Creating yarn.lock on server..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "touch /root/sokal-ai-generate/yarn.lock"
           
           # Run docker-compose on the server
           echo "Starting containers on server..."
