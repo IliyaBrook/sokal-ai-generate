@@ -21,7 +21,7 @@ RUN yarn install --frozen-lockfile --network-timeout 600000 || \
     yarn install --frozen-lockfile --network-timeout 600000 || \
     yarn install --frozen-lockfile --network-timeout 600000
 
-RUN yarn --cwd shared-types build
+RUN cd shared-types && npx tsc --skipLibCheck
 
 RUN yarn build:client
 
