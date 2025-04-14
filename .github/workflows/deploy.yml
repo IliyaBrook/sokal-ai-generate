@@ -171,11 +171,7 @@ jobs:
                 - "27017:27017"
             
             backend:
-              build:
-                context: .
-                dockerfile: backend/Dockerfile
-                args:
-                  - NODE_ENV=production
+              build: ./backend
               restart: always
               depends_on:
                 - mongodb
@@ -183,18 +179,23 @@ jobs:
                 - "${SERVER_PORT}:${SERVER_PORT}"
               environment:
                 - NODE_ENV=production
+                - MONGO_USERNAME=${MONGO_USERNAME}
+                - MONGO_PASSWORD=${MONGO_PASSWORD}
+                - SERVER_PORT=${SERVER_PORT}
+                - JWT_SECRET=${JWT_SECRET}
+                - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+                - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+                - OPENAI_API_KEY=${OPENAI_API_KEY}
             
             frontend:
-              build:
-                context: .
-                dockerfile: frontend/Dockerfile
-                args:
-                  - NODE_ENV=production
+              build: ./frontend
               restart: always
               depends_on:
                 - backend
               ports:
                 - "80:3000"
+              environment:
+                - NODE_ENV=production
           
           volumes:
             mongodb_data:
@@ -211,7 +212,7 @@ jobs:
           
           # Create project directory with verbose output
           echo "Creating project directory..."
-          ssh -v -o StrictHostKeyChecking=no root@157.180.25.1 "mkdir -p /root/sokal-ai-generate"
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "mkdir -p /root/sokal-ai-generate"
           
           # Copy necessary files with verbose output
           echo "Copying files to server..."
@@ -273,6 +274,53 @@ jobs:
           echo "Creating yarn.lock on server..."
           ssh -o StrictHostKeyChecking=no root@157.180.25.1 "touch /root/sokal-ai-generate/yarn.lock"
           
-          # Run docker-compose on the server
+          # Update Dockerfiles on server
+          echo "Updating Dockerfiles to work with simpler context..."
+          
+          # Update backend Dockerfile
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "cat > /root/sokal-ai-generate/backend/Dockerfile << 'EOL'
+          FROM node:22-alpine
+
+          WORKDIR /app
+          
+          # Copy all backend files
+          COPY . /app/
+          
+          # Copy shared-types
+          COPY ../shared-types /app/shared-types/
+          COPY ../configs /app/configs/
+          
+          # Install dependencies and build
+          RUN yarn install --frozen-lockfile
+          RUN yarn build
+          
+          EXPOSE 4000
+          
+          CMD [\"yarn\", \"start:prod\"]
+          EOL"
+          
+          # Update frontend Dockerfile
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "cat > /root/sokal-ai-generate/frontend/Dockerfile << 'EOL'
+          FROM node:22-alpine
+          
+          WORKDIR /app
+          
+          # Copy all frontend files
+          COPY . /app/
+          
+          # Copy shared-types
+          COPY ../shared-types /app/shared-types/
+          COPY ../configs /app/configs/
+          
+          # Install dependencies and build
+          RUN yarn install --frozen-lockfile
+          RUN yarn build
+          
+          EXPOSE 3000
+          
+          CMD [\"yarn\", \"start\"]
+          EOL"
+          
+          # Run docker-compose on the server with debug output
           echo "Starting containers on server..."
-          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "cd /root/sokal-ai-generate && docker-compose down && docker-compose up -d --build" 
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "cd /root/sokal-ai-generate && docker-compose down && DEBUG=* docker-compose up -d --build" 
