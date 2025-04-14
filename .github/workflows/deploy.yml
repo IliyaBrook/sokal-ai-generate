@@ -171,7 +171,9 @@ jobs:
                 - "27017:27017"
             
             backend:
-              build: ./backend
+              build:
+                context: .
+                dockerfile: backend/Dockerfile
               restart: always
               depends_on:
                 - mongodb
@@ -188,7 +190,9 @@ jobs:
                 - OPENAI_API_KEY=${OPENAI_API_KEY}
             
             frontend:
-              build: ./frontend
+              build:
+                context: .
+                dockerfile: frontend/Dockerfile
               restart: always
               depends_on:
                 - backend
@@ -283,15 +287,22 @@ jobs:
 
           WORKDIR /app
           
-          # Copy all backend files
-          COPY . /app/
+          # Copy package.json files from all workspaces
+          COPY package.json yarn.lock ./
+          COPY backend/package.json ./backend/
+          COPY shared-types/package.json ./shared-types/
+          COPY configs/package.json ./configs/
           
-          # Copy shared-types
-          COPY ../shared-types /app/shared-types/
-          COPY ../configs /app/configs/
+          # Copy source code
+          COPY backend ./backend/
+          COPY shared-types ./shared-types/
+          COPY configs ./configs/
           
-          # Install dependencies and build
+          # Install dependencies
           RUN yarn install --frozen-lockfile
+          
+          # Switch to backend directory and build
+          WORKDIR /app/backend
           RUN yarn build
           
           EXPOSE 4000
@@ -305,15 +316,22 @@ jobs:
           
           WORKDIR /app
           
-          # Copy all frontend files
-          COPY . /app/
+          # Copy package.json files from all workspaces
+          COPY package.json yarn.lock ./
+          COPY frontend/package.json ./frontend/
+          COPY shared-types/package.json ./shared-types/
+          COPY configs/package.json ./configs/
           
-          # Copy shared-types
-          COPY ../shared-types /app/shared-types/
-          COPY ../configs /app/configs/
+          # Copy source code
+          COPY frontend ./frontend/
+          COPY shared-types ./shared-types/
+          COPY configs ./configs/
           
-          # Install dependencies and build
+          # Install dependencies
           RUN yarn install --frozen-lockfile
+          
+          # Switch to frontend directory and build
+          WORKDIR /app/frontend
           RUN yarn build
           
           EXPOSE 3000
