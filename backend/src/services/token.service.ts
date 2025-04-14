@@ -25,6 +25,15 @@ export class TokenService {
         'JWT_REFRESH_SECRET',
       ),
     } as EnvironmentVariables
+
+    console.log('TokenService initialized with secrets:')
+    console.log('JWT_ACCESS_SECRET exists:', !!this.config.JWT_ACCESS_SECRET)
+    console.log('JWT_REFRESH_SECRET exists:', !!this.config.JWT_REFRESH_SECRET)
+    
+    if (!this.config.JWT_ACCESS_SECRET || !this.config.JWT_REFRESH_SECRET) {
+      console.error('JWT secrets are missing! This will cause authentication failures.')
+      console.log('Environment variables available:', Object.keys(process.env))
+    }
   }
 
   validateToken(
@@ -62,12 +71,23 @@ export class TokenService {
 
   generateTokens(user: UserDto) {
     const payload = { id: user.id, email: user.email }
+    
+    const accessSecret = this.configService.get('JWT_ACCESS_SECRET')
+    const refreshSecret = this.configService.get('JWT_REFRESH_SECRET')
+    
+    if (!accessSecret || !refreshSecret) {
+      console.error('JWT secrets are missing during token generation!')
+      console.log('JWT_ACCESS_SECRET:', !!accessSecret)
+      console.log('JWT_REFRESH_SECRET:', !!refreshSecret)
+      throw new Error('JWT secrets are required for token generation')
+    }
+    
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('JWT_ACCESS_SECRET'),
+      secret: accessSecret,
       expiresIn: '30m',
     })
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('JWT_REFRESH_SECRET'),
+      secret: refreshSecret,
       expiresIn: '30d',
     })
     return {

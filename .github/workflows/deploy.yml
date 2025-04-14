@@ -31,7 +31,7 @@ jobs:
           echo "Testing SSH connection to 157.180.25.1"
           timeout 10 ssh -v root@157.180.25.1 "echo 'Connection successful'" || echo "Connection timed out"
 
-      - name: Create root .env file
+      - name: Create root .env file for Docker Compose
         run: |
           echo "MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}" > .env
           echo "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" >> .env
@@ -41,26 +41,13 @@ jobs:
           echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
           echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+          echo "FRONTEND_URL=http://localhost:80,http://frontend:3000,http://157.180.25.1,http://157.180.25.1:80" >> .env
+          echo "NODE_ENV=production" >> .env
           
       - name: Set Server IP manually
         run: |
           echo "Setting SERVER_IP manually to 157.180.25.1"
           echo "SERVER_IP=157.180.25.1" >> $GITHUB_ENV
-          
-      - name: Create backend .env.production file
-        run: |
-          echo "PORT=${{ secrets.SERVER_PORT }}" > backend/.env.production
-          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> backend/.env.production
-          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> backend/.env.production
-          echo "DB_URL=mongodb://${{ secrets.MONGO_USERNAME }}:${{ secrets.MONGO_PASSWORD }}@mongodb:27017/sokal-ai-db?authSource=admin" >> backend/.env.production
-          echo "NODE_ENV=production" >> backend/.env.production
-          echo "FRONTEND_URL=http://localhost:80,http://frontend:3000,http://157.180.25.1,http://157.180.25.1:80" >> backend/.env.production
-          echo "SOCKET_TRANSPORT=['websocket', 'polling']" >> backend/.env.production
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> backend/.env.production
-          
-      - name: Create frontend .env.production file
-        run: |
-          echo "NEXT_PUBLIC_API_URL=http://157.180.25.1:4001/api" > frontend/.env.production
           
       - name: Install Docker on server (if needed)
         run: |

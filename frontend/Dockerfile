@@ -11,8 +11,6 @@ COPY frontend/package.json ./frontend/
 COPY shared-types/package.json ./shared-types/
 COPY configs/package.json ./configs/
 
-COPY frontend/.env.production ./frontend/
-
 COPY frontend ./frontend
 COPY shared-types ./shared-types
 COPY configs ./configs

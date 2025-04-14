@@ -22,13 +22,15 @@ services:
     ports:
       - "4001:4000"
     environment:
-      PORT: ${SERVER_PORT}
-      JWT_ACCESS_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_SECRET}
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       DB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/sokal-ai-db?authSource=admin
-      NODE_ENV: production
-      FRONTEND_URL: "http://localhost:80,http://frontend:3000"
+      NODE_ENV: ${NODE_ENV}
+      FRONTEND_URL: ${FRONTEND_URL}
       SOCKET_TRANSPORT: "['websocket', 'polling']"
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     depends_on:
       - mongodb
     networks:
@@ -41,8 +43,8 @@ services:
     ports:
       - "80:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:4001
-      - NODE_ENV=production
+      NEXT_PUBLIC_API_URL: http://157.180.25.1:4001/api
+      NODE_ENV: ${NODE_ENV}
     depends_on:
       - backend
     networks:
