@@ -60,7 +60,7 @@ jobs:
           
       - name: Create frontend .env.production file
         run: |
-          echo "NEXT_PUBLIC_API_URL=http://157.180.25.1:${{ secrets.SERVER_PORT }}/api" > frontend/.env.production
+          echo "NEXT_PUBLIC_API_URL=http://157.180.25.1:4001/api" > frontend/.env.production
           
       - name: Install Docker on server (if needed)
         run: |
