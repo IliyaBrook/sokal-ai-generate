@@ -1,4 +1,5 @@
-import ClientPostLoader from '@/components/posts/ClientPostLoader'
+import { PostItem } from '@/components/posts'
+import type { IPost } from '@sokal_ai_generate/shared-types'
 import type { Metadata } from 'next'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,6 +34,24 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+const getPublicPosts = async () => {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/public`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "force-cache",
+      next: { revalidate: 60 },
+    });
+    if (!response.ok) {
+      return [];
+    }
+    return await response.json();
+  } catch (error) {
+    return [];
+  }
+};
+
 export default async function Home() {
   const posts = await getPublicPosts();
 
@@ -54,27 +73,21 @@ export default async function Home() {
             <h2 className="text-3xl font-bold text-gray-800 mb-3">Published Content</h2>
             <p className="text-gray-600 text-lg">Explore AI-generated posts shared by our community</p>
           </div>
-
-          <ClientPostLoader initialPosts={posts} />
+          {posts.length === 0 ? (
+            <div className="text-center p-10 bg-white rounded-lg shadow-sm">
+              <p className="text-gray-500">No published posts available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-1">
+              {posts.map((post: IPost) => (
+                <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <PostItem post={post} className="w-full" />
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </main>
     </>
   );
 }
-
-const getPublicPosts = async () => {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/public`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      next: { revalidate: 60 },
-    });
-    if (!response.ok) {
-      return [];
-    }
-    return await response.json();
-  } catch (error) {
-    return [];
-  }
-};
