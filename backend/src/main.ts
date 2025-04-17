@@ -12,8 +12,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api')
   
   app.enableCors({
-    origin: function(origin, callback) {
-      // Allow connections without origin (like mobile apps or curl requests)
+    origin: function(origin:any, callback: any) {
       if (!origin) return callback(null, true);
       
       const allowedOrigins = [

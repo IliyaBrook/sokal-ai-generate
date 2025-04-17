@@ -11,22 +11,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Clean GitHub Actions cache
+        run: |
+          echo "Cleaning GitHub Actions cache..."
+          rm -rf ~/.npm
+          rm -rf ~/.yarn
+          rm -rf ~/.cache
+
       - name: Setup SSH key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
-          
+
       - name: Debug SSH connection with verbose output
         run: |
           echo "Debugging SSH connection..."
           echo "Setting up SSH config with verbose logging"
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          
+
           echo "StrictHostKeyChecking no" > ~/.ssh/config
           echo "LogLevel DEBUG3" >> ~/.ssh/config
-          
+
           # Connection attempt
           echo "Testing SSH connection to 157.180.25.1"
           timeout 10 ssh -v root@157.180.25.1 "echo 'Connection successful'" || echo "Connection timed out"
@@ -43,41 +50,57 @@ jobs:
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
           echo "FRONTEND_URL=http://localhost:80,http://frontend:3000,http://157.180.25.1,http://157.180.25.1:80" >> .env
           echo "NODE_ENV=production" >> .env
-          
+
       - name: Set Server IP manually
         run: |
           echo "Setting SERVER_IP manually to 157.180.25.1"
           echo "SERVER_IP=157.180.25.1" >> $GITHUB_ENV
-          
+
       - name: Install Docker on server (if needed)
         run: |
           echo "Installing Docker on server 157.180.25.1..."
           ssh root@157.180.25.1 "if ! command -v docker &> /dev/null; then apt update && apt install -y docker.io docker-compose && systemctl enable docker && systemctl start docker; fi"
-          
+
       - name: Deploy to Hetzner with detailed logging
         run: |
           echo "Deploying to server 157.180.25.1..."
-          
+
           # Create project directory with verbose output
           echo "Creating project directory..."
           ssh -o StrictHostKeyChecking=no root@157.180.25.1 "mkdir -p /root/sokal-ai-generate"
-          
+
           # Clean up Docker resources
           echo "Cleaning up Docker resources..."
           ssh -o StrictHostKeyChecking=no root@157.180.25.1 "docker system prune -af --volumes"
-          
+
+          # Clean up old project files to prevent issues with cached or deleted files
+          echo "Cleaning up old project files..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "rm -rf /root/sokal-ai-generate/*"
+
+          # Ensure node_modules are cleaned up
+          echo "Cleaning up node_modules..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "find /root/sokal-ai-generate -name 'node_modules' -type d -prune -exec rm -rf '{}' \;"
+
+          # Clean up Next.js build cache
+          echo "Cleaning up Next.js build cache..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "find /root/sokal-ai-generate -name '.next' -type d -prune -exec rm -rf '{}' \;"
+
           # Check disk space
           echo "Checking disk space..."
           ssh -o StrictHostKeyChecking=no root@157.180.25.1 "df -h"
-          
+
           # Copy necessary files with verbose output
           echo "Copying files to server..."
           scp -v -r ./* ./.env ./.dockerignore root@157.180.25.1:/root/sokal-ai-generate/
-          
+
           # Check if files were copied successfully
           echo "Verifying copied files..."
           ssh -o StrictHostKeyChecking=no root@157.180.25.1 "ls -la /root/sokal-ai-generate"
-          
+
+          # Verify that problematic files don't exist
+          echo "Verifying that ErrorIcon.tsx doesn't exist..."
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "find /root/sokal-ai-generate -name 'ErrorIcon.tsx' | wc -l | grep -q '0' && echo 'ErrorIcon.tsx not found, good!' || (echo 'ERROR: ErrorIcon.tsx found, removing it...' && find /root/sokal-ai-generate -name 'ErrorIcon.tsx' -delete)"
+
           # Run docker-compose on the server with debug output
           echo "Starting containers on server..."
-          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "cd /root/sokal-ai-generate && docker-compose down && DEBUG=* docker-compose up -d --build" 
+          ssh -o StrictHostKeyChecking=no root@157.180.25.1 "cd /root/sokal-ai-generate && docker-compose down && docker builder prune -af && DEBUG=* docker-compose build --no-cache && docker-compose up -d"
