@@ -30,7 +30,7 @@ export default function UserPosts() {
   };
 
   useEffect(() => {
-    fetchPosts();
+    void fetchPosts();
   }, []);
 
   if (isLoading) {

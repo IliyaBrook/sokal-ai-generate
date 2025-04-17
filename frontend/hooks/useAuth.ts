@@ -1,6 +1,5 @@
-import { useState } from 'react'
-
 import type { IAuthResponse } from '@sokal_ai_generate/shared-types'
+import { useState } from 'react'
 
 interface AuthOptions {
   endpoint: string
@@ -31,11 +30,10 @@ export const useAuth = () => {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Authentication error')
+        return Promise.reject(new Error(errorData.message || 'Authentication error'))
       }
 
-      const result = await response.json()
-      return result
+      return await response.json()
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Authentication error')
       throw error

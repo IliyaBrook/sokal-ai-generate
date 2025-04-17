@@ -1,4 +1,5 @@
-"use client";
+'use client'
+import "client-only"
 
 import { Button } from "@/components/ui";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { ICreatePostData, IPost } from "@/types";
-import { useState } from "react";
+import React, { useState } from "react";
 import { PostItem } from "./PostItem";
 
 export const GeneratePost = ({
@@ -39,7 +40,7 @@ export const GeneratePost = ({
       });
 
       if (!post) {
-        throw new Error("Failed to generate post");
+        console.error("Failed to generate post")
       }
       setGeneratedPost({
         ...post,
@@ -73,7 +74,7 @@ export const GeneratePost = ({
       });
 
       if (!savedPost) {
-        throw new Error("Failed to save post");
+        console.error("Failed to save post");
       }
 
       onPostGenerated(savedPost);

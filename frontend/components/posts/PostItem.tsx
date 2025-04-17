@@ -19,7 +19,7 @@ import { socket } from "@/lib/socket";
 import { IPost } from "@/types";
 import "highlight.js/styles/atom-one-dark.css";
 import { usePathname } from "next/navigation";
-import { useContext, useEffect, useRef, useState, createContext } from "react";
+import React, { useContext, useEffect, useRef, useState, createContext } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "sonner";
 import {
@@ -54,7 +54,7 @@ interface ShortLinkResponse {
 interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
   onPublish?: (postId: string) => Promise<any> | undefined;
-  onEdit?: (id: string, content: string) => Promise<void>;
+  onEdit?: (id: string, content: string) => Promise<IPost>;
   showShare?: boolean;
   showSchedule?: boolean;
   liveView?: boolean;
@@ -193,7 +193,7 @@ export const PostItem = ({
           await updateRequest;
           initialContentRef.current = liveContent;
           lastUpdateRequestRef.current = null;
-        } catch (error) {
+        } catch{
           lastUpdateRequestRef.current = null;
         }
       }, 2000);
@@ -226,7 +226,7 @@ export const PostItem = ({
         toast.success("Post published successfully", {
           id: `publish-${Date.now()}`,
         });
-      } catch (error) {
+      } catch {
         toast.error("Failed to publish post", {
           id: `publish-error-${Date.now()}`,
         });
@@ -282,7 +282,7 @@ export const PostItem = ({
       if (editingContext.activeEditPostId === post.id) {
         editingContext.setActiveEditPostId(null);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to save post", { id: `save-error-${Date.now()}` });
       lastUpdateRequestRef.current = null;
     }
@@ -356,7 +356,7 @@ export const PostItem = ({
   };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
     toast.success("Link copied to clipboard", { id: `copy-${Date.now()}` });
   };
 
@@ -509,7 +509,7 @@ export const PostItem = ({
                 <label className="block text-sm mb-1">Date</label>
                 <DatePickerInput
                   selected={scheduleDate}
-                  onChange={(date: Date | null) =>
+                  onChangeAction={(date: Date | null) =>
                     date && setScheduleDate(date)
                   }
                 />

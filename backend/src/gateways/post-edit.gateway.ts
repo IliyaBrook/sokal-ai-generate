@@ -56,10 +56,7 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-    // Clean up active editors when client disconnects
     this.removeFromAllRooms(client);
-    
-    // Remove from userSocketsMap
     this.removeSocketFromUserMap(client.id);
   }
   
@@ -217,11 +214,8 @@ export class PostEditGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     this.logger.log(`Saving content for post ${postId}`);
     
     try {
-      // Save to database
       const updatedPost = await this.postService.updatePost(postId, { content });
-      
-      // Notify all clients that content was saved
-      this.server.to(`post:${postId}`).emit('content-saved', { 
+      this.server.to(`post:${postId}`).emit('content-saved', {
         postId, 
         timestamp: new Date().toISOString() 
       });

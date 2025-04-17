@@ -29,7 +29,7 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
   const pathname = usePathname()
 
   useLayoutEffect(() => {
-      fetchWithRefresh<IUser>({
+      void fetchWithRefresh<IUser>({
       url: '/api/users/auth',
       onGetData: (data) => {
         setUserData(data)

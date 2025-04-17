@@ -7,7 +7,7 @@ import { cn } from "@/lib"
 
 const Switch = React.forwardRef<
 // TODO  'ElementRef' is deprecated.ts
-  React.ElementRef<typeof SwitchPrimitives.Root>,
+  React.ComponentRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root

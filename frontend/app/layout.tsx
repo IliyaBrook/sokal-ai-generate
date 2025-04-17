@@ -4,6 +4,7 @@ import "./globals.css";
 import "highlight.js/scss/atom-one-dark.scss";
 import { NavBar } from "@/components/ui/NavBar";
 import { UserDataProvider } from "@/contexts/UserData.context";
+import React from 'react'
 import { Toaster } from "sonner";
 const geistSans = Geist({
   variable: "--font-geist-sans",

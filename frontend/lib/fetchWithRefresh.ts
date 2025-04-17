@@ -2,7 +2,7 @@ import { IAuthResponse } from "@sokal_ai_generate/shared-types";
 
 type authResponse = Omit<IAuthResponse, "refreshToken">;
 
-interface IfetchWithRefresh<T> {
+interface IFetchWithRefresh<T> {
   url: string;
   options?: RequestInit;
   onGetRefreshUserData?: (data: authResponse) => void;
@@ -19,7 +19,7 @@ export const fetchWithRefresh = async <T>({
   onGetData,
   onGetRefreshUserData,
   onErrorMessage,
-}: IfetchWithRefresh<T>) => {
+}: IFetchWithRefresh<T>): Promise<void> => {
   const token = localStorage.getItem("accessToken");
   if (token) {
     const defaultHeaders: Record<string, string> = {

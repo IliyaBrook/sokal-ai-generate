@@ -1,12 +1,13 @@
 "use client";
 
 import { CalendarIcon } from "lucide-react";
+import React from 'react'
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface DatePickerInputProps {
   selected: Date | undefined;
-  onChange: (date: Date | null) => void;
+  onChangeAction: (date: Date | null) => void;
   dateFormat?: string;
   minDate?: Date;
   placeholderText?: string;
@@ -19,7 +20,7 @@ interface DatePickerInputProps {
 
 export const DatePickerInput = ({
   selected,
-  onChange,
+  onChangeAction,
   dateFormat = "MMMM d, yyyy",
   minDate = new Date(),
   placeholderText = "Select a date",
@@ -28,12 +29,12 @@ export const DatePickerInput = ({
   showPopperArrow = false,
   todayButton = "Today",
   highlightDates = [new Date()],
-}: DatePickerInputProps) => {
+}: DatePickerInputProps): React.ReactElement => {
   return (
     <div className="relative">
       <DatePicker
         selected={selected}
-        onChange={onChange}
+        onChange={onChangeAction}
         dateFormat={dateFormat}
         minDate={minDate}
         placeholderText={placeholderText}

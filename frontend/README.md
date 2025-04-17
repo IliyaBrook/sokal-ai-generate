@@ -18,13 +18,13 @@ The architecture follows a clean separation of concerns with distinct modules:
 
 ### System Structure Details
 
-The project utilizes a monorepo architecture managed with Yarn Workspaces, containing four primary modules:
+The project uses a monorepo architecture managed with Yarn Workspaces, containing four primary modules:
 
 1. **Backend (NestJS)**
-   - Modular structure with controllers, services, DTOs and schemas
+   - Modular structure with controllers, services, DTOs, and schemas
    - MongoDB integration via Mongoose
    - JWT authentication with access/refresh token mechanism
-   - REST API endpoints for user management, content generation and sharing
+   - REST API endpoints for user management, content generation, and sharing
    - WebSocket implementation for real-time collaboration
 
 2. **Frontend (Next.js)**
@@ -40,7 +40,7 @@ The project utilizes a monorepo architecture managed with Yarn Workspaces, conta
    - Ensures type consistency across the application
 
 4. **Configs**
-   - Shared configuration for linting, formatting and TypeScript
+   - Shared configuration for linting, formatting, and TypeScript
    - Ensures consistent code quality across all modules
 
 ## API Reference
@@ -66,7 +66,7 @@ POST /auth/signup
 
 **Response (200 OK):**
 
-```typescript
+```text
 {
   user: {
     id: string;
@@ -100,7 +100,7 @@ POST /auth/login
 ```
 
 **Response (200 OK):**
-```typescript
+```text
 {
   user: {
     id: string;
@@ -187,7 +187,7 @@ POST /posts/save
 - `Authorization: Bearer {accessToken}`
 
 **Request Body:**
-```typescript
+```text
 {
   title: string;                    // Post title
   content: string;                  // Post content
@@ -199,7 +199,7 @@ POST /posts/save
 ```
 
 **Response (201 Created):**
-```typescript
+```text
 {
   id: string;
   title: string;
@@ -228,7 +228,7 @@ GET /posts/user
 - `Authorization: Bearer {accessToken}`
 
 **Response (200 OK):**
-```typescript
+```text
 [
   {
     id: string;
@@ -259,7 +259,7 @@ GET /posts/:id
 - `id`: Post ID
 
 **Response (200 OK):**
-```typescript
+```text
 {
   id: string;
   title: string;
@@ -290,7 +290,7 @@ PUT /posts/:id
 - `id`: Post ID
 
 **Request Body:**
-```typescript
+```text
 {
   title?: string;
   content?: string;
@@ -302,7 +302,7 @@ PUT /posts/:id
 ```
 
 **Response (200 OK):**
-```typescript
+```text
 {
   id: string;
   title: string;
@@ -320,7 +320,7 @@ PUT /posts/:id
 **Error Responses:**
 - `400 Bad Request`: Invalid input data
 - `401 Unauthorized`: Missing or invalid token
-- `403 Forbidden`: User not authorized to update this post
+- `403 Forbidden`: User is not authorized to update this post
 - `404 Not Found`: Post not found
 - `500 Internal Server Error`: Server error
 
@@ -367,7 +367,7 @@ POST /short
 ```
 
 **Response (201 Created):**
-```typescript
+```text
 {
   id: string;
   code: string;      // Short code
@@ -393,7 +393,7 @@ GET /short/:code
 - `code`: Short link code
 
 **Response (200 OK):**
-```typescript
+```text
 {
   id: string;
   code: string;
@@ -406,7 +406,7 @@ GET /short/:code
 ```
 
 **Error Responses:**
-- `404 Not Found`: Short link not found or expired
+- `404 Not Found`: Short link isn't found or expired
 - `500 Internal Server Error`: Server error
 
 #### Get Shared Content
@@ -418,7 +418,7 @@ GET /shared/:code
 - `code`: Short link code
 
 **Response (200 OK):**
-```typescript
+```text
 {
   post: {
     id: string;
@@ -460,7 +460,7 @@ GET /users
 - `limit`: Number of results per page (optional, default: 10)
 
 **Response (200 OK):**
-```typescript
+```text
 [
   {
     id: string;
@@ -638,7 +638,7 @@ If I had more time to improve this project, I would implement:
 
 1. **CMS Integration**: Integrate Strapi headless CMS for more robust content management capabilities
 2. **Social Authentication**: Add Gmail-based authorization for simplified user onboarding
-3. **Enhanced Editing Options**: Expand post editing features with additional formatting options and templates
+3. **Enhanced Editing Options**: Expand post-editing features with additional formatting options and templates
 4. **Multiple AI Models**: Support for various AI models beyond OpenAI, including Gemini, Claude Sonnet, and others
 5. **Real-time Collaboration Enhancements**: More sophisticated conflict resolution and presence indicators
 

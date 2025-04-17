@@ -1,16 +1,16 @@
 'use client'
 
-import { UserDataContext } from "@/contexts/UserData.context"
-import { fetchWithRefresh } from "@/lib/fetchWithRefresh"
-import { FetchFunction } from "@/types/common.type"
-import { useRouter } from "next/navigation"
-import { useContext } from "react"
+import { UserDataContext } from '@/contexts/UserData.context'
+import { fetchWithRefresh } from '@/lib/fetchWithRefresh'
+import { FetchFunction } from '@/types/common.type'
+import { useRouter } from 'next/navigation'
+import { useContext } from 'react'
 
 export const useAuthUserFetch = (): FetchFunction => {
   const router = useRouter()
   const userData = useContext(UserDataContext)
 
-  const fetchData = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
+  return async <T>(url: string, options: RequestInit = {}): Promise<T> => {
     return new Promise<T>((resolve, reject) => {
       fetchWithRefresh<T>({
         url,
@@ -34,6 +34,4 @@ export const useAuthUserFetch = (): FetchFunction => {
       })
     })
   }
-  
-  return fetchData
 }

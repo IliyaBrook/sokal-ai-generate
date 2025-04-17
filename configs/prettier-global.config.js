@@ -1,6 +1,5 @@
 /**
  * @see https://prettier.io/docs/configuration
- * @type {import("prettier").Config, import("@trivago/prettier-plugin-sort-imports").PluginConfig}
  */
 export const prettierGlobalConfig = {
   semi: false,
@@ -9,7 +8,6 @@ export const prettierGlobalConfig = {
   printWidth: 70,
   tabWidth: 2,
   useTabs: false,
-  plugins: ["@trivago/prettier-plugin-sort-imports"],
   importOrder: [
     "<THIRD_PARTY_MODULES>",
     "^@/components/(.*)$",

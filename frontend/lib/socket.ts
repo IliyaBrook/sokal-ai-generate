@@ -1,5 +1,5 @@
-import { io, Socket } from 'socket.io-client';
-import { toast } from 'sonner';
+import { io, Socket } from 'socket.io-client'
+import { toast } from 'sonner'
 
 const getSocketURL = (): string => {
   if (typeof window !== 'undefined') {
@@ -11,9 +11,7 @@ const getSocketURL = (): string => {
   }
   
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-  const baseURL = apiUrl.replace('/api', '');
-  
-  return baseURL;
+  return apiUrl.replace('/api', '');
 };
 
 export const socket: Socket = io(getSocketURL(), {

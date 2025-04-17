@@ -31,12 +31,15 @@ export default function Shared({ linkId }: {linkId: string}) {
         
         if (!response.ok) {
           toast.error("Failed to load post. It may have been deleted or the link has expired.")
-          throw new Error(`HTTP error! status: ${response.status}`)
+          setError(`HTTP error! status: ${response.status}`)
+          return
         }
-
+        
         const data = await response.json()
         if (!data.post) {
-          throw new Error("Post not found")
+          toast.error("Post not found")
+          setError("Post not found")
+          return
         }
         
         setCurrentPost({
@@ -51,10 +54,10 @@ export default function Shared({ linkId }: {linkId: string}) {
       }
     }
 
-    fetchPost()
+    void fetchPost()
   }, [linkId])
 
-  const handleEditPost = async (id: string, content: string): Promise<void> => {
+  const handleEditPost = async (id: string, content: string): Promise<IPost> => {
     try {
       const data = await apiFetch<IPost>(`/api/posts/${id}`, {
         method: 'PUT',
@@ -63,9 +66,9 @@ export default function Shared({ linkId }: {linkId: string}) {
       
       if (!data) {
         toast.error("Failed to update post")
-        throw new Error("Failed to update post")
+        return Promise.reject(new Error("Failed to update post"))
       }
-      
+      return data
     } catch (error) {
       console.error('Error updating post:', error)
       toast.error("Failed to update post")

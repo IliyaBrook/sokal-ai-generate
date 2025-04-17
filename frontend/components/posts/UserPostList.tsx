@@ -92,7 +92,7 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
     }
   };
 
-  const handleEditPost = async (id: string, content: string): Promise<void> => {
+  const handleEditPost = async (id: string, content: string): Promise<IPost> => {
     try {
       const data = await apiFetch<IPost>(`/api/posts/${id}`, {
         method: 'PUT',
@@ -101,14 +101,14 @@ export const UserPostList = ({ posts: initialPosts }: { posts: IPost[] }) => {
       
       if (!data) {
         toast.error("Failed to update post");
-        throw new Error("Failed to update post");
+        return Promise.reject(new Error("Failed to update post"));
       }
-      
       const updatedPosts = posts.map(post => 
         post.id === id ? data : post
       );
       setPosts(updatedPosts);
       toast.success("Post updated successfully");
+      return data;
     } catch (error) {
       console.error('Error updating post:', error);
       throw error;

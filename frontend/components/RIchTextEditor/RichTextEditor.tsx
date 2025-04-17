@@ -161,12 +161,14 @@ const RichTextEditorWithNoSSR = forwardRef<
       }
     }
   }, [editor, content]);
-
+  RichTextEditorWithNoSSR.displayName = 'RichTextEditorWithNoSSR';
+  
+  
   if (!editor) {
     return null;
   }
 
-  const getActiveButtonStyles = (buttonName: string, attributes?: {}) =>
+  const getActiveButtonStyles = (buttonName: string, attributes?: Record<string, any>) =>
     `p-2 rounded cursor-pointer border border-gray-300 ${editor.isActive(buttonName, attributes) ? "bg-black text-white" : ""}`;
 
   return (

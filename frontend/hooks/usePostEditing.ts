@@ -1,15 +1,9 @@
-import { UserDataContext } from '@/contexts/UserData.context';
-import {
-  connectSocket,
-
-  joinPostEditing,
-  leavePostEditing,
-  socket
-} from '@/lib/socket';
-import { IPost } from '@sokal_ai_generate/shared-types';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { useAuthUserFetch, useDebounce } from '@/hooks';
+import { UserDataContext } from '@/contexts/UserData.context'
+import { useAuthUserFetch, useDebounce } from '@/hooks'
+import { connectSocket, joinPostEditing, leavePostEditing, socket } from '@/lib/socket'
+import { IPost } from '@sokal_ai_generate/shared-types'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 interface UsePostEditingOptions {
   postId: string;
@@ -77,8 +71,7 @@ export function usePostEditing({
       });
     });
 
-    const result = Array.from(uniqueWatchersMap.values());
-    return result;
+    return Array.from(uniqueWatchersMap.values());
   }, []);
 
   useEffect(() => {

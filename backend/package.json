@@ -47,8 +47,6 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@nestjs/websockets": "^11.0.16",
-    "@sokal_ai_generate/configs": "*",
-    "@sokal_ai_generate/shared-types": "*",
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.10.7",
     "@types/bcrypt": "^5.0.2",
@@ -73,7 +71,9 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.20.0",
+    "@sokal_ai_generate/configs": "*",
+    "@sokal_ai_generate/shared-types": "*"
   },
   "jest": {
     "moduleFileExtensions": [
