@@ -168,15 +168,6 @@ export const NavBar = (): ReactElement => {
                     aria-labelledby="user-menu-button"
                     ref={dropdownRef}
                   >
-                    {/* <Link
-                      // TODO add route /user/id
-                      href="/user/id"
-                      className="block px-4 py-2 text-sm text-gray-700"
-                      role="menuitem"
-                      id="user-menu-item-0"
-                    >
-                      Your Profile
-                    </Link> */}
                     <Link
                       href="/users/posts"
                       className="block px-4 py-2 text-sm text-gray-700"
