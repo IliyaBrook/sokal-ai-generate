@@ -11,6 +11,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Clean GitHub Actions cache
+        run: |
+          echo "Cleaning GitHub Actions cache..."
+          rm -rf ~/.npm
+          rm -rf ~/.yarn
+          rm -rf ~/.cache
+
       - name: Setup SSH key
         uses: shimataro/ssh-key-action@v2
         with:

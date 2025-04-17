@@ -6,7 +6,7 @@ RUN yarn config set network-timeout 300000 && \
     yarn config set registry https://registry.npmjs.org/ && \
     yarn config set network-concurrency 4
 
-COPY package.json yarn.lock ./
+#COPY package.json yarn.lock ./
 COPY frontend/package.json ./frontend/
 COPY shared-types/package.json ./shared-types/
 COPY configs/package.json ./configs/
