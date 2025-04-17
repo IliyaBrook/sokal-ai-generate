@@ -1,7 +1,7 @@
 FROM node:22-alpine
 
 WORKDIR /app
-
+ENV NEXT_PUBLIC_API_URL=http://backend:4000/api
 RUN yarn config set network-timeout 300000 && \
     yarn config set registry https://registry.npmjs.org/ && \
     yarn config set network-concurrency 4
@@ -20,6 +20,7 @@ RUN yarn install --frozen-lockfile --network-timeout 600000 || \
     yarn install --frozen-lockfile --network-timeout 600000
 
 RUN cd shared-types && npx tsc --skipLibCheck
+RUN echo "NEXT_PUBLIC_API_URL=http://backend:4000/api" > ./frontend/.env.production
 
 RUN yarn build:client
 
