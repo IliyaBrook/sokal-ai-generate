@@ -22,7 +22,6 @@ const PostItemWrapper = ({ post, isSharedPage, isScheduled, ...props }: {
   post: IPost; 
   isSharedPage: boolean;
   isScheduled: boolean;
-
 } & Partial<Record<string, any>>) => {
   const getPostStatus = (post: IPost): PostStatus => {
     if (post.isPublished) return "published";
