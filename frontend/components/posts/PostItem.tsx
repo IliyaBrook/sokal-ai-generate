@@ -51,7 +51,7 @@ interface ShortLinkResponse {
   expiresAt?: Date;
 }
 
-interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   post: IPost;
   onPublish?: (postId: string) => Promise<any> | undefined;
   onEdit?: (id: string, content: string) => Promise<IPost>;

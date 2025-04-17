@@ -6,7 +6,7 @@ import { IPost } from "@sokal_ai_generate/shared-types";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { PostItem, EditingContext } from "./PostItem";
+import { PostItem, EditingContext } from './PostItem'
 import { PostStatus, PostStatusBadge } from "./PostStatusBadge";
 
 const defaultPostItemProps = {
@@ -22,8 +22,8 @@ const PostItemWrapper = ({ post, isSharedPage, isScheduled, ...props }: {
   post: IPost; 
   isSharedPage: boolean;
   isScheduled: boolean;
-  [key: string]: any;
-}) => {
+
+} & Partial<Record<string, any>>) => {
   const getPostStatus = (post: IPost): PostStatus => {
     if (post.isPublished) return "published";
     if (post.scheduledPublishDate && new Date(post.scheduledPublishDate) > new Date()) {
