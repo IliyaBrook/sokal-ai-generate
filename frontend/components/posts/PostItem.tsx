@@ -15,7 +15,7 @@ import {
 import { UserDataContext } from "@/contexts/UserData.context";
 import { useAuthUserFetch } from "@/hooks/useAuthUserFetch";
 import { usePostEditing } from "@/hooks/usePostEditing";
-import { socket } from "@/lib/socket";
+import { getCurrentTime, socket } from '@/lib'
 import { IPost } from "@/types";
 import "highlight.js/styles/atom-one-dark.css";
 import { usePathname } from "next/navigation";
@@ -61,13 +61,6 @@ export interface PostItemProps extends React.HTMLAttributes<HTMLDivElement> {
   editable?: boolean;
   showEdit?: boolean;
 }
-
-const getCurrentTime = () => {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  return `${hours}:${minutes}`;
-};
 
 export const PostItem = ({
   post,

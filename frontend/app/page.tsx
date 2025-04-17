@@ -40,8 +40,7 @@ const getPublicPosts = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-      cache: "force-cache",
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!response.ok) {
       return [];
