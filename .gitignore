@@ -55,5 +55,6 @@ coverage/
 
 # other files
 cheatsheet
+.junie
 docs
 .secrets

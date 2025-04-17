@@ -201,9 +201,7 @@ export function usePostEditing({
   }, [debouncedContent, postId, user, isConnected]);
 
   const connect = useCallback(() => {
-    console.log('🔌 Manual connect requested');
     connectSocket();
-
     if (!autoConnect && postId && socket.connected) {
         console.log('🚪 Manually joining post room after connect:', postId);
         joinPostEditing(postId, user);

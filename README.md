@@ -55,7 +55,7 @@ POST /auth/signup
 
 **Request Body:**
 
-```typescript
+```text
 {
   email: string;      // Valid email address
   password: string;   // Minimum 6 characters
@@ -66,7 +66,7 @@ POST /auth/signup
 
 **Response (200 OK):**
 
-```typescript
+```text
 {
   user: {
     id: string;
@@ -92,7 +92,7 @@ POST /auth/login
 ```
 
 **Request Body:**
-```typescript
+```text
 {
   email: string;  
   password: string;  // User's password
@@ -100,7 +100,7 @@ POST /auth/login
 ```
 
 **Response (200 OK):**
-```typescript
+```text
 {
   user: {
     id: string;
@@ -125,14 +125,14 @@ POST /auth/refresh
 ```
 
 **Request Body:**
-```typescript
+```text
 {
   refreshToken: string;  // Refresh token previously issued
 }
 ```
 
 **Response (200 OK):**
-```typescript
+```text
 {
   accessToken: string;
   refreshToken: string;
@@ -154,7 +154,7 @@ POST /generate
 - `Authorization: Bearer {accessToken}`
 
 **Request Body:**
-```typescript
+```text
 {
   topic: string;  // The topic for the post
   style: string;  // Style or tone for the post
@@ -162,7 +162,7 @@ POST /generate
 ```
 
 **Response (200 OK):**
-```typescript
+```text
 {
   title: string;    // Generated title
   content: string;  // Generated content
@@ -187,7 +187,7 @@ POST /posts/save
 - `Authorization: Bearer {accessToken}`
 
 **Request Body:**
-```typescript
+```text
 {
   title: string;                    // Post title
   content: string;                  // Post content
@@ -199,7 +199,7 @@ POST /posts/save
 ```
 
 **Response (201 Created):**
-```typescript
+```text
 {
   id: string;
   title: string;
@@ -228,7 +228,7 @@ GET /posts/user
 - `Authorization: Bearer {accessToken}`
 
 **Response (200 OK):**
-```typescript
+```text
 [
   {
     id: string;
@@ -259,7 +259,7 @@ GET /posts/:id
 - `id`: Post ID
 
 **Response (200 OK):**
-```typescript
+```text
 {
   id: string;
   title: string;
@@ -290,7 +290,7 @@ PUT /posts/:id
 - `id`: Post ID
 
 **Request Body:**
-```typescript
+```text
 {
   title?: string;
   content?: string;
@@ -302,7 +302,7 @@ PUT /posts/:id
 ```
 
 **Response (200 OK):**
-```typescript
+```text
 {
   id: string;
   title: string;
@@ -336,7 +336,7 @@ DELETE /posts/:id
 - `id`: Post ID
 
 **Response (200 OK):**
-```typescript
+```text
 {
   message: "Post deleted successfully"
 }
@@ -359,7 +359,7 @@ POST /short
 - `Authorization: Bearer {accessToken}`
 
 **Request Body:**
-```typescript
+```text
 {
   targetType: "post" | "other";  // Type of content being shared
   targetId: string;              // ID of the content (post ID)
@@ -367,7 +367,7 @@ POST /short
 ```
 
 **Response (201 Created):**
-```typescript
+```text
 {
   id: string;
   code: string;      // Short code
@@ -393,7 +393,7 @@ GET /short/:code
 - `code`: Short link code
 
 **Response (200 OK):**
-```typescript
+```text
 {
   id: string;
   code: string;
@@ -418,7 +418,7 @@ GET /shared/:code
 - `code`: Short link code
 
 **Response (200 OK):**
-```typescript
+```text
 {
   post: {
     id: string;
@@ -460,7 +460,7 @@ GET /users
 - `limit`: Number of results per page (optional, default: 10)
 
 **Response (200 OK):**
-```typescript
+```text
 [
   {
     id: string;
@@ -490,7 +490,7 @@ GET /users/:id
 - `id`: User ID
 
 **Response (200 OK):**
-```typescript
+```text
 {
   id: string;
   firstname: string;

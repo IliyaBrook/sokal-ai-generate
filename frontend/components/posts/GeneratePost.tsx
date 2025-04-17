@@ -1,5 +1,4 @@
 'use client'
-import "client-only"
 
 import { Button } from "@/components/ui";
 import {
@@ -17,9 +16,9 @@ import React, { useState } from "react";
 import { PostItem } from "./PostItem";
 
 export const GeneratePost = ({
-  onPostGenerated,
+  onPostGeneratedAction,
 }: {
-  onPostGenerated: (newPost: IPost) => void;
+  onPostGeneratedAction: (newPost: IPost) => void;
 }) => {
   const [topic, setTopic] = useState("");
   const [style, setStyle] = useState("");
@@ -76,8 +75,8 @@ export const GeneratePost = ({
       if (!savedPost) {
         console.error("Failed to save post");
       }
-
-      onPostGenerated(savedPost);
+      
+      onPostGeneratedAction(savedPost);
       setTopic("");
       setStyle("");
       setIsDialogOpen(false);

@@ -45,7 +45,7 @@ export default function UserPosts() {
       {userName && (
         <h1 className="text-3xl font-bold mb-8">Welcome, {userName}</h1>
       )}
-      <GeneratePost onPostGenerated={handlePostGenerated} />
+      <GeneratePost onPostGeneratedAction={handlePostGenerated} />
       <UserPostList posts={posts} />
     </div>
   );

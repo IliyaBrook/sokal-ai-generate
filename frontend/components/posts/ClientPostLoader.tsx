@@ -37,25 +37,25 @@ export default function ClientPostLoader({ initialPosts }: ClientPostLoaderProps
       }
     };
 
-    fetchPosts();
+    void fetchPosts();
   }, [initialPosts.length]);
-
+  
   if (loading) {
     return (
-      <div className="text-center p-10 bg-white rounded-lg shadow-sm">
-        <p className="text-gray-500">Загрузка публикаций...</p>
+      <div className='text-center p-10 bg-white rounded-lg shadow-sm'>
+        <p className='text-gray-500'>Loading posts...</p>
       </div>
-    );
+    )
   }
-
+  
   if (posts.length === 0) {
     return (
-      <div className="text-center p-10 bg-white rounded-lg shadow-sm">
-        <p className="text-gray-500">Нет доступных публикаций в данный момент.</p>
+      <div className='text-center p-10 bg-white rounded-lg shadow-sm'>
+        <p className='text-gray-500'>No posts available at the moment.</p>
       </div>
-    );
+    )
   }
-
+  
   return (
     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-1">
       {posts.map((post: IPost) => (

@@ -58,17 +58,7 @@ socket.on('duplicate-connection', (data) => {
 });
 
 export const connectSocket = () => {
-  const socketUrl = getSocketURL();
-  
-  console.log(`🔍 Socket connection info:
-  - Socket URL: ${socketUrl}
-  - Environment: ${process.env.NODE_ENV || 'development'}
-  - Window location: ${typeof window !== 'undefined' ? window.location.href : 'SSR'}
-  - Connected: ${socket.connected}
-  - ID: ${socket.id || 'not connected'}`);
-
   if (!socket.connected) {
-    console.log(`🔌 Connecting to ${socketUrl}...`);
     try {
       socket.io.opts.transports = ['websocket', 'polling'];
       socket.io.opts.extraHeaders = {
