@@ -11,7 +11,7 @@ dist/
 build/
 **/dist/
 **/build/
-.next/
+**/.next/
 out/
 
 # Environment
@@ -29,8 +29,6 @@ out/
 *.swp
 *.swo
 .DS_Store
-.cursorignore
-.cursorindexingignore
 
 # Logs
 logs/
@@ -50,7 +48,7 @@ coverage/
 .nyc_output/
 
 # Misc
-.cursor/
+.aiignore
 *.pem
 *.key
 *.cert
