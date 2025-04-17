@@ -75,7 +75,6 @@ const getPublicPosts = async () => {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching public posts:", error);
     return [];
   }
 };
