@@ -21,21 +21,19 @@ export class UserDto implements Omit<IUser, 'password'> {
   @Expose()
   updatedAt: Date
 
+  @Expose()
+  role!: string
+
   constructor(user: Omit<IUser, 'password'>) {
     this.id = user.id!
     this.firstname = user.firstname
     this.lastname = user.lastname
     this.email = user.email
-  }
-}
-
-export class UserSignInDto extends UserDto {
-  @Expose()
-  password: string
-
-  constructor(user: IUser & { password: string }) {
-    super(user)
-    this.password = user.password
+    if (!user.role) {
+      this.role = 'user'
+    } else {
+      this.role = user.role
+    }
   }
 }
 
@@ -57,7 +55,7 @@ export class UserSignInResponseDto {
       id: user.user.id,
       firstname: user.user.firstname,
       lastname: user.user.lastname,
-      email: user.user.email
+      email: user.user.email,
     }
   }
 }

@@ -14,13 +14,18 @@ export class User {
   @Prop({ required: true })
   lastname: string
 
+  @Prop({ required: true, default: 'user' })
+  role: string
+
   @Prop({ required: true, unique: true })
   email: string
 
   @Prop({ required: true })
   password: string
 
-  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Post' }] })
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Post' }],
+  })
   posts: string[]
 
   @Prop({ type: Date })
@@ -32,6 +37,6 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User)
 
-UserSchema.virtual('id').get(function() {
+UserSchema.virtual('id').get(function () {
   return this._id.toString()
 })

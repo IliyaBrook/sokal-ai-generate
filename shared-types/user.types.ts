@@ -4,15 +4,8 @@ export interface IUser {
   firstname: string
   lastname: string
   password?: string
-  posts?: string[]
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface IRefreshToken {
-  token: string
-  user: string
-  expiresAt: Date
+  posts?: string[];
+  role?: string;
   createdAt: Date
   updatedAt: Date
 }
