@@ -6,4 +6,8 @@ export interface EnvironmentVariables {
   CLIENT_URL: string
   DB_URL: string
   OPENAI_API_KEY: string
+  ADMIN_USER_EMAIL: string
+  ADMIN_USER_PASSWORD: string
+  ADMIN_USER_FIRST_NAME: string
+  ADMIN_USER_LAST_NAME: string
 }
