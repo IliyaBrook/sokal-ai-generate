@@ -72,11 +72,7 @@ export const metadata: Metadata = {
     images: ['/og-image.jpg'],
     creator: '@aicontentgen',
     site: '@aicontentgen',
-  },
-  verification: {
-    google: 'google-site-verification-code', // Замените на реальный код верификации
-    yandex: 'yandex-verification-code', // Замените на реальный код верификации
-  },
+  }
 };
 
 export default function RootLayout({

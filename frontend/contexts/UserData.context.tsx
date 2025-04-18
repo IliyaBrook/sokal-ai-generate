@@ -38,7 +38,7 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
         setUserData(data.user)
       },
       onFalseRefreshUserData: () => {
-        navigate.push('/')
+        navigate.back()
       },
       onErrorMessage: (error) => {
         console.log(error)

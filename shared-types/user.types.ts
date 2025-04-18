@@ -1,3 +1,4 @@
+export type IUserRoleOp = 'user' | 'admin'
 export interface IUser {
   id: string
   email: string
@@ -5,7 +6,7 @@ export interface IUser {
   lastname: string
   password?: string
   posts?: string[];
-  role?: string;
+  role?: IUserRoleOp;
   createdAt: Date
   updatedAt: Date
 }

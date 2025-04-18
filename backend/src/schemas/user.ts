@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import type { IUserRoleOp } from '@sokal_ai_generate/shared-types'
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose'
 import { schemaOptions } from '.'
 
@@ -15,7 +16,7 @@ export class User {
   lastname: string
 
   @Prop({ required: true, default: 'user' })
-  role: string
+  role: IUserRoleOp
 
   @Prop({ required: true, unique: true })
   email: string

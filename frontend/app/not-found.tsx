@@ -12,9 +12,9 @@ export default function NotFound(): React.ReactElement {
       <p className="text-lg mb-8">The page you are looking for does not exist.</p>
       <button 
         className="bg-blue-600 text-white px-5 py-2.5 rounded cursor-pointer transition-colors duration-300 hover:bg-blue-700"
-        onClick={() => router.push(`/`)}
+        onClick={() => router.back()}
       >
-        Go to Home Page
+        Go back
       </button>
     </div>
   )

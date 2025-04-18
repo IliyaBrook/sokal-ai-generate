@@ -1,4 +1,8 @@
-import { IAuthResponse, IUser } from '@sokal_ai_generate/shared-types'
+import {
+  IAuthResponse,
+  IUser,
+  type IUserRoleOp,
+} from '@sokal_ai_generate/shared-types'
 import { Expose } from 'class-transformer'
 import { IsEmail, MinLength } from 'class-validator'
 
@@ -22,7 +26,7 @@ export class UserDto implements Omit<IUser, 'password'> {
   updatedAt: Date
 
   @Expose()
-  role!: string
+  role!: IUserRoleOp
 
   constructor(user: Omit<IUser, 'password'>) {
     this.id = user.id!

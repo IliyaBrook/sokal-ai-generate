@@ -4,7 +4,10 @@ import * as bcrypt from 'bcrypt'
 
 import { UserService } from './user.service'
 import type { EnvironmentVariables } from '@/types'
-import type { ISignUpData } from '@sokal_ai_generate/shared-types'
+import type {
+  ISignUpData,
+  IUserRoleOp,
+} from '@sokal_ai_generate/shared-types'
 
 @Injectable()
 export class AdminInitService implements OnModuleInit {
@@ -52,11 +55,9 @@ export class AdminInitService implements OnModuleInit {
           firstname,
           lastname,
           role: 'admin',
-        } as ISignUpData & { role: string })
+        } as ISignUpData & { role: IUserRoleOp })
 
         console.log('Admin user created successfully.')
-      } else {
-        console.log('Admin user already exists.')
       }
     } catch (error) {
       console.error('Error initializing admin user:', error)
