@@ -11,6 +11,7 @@ interface PostWithAuthor extends IPost {
   authorName?: string
 }
 
+
 export default function Shared({ linkId }: {linkId: string}) {
   const contextData = useContext(UserDataContext)
   const [isLoading, setIsLoading] = useState(true)
@@ -103,8 +104,8 @@ export default function Shared({ linkId }: {linkId: string}) {
     <EditingContext.Provider value={{ activeEditPostId, setActiveEditPostId }}>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Shared Post from {currentPost.authorName}</h1>
-        <PostItem 
-            post={currentPost} 
+        <PostItem
+            post={currentPost}
             showShare={!!isAuthor}
             onEdit={handleEditPost}
             liveView
