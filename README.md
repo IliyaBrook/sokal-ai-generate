@@ -546,6 +546,26 @@ The application is containerized using Docker for consistent deployment across e
 - **Collaborative Editing**: Real-time multi-user editing through shared links
 - **Public/Private Content**: Control over content visibility and sharing
 - **Rich Text Editor**: Support for various formatting options and code syntax highlighting
+- **Admin Panel**: Comprehensive administration interface for user and content management
+
+## Admin Panel
+
+The application includes a dedicated admin panel accessible only to users with the admin role. Administrators can access this panel by clicking the admin icon in the navigation bar.
+
+### Admin Features
+
+#### User Management
+- **View Users**: See a list of all registered users with their details
+- **Create Users**: Add new users with specified email, name, password, and role (user or admin)
+- **Edit Users**: Modify existing user information including email, name, password, and role
+- **Delete Users**: Remove non-admin users from the system
+
+#### Post Management
+- **View and edit All Posts**: Edit and review all posts created by any user in the system
+
+### Accessing the Admin Panel
+
+The admin panel is available at the `/admin` route and is only accessible to users with the admin role. The interface is organized into tabs for easy navigation between different management functions.
 
 ## Getting Started
 
