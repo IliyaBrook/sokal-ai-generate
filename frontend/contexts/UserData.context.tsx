@@ -3,7 +3,7 @@
 import { fetchWithRefresh } from '@/lib'
 import type { IUser } from '@sokal_ai_generate/shared-types'
 import { usePathname } from 'next/navigation'
-import React, { type Dispatch, type SetStateAction, useEffect, useLayoutEffect } from 'react'
+import React, { type Dispatch, type SetStateAction, useLayoutEffect } from 'react'
 
 interface IUserDataContext {
   children: React.ReactNode
@@ -23,7 +23,7 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
   const [userData, setUserData] = React.useState<IUser | null>(null)
   const pathname = usePathname()
   
-  useEffect(() => {
+  useLayoutEffect(() => {
       void fetchWithRefresh<IUser>({
       url: '/api/users/auth',
     }).then(response => {

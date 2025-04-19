@@ -1,20 +1,17 @@
 'use client'
 
 import { isAllowedRoute } from '@/lib/isAllowedRoute'
-import { IAuthResponse } from '@sokal_ai_generate/shared-types'
+import type { authResponse } from '@/types'
 
-type authResponse = Omit<IAuthResponse, 'refreshToken'>;
 
 interface IFetchWithRefresh {
 	url: string;
 	options?: RequestInit;
-	onGetRefreshUserData?: (data: authResponse) => void;
 }
 
 export const fetchWithRefresh = async <T>({
 	                                          url,
 	                                          options = {},
-	                                          onGetRefreshUserData
                                           }: IFetchWithRefresh): Promise<T> => {
 	let token = localStorage.getItem('accessToken')
 	return new Promise<T>((resolve, reject) => {
@@ -50,12 +47,6 @@ export const fetchWithRefresh = async <T>({
 								return refreshResponseClone.json().then((refreshedData: authResponse) => {
 									const accessToken = refreshedData.accessToken
 									localStorage.setItem('accessToken', accessToken)
-									console.log('typeof:', typeof onGetRefreshUserData, 'value:', onGetRefreshUserData)
-									
-									if (typeof onGetRefreshUserData === 'function' && onGetRefreshUserData) {
-										onGetRefreshUserData(refreshedData)
-									}
-									console.log('refresh token success:')
 									token = accessToken
 									fetchOptions = {
 										...options,
@@ -65,14 +56,17 @@ export const fetchWithRefresh = async <T>({
 											...((options.headers as Record<string, string>) || {})
 										}
 									}
-									return fetchResponse()
+									window.location.reload()
 								})
 							} else {
 								throw new Error(`Cannot update refresh token: ${response.status}`)
 							}
 						})
 					} else if (response) {
-						throw new Error(`Refresh token error: ${response.status}`);
+						const responseClone = response.clone()
+						return responseClone.json().then(errorData => {
+							throw new Error(errorData.message);
+						})
 					}
 				}).catch(error => {
 					reject(error)

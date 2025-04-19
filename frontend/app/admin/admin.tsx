@@ -12,12 +12,12 @@ import {
 	TabsList,
 	TabsTrigger
 } from '@/components/ui'
-import { UserDataContext } from '@/contexts/UserData.context'
+// import { UserDataContext } from '@/contexts/UserData.context'
 import { useAuthUserFetch } from '@/hooks'
 import { fetchWithRefresh } from '@/lib'
 import { IPost } from '@/types'
 import dynamic from 'next/dynamic'
-import { Suspense, use, useContext, useEffect, useRef, useState } from 'react'
+import { Suspense, use, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface IUser {
@@ -36,9 +36,9 @@ const fetchUsers = fetchWithRefresh<IUser[]>({
 });
 
 const AdminPage = () => {
-	const contextData = useContext(UserDataContext);
-	const role = contextData?.userData?.role;
-	const timerId = useRef<NodeJS.Timeout | null>(null);
+	// const contextData = useContext(UserDataContext);
+	// const role = contextData?.userData?.role;
+	// const timerId = useRef<NodeJS.Timeout | null>(null);
 	const [editingUser, setEditingUser] = useState<IUser | null>(null);
 	const [userEmail, setUserEmail] = useState('');
 	const apiFetch = useAuthUserFetch();
@@ -55,20 +55,20 @@ const AdminPage = () => {
 	useEffect(() => {
 		setUsers(initialUsers);
 	}, [initialUsers]);
-	const isAdminPromise = new Promise(resolve => {
-		if (timerId.current) {
-			clearTimeout(timerId.current)
-		}
-		timerId.current = setTimeout(() => {
-			resolve(role === 'admin');
-			timerId.current = null;
-		}, 500)
-	})
-	isAdminPromise.then(isAdmin => {
-		if (!isAdmin) {
-			// router.push('/')
-		}
-	});
+	// const isAdminPromise = new Promise(resolve => {
+	// 	if (timerId.current) {
+	// 		clearTimeout(timerId.current)
+	// 	}
+	// 	timerId.current = setTimeout(() => {
+	// 		resolve(role === 'admin');
+	// 		timerId.current = null;
+	// 	}, 500)
+	// })
+	// isAdminPromise.then(isAdmin => {
+	// 	if (!isAdmin) {
+	// 		// router.push('/')
+	// 	}
+	// });
 	const handleDeleteUser = async (userId: string) => {
 		if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
 			try {

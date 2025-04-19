@@ -17,7 +17,6 @@ function Posts() {
   const [posts, setPosts] = useState<IPost[]>(initialPosts);
   // const [isLoading, setIsLoading] = useState(true);
   const data = useContext(UserDataContext);
-  console.log('data: ', data)
   const userName = [data?.userData?.firstname, data?.userData?.lastname]?.join(
     " "
   );
