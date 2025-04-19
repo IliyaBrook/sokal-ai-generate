@@ -31,6 +31,10 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       SOCKET_TRANSPORT: "['websocket', 'polling']"
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ADMIN_USER_EMAIL: ${ADMIN_USER_EMAIL}
+      ADMIN_USER_PASSWORD: ${ADMIN_USER_PASSWORD}
+      ADMIN_USER_FIRST_NAME: ${ADMIN_USER_FIRST_NAME}
+      ADMIN_USER_LAST_NAME: ${ADMIN_USER_LAST_NAME}
     depends_on:
       - mongodb
     networks:
