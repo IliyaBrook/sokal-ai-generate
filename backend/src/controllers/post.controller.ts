@@ -123,14 +123,17 @@ export class PostController {
     @Param('id') id: string,
     @Req() req: RequestWithUser,
   ) {
+    if (!req?.user) {
+      throw new UnauthorizedException()
+    }
     const userId = req.user.id
+    const userData = await this.userService.findById(userId)
+    if (!userData) {
+      throw new UnauthorizedException()
+    }
+    const isAdmin = userData.role === 'admin'
     const post = await this.postService.getPostById(id)
-
-    // Allow admins to delete any post, but regular users can only delete their own posts
-    if (
-      req.user.role !== 'admin' &&
-      post.authorId.toString() !== userId
-    ) {
+    if (!isAdmin && post.authorId.toString() !== userId) {
       throw new ForbiddenException(
         'You do not have permission to delete this post',
       )

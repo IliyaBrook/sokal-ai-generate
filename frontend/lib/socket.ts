@@ -73,7 +73,6 @@ export const connectSocket = () => {
         - Socket ID: ${socket.id || 'no id'}`);
         
         if (!socket.connected) {
-          console.error('🔴 Socket failed to connect within timeout! Trying again with polling only...');
           socket.io.opts.transports = ['polling'];
           socket.connect();
           
@@ -90,15 +89,6 @@ export const connectSocket = () => {
     }
   } else {
     console.log('Socket already connected, id:', socket.id);
-  }
-};
-
-export const disconnectSocket = () => {
-  if (socket.connected) {
-    console.log('🔌 Disconnecting socket...');
-    socket.disconnect();
-  } else {
-    console.log('Socket already disconnected');
   }
 };
 

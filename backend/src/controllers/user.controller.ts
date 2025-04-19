@@ -197,11 +197,20 @@ export class UserController {
     @Body()
     userData: Partial<IUser>,
   ) {
-    // Allow admins to update any user, but regular users can only update themselves
-    if (req.user.role !== 'admin' && req.user.id !== id) {
-      throw new ForbiddenException(
-        'You are not allowed to update this user.',
-      )
+    if (req?.user) {
+      const userData = await this.userService.findById(req.user.id)
+      if (!userData) {
+        throw new UnauthorizedException()
+      } else {
+        const isAdmin = userData.role === 'admin'
+        if (!isAdmin && req.user.id !== id) {
+          throw new ForbiddenException(
+            'You are not allowed to update this user.',
+          )
+        }
+      }
+    } else {
+      throw new UnauthorizedException()
     }
 
     const updatedUser = await this.userService.updateUser(
@@ -221,11 +230,21 @@ export class UserController {
     @Param('id')
     id: string,
   ) {
-    // Only admins can delete users
-    if (req.user.role !== 'admin') {
-      throw new ForbiddenException(
-        'Only administrators can delete users.',
-      )
+    if (req?.user) {
+      const userData = await this.userService.findById(req.user.id)
+      if (!userData) {
+        throw new UnauthorizedException()
+      } else {
+        const isAdmin = userData.role === 'admin'
+        // Only admins can delete users
+        if (!isAdmin) {
+          throw new ForbiddenException(
+            'Only administrators can delete users.',
+          )
+        }
+      }
+    } else {
+      throw new UnauthorizedException()
     }
 
     // Prevent admins from deleting themselves

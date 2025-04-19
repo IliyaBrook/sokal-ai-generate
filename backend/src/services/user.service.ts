@@ -34,6 +34,11 @@ export class UserService {
     id: string,
     userData: Partial<IUser>,
   ): Promise<UserDto | null> {
+    // If password is provided, hash it before saving
+    if (userData.password) {
+      userData.password = await bcrypt.hash(userData.password, 3);
+    }
+
     const user = await this.userModel.findByIdAndUpdate(
       id,
       userData,

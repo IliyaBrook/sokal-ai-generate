@@ -12,7 +12,6 @@ import {
 	TabsList,
 	TabsTrigger
 } from '@/components/ui'
-// import { UserDataContext } from '@/contexts/UserData.context'
 import { useAuthUserFetch } from '@/hooks'
 import { fetchWithRefresh } from '@/lib'
 import { IPost } from '@/types'
@@ -36,39 +35,26 @@ const fetchUsers = fetchWithRefresh<IUser[]>({
 });
 
 const AdminPage = () => {
-	// const contextData = useContext(UserDataContext);
-	// const role = contextData?.userData?.role;
-	// const timerId = useRef<NodeJS.Timeout | null>(null);
 	const [editingUser, setEditingUser] = useState<IUser | null>(null);
 	const [userEmail, setUserEmail] = useState('');
+	const [userPassword, setUserPassword] = useState('');
+	const [userConfirmPassword, setUserConfirmPassword] = useState('');
+	const [userFirstname, setUserFirstname] = useState('');
+	const [userLastname, setUserLastname] = useState('');
 	const apiFetch = useAuthUserFetch();
-	
+
 	const initialPosts = use(fetchPosts);
 	const initialUsers = use(fetchUsers);
-	
+
 	const [posts, setPosts] = useState<IPost[]>(initialPosts);
 	const [users, setUsers] = useState<IUser[]>(initialUsers);
 	useEffect(() => {
 		setPosts(initialPosts);
 	}, [initialPosts]);
-	
+
 	useEffect(() => {
 		setUsers(initialUsers);
 	}, [initialUsers]);
-	// const isAdminPromise = new Promise(resolve => {
-	// 	if (timerId.current) {
-	// 		clearTimeout(timerId.current)
-	// 	}
-	// 	timerId.current = setTimeout(() => {
-	// 		resolve(role === 'admin');
-	// 		timerId.current = null;
-	// 	}, 500)
-	// })
-	// isAdminPromise.then(isAdmin => {
-	// 	if (!isAdmin) {
-	// 		// router.push('/')
-	// 	}
-	// });
 	const handleDeleteUser = async (userId: string) => {
 		if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
 			try {
@@ -86,19 +72,46 @@ const AdminPage = () => {
 	const handleEditUser = (user: IUser) => {
 		setEditingUser(user);
 		setUserEmail(user.email);
+		setUserFirstname(user.firstname);
+		setUserLastname(user.lastname);
+		setUserPassword('');
+		setUserConfirmPassword('');
 	};
 	const handleUpdateUser = async () => {
 		if (!editingUser) return;
+
+		if (userPassword && userPassword !== userConfirmPassword) {
+			toast.error("Passwords do not match");
+			return;
+		}
+
+		const updateData: {
+			email: string;
+			firstname: string;
+			lastname: string;
+			password?: string;
+		} = {
+			email: userEmail,
+			firstname: userFirstname,
+			lastname: userLastname
+		};
+
+		if (userPassword) {
+			updateData.password = userPassword;
+		}
+
 		try {
 			const updatedUser = await apiFetch<IUser>(`/api/users/${editingUser.id}`, {
 				method: 'PATCH',
-				body: JSON.stringify({ email: userEmail }),
+				body: JSON.stringify(updateData),
 			});
-			
+
 			setUsers(prevUsers => prevUsers.map(user =>
 				user.id === editingUser.id ? updatedUser : user
 			));
 			setEditingUser(null);
+			setUserPassword('');
+			setUserConfirmPassword('');
 			toast.success("User successfully updated");
 		} catch (error) {
 			console.error("Error updating user:", error);
@@ -108,11 +121,12 @@ const AdminPage = () => {
 	const handleCancelEdit = () => {
 		setEditingUser(null);
 		setUserEmail('');
+		setUserPassword('');
+		setUserConfirmPassword('');
+		setUserFirstname('');
+		setUserLastname('');
 	};
-	
-	console.log('users: ', users)
-	console.log('posts: ', posts)
-	
+
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<h1 className="text-3xl font-bold mb-8">Admin Panel</h1>
@@ -144,6 +158,44 @@ const AdminPage = () => {
 												value={userEmail}
 												onChange={(e) => setUserEmail(e.target.value)}
 												className="w-full p-2 border rounded"
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">First Name</label>
+											<input
+												type="text"
+												value={userFirstname}
+												onChange={(e) => setUserFirstname(e.target.value)}
+												className="w-full p-2 border rounded"
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Last Name</label>
+											<input
+												type="text"
+												value={userLastname}
+												onChange={(e) => setUserLastname(e.target.value)}
+												className="w-full p-2 border rounded"
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Password</label>
+											<input
+												type="password"
+												value={userPassword}
+												onChange={(e) => setUserPassword(e.target.value)}
+												className="w-full p-2 border rounded"
+												placeholder="Leave blank to keep current password"
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Confirm Password</label>
+											<input
+												type="password"
+												value={userConfirmPassword}
+												onChange={(e) => setUserConfirmPassword(e.target.value)}
+												className="w-full p-2 border rounded"
+												placeholder="Confirm new password"
 											/>
 										</div>
 										<div className="flex space-x-2">

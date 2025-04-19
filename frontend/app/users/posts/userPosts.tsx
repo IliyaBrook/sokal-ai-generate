@@ -15,39 +15,14 @@ const fetchPosts = 	fetchWithRefresh<IPost[]>({
 function Posts() {
   const initialPosts = use(fetchPosts);
   const [posts, setPosts] = useState<IPost[]>(initialPosts);
-  // const [isLoading, setIsLoading] = useState(true);
   const data = useContext(UserDataContext);
   const userName = [data?.userData?.firstname, data?.userData?.lastname]?.join(
     " "
   );
-  // const apiFetch = useAuthUserFetch();
-  // const fetchPosts = async () => {
-  //   try {
-  //     const data = await apiFetch<IPost[]>(`/api/posts/user`);
-  //     console.log('UserPosts : ', data)
-  //     setPosts(data);
-  //   } catch (error) {
-  //     console.error("Error fetching posts:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const handlePostGenerated = (newPost: IPost) => {
     setPosts((prevPosts) => [newPost, ...prevPosts]);
   };
-
-  // useEffect(() => {
-  //   void fetchPosts();
-  // }, []);
-
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen">
-  //       Loading...
-  //     </div>
-  //   );
-  // }
   return (
     <div className="container mx-auto px-4 py-8">
       {userName && (
