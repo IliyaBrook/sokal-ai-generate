@@ -1,45 +1,54 @@
 "use client";
 
-import { GeneratePost, UserPostList } from "@/components/posts";
-import { UserDataContext } from "@/contexts/UserData.context";
-import { useAuthUserFetch } from "@/hooks";
-import { IPost } from "@/types";
-import { useContext, useEffect, useState } from "react";
+import { GeneratePost, UserPostList } from '@/components/posts'
+import { SpinnerCentered } from '@/components/ui'
+import { UserDataContext } from '@/contexts/UserData.context'
+import { fetchWithRefresh } from '@/lib'
+import { IPost } from '@/types'
+import dynamic from 'next/dynamic'
+import { Suspense, use, useContext, useState } from 'react'
 
-export default function UserPosts() {
-  const [posts, setPosts] = useState<IPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const fetchPosts = 	fetchWithRefresh<IPost[]>({
+  url: `/api/posts/user`,
+});
+
+function Posts() {
+  const initialPosts = use(fetchPosts);
+  const [posts, setPosts] = useState<IPost[]>(initialPosts);
+  // const [isLoading, setIsLoading] = useState(true);
   const data = useContext(UserDataContext);
+  console.log('data: ', data)
   const userName = [data?.userData?.firstname, data?.userData?.lastname]?.join(
     " "
   );
-  const apiFetch = useAuthUserFetch();
-  const fetchPosts = async () => {
-    try {
-      const data = await apiFetch<IPost[]>(`/api/posts/user`);
-      setPosts(data);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const apiFetch = useAuthUserFetch();
+  // const fetchPosts = async () => {
+  //   try {
+  //     const data = await apiFetch<IPost[]>(`/api/posts/user`);
+  //     console.log('UserPosts : ', data)
+  //     setPosts(data);
+  //   } catch (error) {
+  //     console.error("Error fetching posts:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handlePostGenerated = (newPost: IPost) => {
     setPosts((prevPosts) => [newPost, ...prevPosts]);
   };
 
-  useEffect(() => {
-    void fetchPosts();
-  }, []);
+  // useEffect(() => {
+  //   void fetchPosts();
+  // }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       Loading...
+  //     </div>
+  //   );
+  // }
   return (
     <div className="container mx-auto px-4 py-8">
       {userName && (
@@ -50,3 +59,14 @@ export default function UserPosts() {
     </div>
   );
 }
+
+const UserPostsSuspended = () => {
+  return (
+    <Suspense fallback={<SpinnerCentered/>}>
+      <Posts />
+    </Suspense>
+  );
+};
+
+const UserPosts = dynamic(() => Promise.resolve(UserPostsSuspended), { ssr: false })
+export default UserPosts;

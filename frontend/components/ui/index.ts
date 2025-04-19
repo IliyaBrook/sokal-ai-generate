@@ -10,4 +10,4 @@ export * from './switch'
 export * from './tabs'
 export * from './datepicker'
 export * from './card'
-
+export * from './spinner'

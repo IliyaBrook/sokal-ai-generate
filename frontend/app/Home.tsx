@@ -32,7 +32,7 @@ const Home = () => {
 		<>
 			{posts.length === 0 ? (
 				<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-1">
-					<p className="text-gray-500">No published posts available at the moment.</p>
+					<p className="text-gray-500 text-center">No published posts available at the moment.</p>
 				</div>
 			) : (
 				<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-1">

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   NotFoundException,
@@ -20,7 +21,11 @@ import { UserSignInResponseDto } from '../dto/user.dto'
 
 import { SignInDto, SignUpDto, UserDto } from '@/dto'
 import { JwtAuthGuard } from '@/guards'
-import { refreshExpiredDays, TokenService, UserService } from '@/services'
+import {
+  refreshExpiredDays,
+  TokenService,
+  UserService,
+} from '@/services'
 import type { IUser, RequestWithUser } from '@/types'
 
 @Controller('users')
@@ -49,10 +54,10 @@ export class UserController {
     if (!user) {
       throw new UnauthorizedException()
     }
-    
+
     return new UserSignInResponseDto(signUpData.accessToken, {
       ...signUpData,
-      user: user
+      user: user,
     })
   }
 
@@ -100,39 +105,40 @@ export class UserController {
     const accessToken = this.tokenService.extractTokenFromHeader(req)
     if (!accessToken) throw new UnauthorizedException()
 
-    const response = this.tokenService.validateAccessToken(accessToken)
+    const response =
+      this.tokenService.validateAccessToken(accessToken)
     if (!response) {
       throw new UnauthorizedException()
     }
-    
+
     const user = await this.userService.findById(response.id)
     if (!user) {
       throw new UnauthorizedException()
     }
-    
+
     return new UserDto(user)
   }
 
   @Get('refresh')
   async refresh(@Req() req: Request, @Res() res: Response) {
     const { refreshToken } = req.cookies
-    
+
     const userData = await this.userService.refresh(refreshToken)
-    
+
     res.cookie('refreshToken', userData.refreshToken, {
       maxAge: refreshExpiredDays,
       httpOnly: true,
     })
-    
+
     const user = await this.userService.findById(userData.user.id)
-    
+
     if (!user) {
       throw new UnauthorizedException()
     }
-    
+
     return res.json({
       accessToken: userData.accessToken,
-      user: new UserDto(user)
+      user: new UserDto(user),
     })
   }
 
@@ -140,26 +146,40 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getUsers(
+    @Req() req: RequestWithUser,
     @Query('page')
     page?: number,
     @Query('limit')
-    limit?: number
+    limit?: number,
   ) {
-    const response = await this.userService.getUsers(
-      page,
-      limit
-    )
-    if (response.length > 0) {
-      return response
+    if (req?.user) {
+      const userData = await this.userService.findById(req.user.id)
+      if (!userData) {
+        throw new UnauthorizedException()
+      } else {
+        const isAdmin = userData.role === 'admin'
+        if (!isAdmin) {
+          throw new ForbiddenException(
+            'Only admins can access all users',
+          )
+        } else {
+          const users = await this.userService.getUsers(page, limit)
+          if (users.length > 0) {
+            return users.map((user) => new UserDto(user))
+          }
+          return []
+        }
+      }
+    } else {
+      throw new UnauthorizedException()
     }
-    return []
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getUser(
     @Param('id')
-    id: string
+    id: string,
   ) {
     const user = await this.userService.findOne({ id })
     if (!user) {
@@ -177,16 +197,48 @@ export class UserController {
     @Body()
     userData: Partial<IUser>,
   ) {
-    if (req.user.id !== id) {
+    // Allow admins to update any user, but regular users can only update themselves
+    if (req.user.role !== 'admin' && req.user.id !== id) {
       throw new ForbiddenException(
         'You are not allowed to update this user.',
-      );
+      )
     }
 
-    const updatedUser = await this.userService.updateUser(id, userData);
+    const updatedUser = await this.userService.updateUser(
+      id,
+      userData,
+    )
     if (!updatedUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`User with ID ${id} not found`)
     }
-    return new UserDto(updatedUser);
+    return new UserDto(updatedUser)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async deleteUser(
+    @Req() req: RequestWithUser,
+    @Param('id')
+    id: string,
+  ) {
+    // Only admins can delete users
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenException(
+        'Only administrators can delete users.',
+      )
+    }
+
+    // Prevent admins from deleting themselves
+    if (req.user.id === id) {
+      throw new ForbiddenException(
+        'You cannot delete your own account.',
+      )
+    }
+
+    const deleted = await this.userService.delete(id)
+    if (!deleted) {
+      throw new NotFoundException(`User with ID ${id} not found`)
+    }
+    return { success: true }
   }
 }

@@ -22,6 +22,10 @@ export class PostService {
     }
   }
 
+  async getAllPosts(): Promise<TPostDocument[]> {
+    return this.postModel.find().sort({ createdAt: -1 }).exec()
+  }
+
   async getPublicPosts(): Promise<TPostDocument[]> {
     return this.postModel.find({ isPublished: true }).exec()
   }
@@ -57,12 +61,12 @@ export class PostService {
   async getPostById(postId: string): Promise<TPostDocument> {
     this.logger.log(`Fetching post by id: ${postId}`)
     const post = await this.postModel.findById(postId).exec()
-    
+
     if (!post) {
       this.logger.warn(`Post not found: ${postId}`)
       throw new NotFoundException(`Post with ID ${postId} not found`)
     }
-    
+
     return post
   }
 
@@ -75,11 +79,11 @@ export class PostService {
     const result = await this.postModel.deleteOne({
       _id: postId,
     })
-    
+
     if (result.deletedCount === 0) {
       throw new NotFoundException(`Post with ID ${postId} not found`)
     }
-    
+
     return true
   }
 } 

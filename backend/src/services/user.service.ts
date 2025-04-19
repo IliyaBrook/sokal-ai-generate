@@ -3,42 +3,42 @@ import {
   HttpStatus,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+} from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
 import type {
   IAuthResponse,
   ISignUpData,
-} from '@sokal_ai_generate/shared-types';
-import * as bcrypt from 'bcrypt';
-import type { Model } from 'mongoose';
+} from '@sokal_ai_generate/shared-types'
+import * as bcrypt from 'bcrypt'
+import type { Model } from 'mongoose'
 
-
-import { SignInDto, SignUpDto, UserDto } from '@/dto';
-import { TUserDocument, User } from '@/schemas';
-import type { IUser } from '@/types';
-import { TokenService } from './token.service';
+import { SignInDto, SignUpDto, UserDto } from '@/dto'
+import { TUserDocument, User } from '@/schemas'
+import type { IUser } from '@/types'
+import { TokenService } from './token.service'
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<TUserDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<TUserDocument>,
     private tokenService: TokenService,
   ) {}
 
-  findById(
-    id: string,
-  ): Promise<UserDto | null> {
+  findById(id: string): Promise<UserDto | null> {
     let query = this.userModel.findById(id)
     return query.exec()
   }
 
-  async findByEmail(email: string): Promise<UserDto | null> {
-    const user = await this.userModel.findOne({ email }).exec()
-    return user ? new UserDto(user) : null
-  }
-
-  async updateUser(id: string, userData: Partial<IUser>): Promise<UserDto | null> {
-    const user = await this.userModel.findByIdAndUpdate(id, userData, { new: true })
+  async updateUser(
+    id: string,
+    userData: Partial<IUser>,
+  ): Promise<UserDto | null> {
+    const user = await this.userModel.findByIdAndUpdate(
+      id,
+      userData,
+      { new: true },
+    )
     return user ? new UserDto(user) : null
   }
 
@@ -64,7 +64,9 @@ export class UserService {
     return query.exec()
   }
 
-  async findOne(projection: Record<string, any>): Promise<TUserDocument | null> {
+  async findOne(
+    projection: Record<string, any>,
+  ): Promise<TUserDocument | null> {
     return this.userModel.findOne(projection).exec()
   }
 
@@ -156,7 +158,7 @@ export class UserService {
         userDto.id,
         tokens.refreshToken,
       )
-    
+
       return {
         ...tokens,
         user: userDto,

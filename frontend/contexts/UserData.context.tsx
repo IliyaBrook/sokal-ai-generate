@@ -1,13 +1,9 @@
-"use client"
+'use client'
 
-import { fetchWithRefresh } from '@/lib';
-import type { IUser } from '@sokal_ai_generate/shared-types';
-import { usePathname, useRouter } from 'next/navigation';
-import React, {
-  type Dispatch,
-  type SetStateAction,
-  useLayoutEffect
-} from 'react';
+import { fetchWithRefresh } from '@/lib'
+import type { IUser } from '@sokal_ai_generate/shared-types'
+import { usePathname } from 'next/navigation'
+import React, { type Dispatch, type SetStateAction, useEffect, useLayoutEffect } from 'react'
 
 interface IUserDataContext {
   children: React.ReactNode
@@ -25,27 +21,18 @@ export const UserDataProvider: React.FC<IUserDataContext> = ({
   children,
 }) => {
   const [userData, setUserData] = React.useState<IUser | null>(null)
-  const navigate = useRouter()
   const pathname = usePathname()
-
-  useLayoutEffect(() => {
+  
+  useEffect(() => {
       void fetchWithRefresh<IUser>({
       url: '/api/users/auth',
-      onGetData: (data) => {
-        setUserData(data)
-      },
-      onGetRefreshUserData: (data) => {
-        setUserData(data.user)
-      },
-      onFalseRefreshUserData: () => {
-        navigate.back()
-      },
-      onErrorMessage: (error) => {
-        console.log(error)
-      }
-    })
+    }).then(response => {
+       if (response) {
+         setUserData(response)
+       }
+      })
   }, [pathname])
-
+  
   const providedData = {
     userData,
     setUserData,

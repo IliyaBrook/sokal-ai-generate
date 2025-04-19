@@ -8,23 +8,52 @@ import {
   Post,
   Put,
   Req,
-  UseGuards
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common'
 
 import { CreatePostDto, PostDto, UpdatePostDto } from '@/dto'
 import { JwtAuthGuard } from '@/guards'
-import { PostService } from '@/services'
+import { PostService, UserService } from '@/services'
 import { RequestWithUser } from '@/types'
 
 @Controller('posts')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly userService: UserService,
+  ) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Get('all')
+  async getAllPosts(@Req() req: RequestWithUser) {
+    if (req?.user) {
+      const userData = await this.userService.findById(req.user.id)
+      if (!userData) {
+        throw new UnauthorizedException()
+      } else {
+        const isAdmin = userData.role === 'admin'
+        if (!isAdmin) {
+          throw new ForbiddenException(
+            'Only admins can access all posts',
+          )
+        } else {
+          const posts = await this.postService.getAllPosts()
+          if (posts.length > 0) {
+            return posts.map((post) => new PostDto(post))
+          }
+          return []
+        }
+      }
+    } else {
+      throw new UnauthorizedException()
+    }
+  }
 
   @Get('public')
   async getPublicPosts() {
     const posts = await this.postService.getPublicPosts()
-    return posts.map(post => new PostDto(post))
+    return posts.map((post) => new PostDto(post))
   }
 
   @UseGuards(JwtAuthGuard)
@@ -34,7 +63,10 @@ export class PostController {
     @Body() createPostDto: CreatePostDto,
   ) {
     const userId = req.user.id
-    const post = await this.postService.createPost(userId, createPostDto)
+    const post = await this.postService.createPost(
+      userId,
+      createPostDto,
+    )
     return new PostDto(post)
   }
 
@@ -45,9 +77,11 @@ export class PostController {
     @Body() createPostDto: CreatePostDto,
   ) {
     if (!createPostDto.scheduledPublishDate) {
-      throw new ForbiddenException('Scheduled publish date is required')
+      throw new ForbiddenException(
+        'Scheduled publish date is required',
+      )
     }
-    
+
     const userId = req.user.id
     const post = await this.postService.createPost(userId, {
       ...createPostDto,
@@ -61,7 +95,7 @@ export class PostController {
   async getUserPosts(@Req() req: RequestWithUser) {
     const userId = req.user.id
     const posts = await this.postService.getUserPosts(userId)
-    return posts.map(post => new PostDto(post))
+    return posts.map((post) => new PostDto(post))
   }
 
   @Get(':id')
@@ -76,7 +110,10 @@ export class PostController {
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    const updatedPost = await this.postService.updatePost(id, updatePostDto)
+    const updatedPost = await this.postService.updatePost(
+      id,
+      updatePostDto,
+    )
     return new PostDto(updatedPost)
   }
 
@@ -88,12 +125,18 @@ export class PostController {
   ) {
     const userId = req.user.id
     const post = await this.postService.getPostById(id)
-    
-    if (post.authorId.toString() !== userId) {
-      throw new ForbiddenException('You do not have permission to delete this post')
+
+    // Allow admins to delete any post, but regular users can only delete their own posts
+    if (
+      req.user.role !== 'admin' &&
+      post.authorId.toString() !== userId
+    ) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this post',
+      )
     }
-    
+
     await this.postService.deletePost(id)
     return { success: true }
   }
-} 
+}
