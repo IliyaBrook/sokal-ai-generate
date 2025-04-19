@@ -1,3 +1,4 @@
+#file: noinspection HttpUrlsUsage
 name: Deploy to Production
 
 on:
@@ -35,8 +36,8 @@ jobs:
           echo "LogLevel DEBUG3" >> ~/.ssh/config
 
           # Connection attempt
-          echo "Testing SSH connection to ${{ SERVER_IP }}"
-          timeout 10 ssh -v root@${{ SERVER_IP }} "echo 'Connection successful'" || echo "Connection timed out"
+          echo "Testing SSH connection to ${{ secrets.SERVER_IP }}"
+          timeout 10 ssh -v root@${{ secrets.SERVER_IP }} "echo 'Connection successful'" || echo "Connection timed out"
 
       - name: Create root .env file for Docker Compose
         run: |
@@ -52,57 +53,55 @@ jobs:
           echo "ADMIN_USER_PASSWORD=${{ secrets.ADMIN_USER_PASSWORD }}" >> .env
           echo "ADMIN_USER_FIRST_NAME=${{ secrets.ADMIN_USER_FIRST_NAME }}" >> .env
           echo "ADMIN_USER_LAST_NAME=${{ secrets.ADMIN_USER_LAST_NAME }}" >> .env
-          echo "FRONTEND_URL=http://localhost:80,http://frontend:3000,http://${{ SERVER_IP }},http://${{ SERVER_IP }}:80" >> .env
+          echo "FRONTEND_URL=http://localhost:80,http://frontend:3000,http://${{ secrets.SERVER_IP }},http://${{ secrets.SERVER_IP }}:80" >> .env
           echo "NEXT_PUBLIC_API_URL=http://backend:4000/api" >> .env
           echo "NODE_ENV=production" >> .env
 
-
-
       - name: Install Docker on server (if needed)
         run: |
-          echo "Installing Docker on server ${{ SERVER_IP }}..."
-          ssh root@${{ SERVER_IP }} "if ! command -v docker &> /dev/null; then apt update && apt install -y docker.io docker-compose && systemctl enable docker && systemctl start docker; fi"
+          echo "Installing Docker on server ${{ secrets.SERVER_IP }}..."
+          ssh root@${{ secrets.SERVER_IP }} "if ! command -v docker &> /dev/null; then apt update && apt install -y docker.io docker-compose && systemctl enable docker && systemctl start docker; fi"
 
       - name: Deploy to Hetzner with detailed logging
         run: |
-          echo "Deploying to server ${{ SERVER_IP }}..."
-
+          echo "Deploying to server ${{ secrets.SERVER_IP }}..."
+      
           # Create project directory with verbose output
           echo "Creating project directory..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "mkdir -p /root/sokal-ai-generate"
-
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "mkdir -p /root/sokal-ai-generate"
+      
           # Clean up Docker resources
           echo "Cleaning up Docker resources..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "docker system prune -af --volumes"
-
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "docker system prune -af --volumes"
+      
           # Clean up old project files to prevent issues with cached or deleted files
           echo "Cleaning up old project files..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "rm -rf /root/sokal-ai-generate/*"
-
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "rm -rf /root/sokal-ai-generate/*"
+      
           # Ensure node_modules are cleaned up
           echo "Cleaning up node_modules..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "find /root/sokal-ai-generate -name 'node_modules' -type d -prune -exec rm -rf '{}' \;"
-
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "find /root/sokal-ai-generate -name 'node_modules' -type d -prune -exec rm -rf '{}' \;"
+      
           # Clean up Next.js build cache
           echo "Cleaning up Next.js build cache..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "find /root/sokal-ai-generate -name '.next' -type d -prune -exec rm -rf '{}' \;"
-
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "find /root/sokal-ai-generate -name '.next' -type d -prune -exec rm -rf '{}' \;"
+      
           # Check disk space
           echo "Checking disk space..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "df -h"
-
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "df -h"
+      
           # Copy necessary files with verbose output
           echo "Copying files to server..."
-          scp -v -r ./* ./.env ./.dockerignore root@${{ SERVER_IP }}:/root/sokal-ai-generate/
-
+          scp -v -r ./* ./.env ./.dockerignore root@${{ secrets.SERVER_IP }}:/root/sokal-ai-generate/
+      
           # Check if files were copied successfully
           echo "Verifying copied files..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "ls -la /root/sokal-ai-generate"
-
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "ls -la /root/sokal-ai-generate"
+      
           # Verify that problematic files don't exist
           echo "Verifying that ErrorIcon.tsx doesn't exist..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "find /root/sokal-ai-generate -name 'ErrorIcon.tsx' | wc -l | grep -q '0' && echo 'ErrorIcon.tsx not found, good!' || (echo 'ERROR: ErrorIcon.tsx found, removing it...' && find /root/sokal-ai-generate -name 'ErrorIcon.tsx' -delete)"
-
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "find /root/sokal-ai-generate -name 'ErrorIcon.tsx' | wc -l | grep -q '0' && echo 'ErrorIcon.tsx not found, good!' || (echo 'ERROR: ErrorIcon.tsx found, removing it...' && find /root/sokal-ai-generate -name 'ErrorIcon.tsx' -delete)"
+      
           # Run docker-compose on the server with debug output
           echo "Starting containers on server..."
-          ssh -o StrictHostKeyChecking=no root@${{ SERVER_IP }} "cd /root/sokal-ai-generate && docker-compose down && docker builder prune -af && DEBUG=* docker-compose build --no-cache && docker-compose up -d"
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} "cd /root/sokal-ai-generate && docker-compose down && docker builder prune -af && DEBUG=* docker-compose build --no-cache && docker-compose up -d"
