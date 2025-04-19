@@ -228,7 +228,6 @@ export function usePostEditing({
     setIsSaving(true);
 
     if (socket.connected) {
-      console.log('💾 Requesting save via socket...');
       return new Promise<boolean>((resolve) => {
         saveResolverRef.current = resolve;
 
@@ -262,24 +261,21 @@ export function usePostEditing({
       });
     }
 
-    console.log('💾 Socket not connected, using HTTP fallback to save...');
     try {
       const response = await apiFetch<{ success: boolean; message?: string; post?: IPost }>(`/api/posts/${postId}/save`, {
         method: 'PUT',
         body: JSON.stringify({ content }),
       });
       if (response?.success) {
-        toast.success('Post saved successfully (HTTP fallback)');
+        toast.success('Post saved successfully');
         setIsSaving(false);
         return true;
       } else {
-        toast.error(`Failed to save (HTTP): ${response?.message || 'Unknown error'}`);
+        toast.error(`Failed to save post: ${response?.message || 'Unknown error'}`);
         setIsSaving(false);
         return false;
       }
     } catch (error) {
-      console.error('Error saving via HTTP fallback:', error);
-      toast.error('Failed to save post (HTTP)');
       setIsSaving(false);
       return false;
     }

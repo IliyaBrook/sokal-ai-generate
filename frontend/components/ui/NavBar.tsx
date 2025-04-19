@@ -5,7 +5,7 @@ import React, { type ReactElement, useContext, useState } from "react";
 
 import useOutsideClick from "@/hooks/useOutsideClick";
 import useSetNavActiveClass from "@/hooks/useSetNavActiveClass";
-import { SettingsIcon } from "@/components/svgIcons/SettingsIcon";
+import { AdminIcon, SettingsIcon } from "@/components/svgIcons";
 
 import { UserDataContext } from "@/contexts/UserData.context";
 import { cn } from "@/lib";
@@ -143,13 +143,26 @@ export const NavBar = (): ReactElement => {
           </div>
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
             {contextData?.userData && (
-              <div className="relative ml-3">
+              <div className="relative ml-3 flex items-center">
+                {contextData?.userData?.role === "admin" && (
+                  <Link href="/admin" className="mr-4">
+                    <button
+                      type="button"
+                      className="relative flex rounded-full bg-gray-800 text-sm focus:outline-hidden cursor-pointer"
+                      aria-label="Admin panel"
+                    >
+                      <span className="absolute -inset-1.5"></span>
+                      <span className="sr-only">Admin panel</span>
+                      <AdminIcon className="size-5 text-white" />
+                    </button>
+                  </Link>
+                )}
                 <div>
                   <button
                     onClick={handleMenuOpen}
                     ref={dropdownRef}
                     type="button"
-                    className="relative flex rounded-full bg-gray-800 text-sm focus:outline-hidden  cursor-pointer"
+                    className="relative flex rounded-full bg-gray-800 text-sm focus:outline-hidden cursor-pointer"
                     id="user-menu-button"
                     aria-expanded="false"
                     aria-haspopup="true"
@@ -161,7 +174,7 @@ export const NavBar = (): ReactElement => {
                 </div>
                 {isMenuOpen && (
                   <div
-                    className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-black/5 focus:outline-hidden"
+                    className="absolute right-0 z-10 mt-2 w-48 top-11/12 rounded-md bg-white py-1 ring-1 shadow-lg ring-black/5 focus:outline-hidden"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="user-menu-button"
@@ -212,16 +225,24 @@ export const NavBar = (): ReactElement => {
           >
             Home
           </Link>
-          {!contextData?.userData && (
+          {contextData?.userData ? (
+            <>
+              {contextData.userData.role === "admin" && (
+                <Link href="/admin" className={setMobileClasses("/admin")}>
+                  Admin Panel
+                </Link>
+              )}
+              <Link href="/users/posts" className={setMobileClasses("/users/posts")}>
+                Posts
+              </Link>
+            </>
+          ) : (
             <>
               <Link href={"/sign-in"} className={setMobileClasses("/sign-in")}>
                 Login
               </Link>
               <Link href={"/sign-up"} className={setMobileClasses("/sign-up")}>
                 Registration
-              </Link>
-              <Link href="/users/posts" className={setMobileClasses("/sign-up")}>
-                Posts
               </Link>
             </>
           )}
