@@ -15,18 +15,12 @@ import {
 import { useAuthUserFetch } from '@/hooks'
 import { fetchWithRefresh } from '@/lib'
 import { IPost } from '@/types'
+import type { IUser } from '@sokal_ai_generate/shared-types'
 import dynamic from 'next/dynamic'
 import { Suspense, use, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-interface IUser {
-	id: string;
-	firstname: string;
-	lastname: string;
-	email: string;
-	role: string;
-	createdAt?: Date;
-}
+
 const fetchPosts = 	fetchWithRefresh<IPost[]>({
 	url: `/api/posts/all`,
 });
@@ -36,11 +30,13 @@ const fetchUsers = fetchWithRefresh<IUser[]>({
 
 const AdminPage = () => {
 	const [editingUser, setEditingUser] = useState<IUser | null>(null);
+	const [isCreatingUser, setIsCreatingUser] = useState(false);
 	const [userEmail, setUserEmail] = useState('');
 	const [userPassword, setUserPassword] = useState('');
 	const [userConfirmPassword, setUserConfirmPassword] = useState('');
 	const [userFirstname, setUserFirstname] = useState('');
 	const [userLastname, setUserLastname] = useState('');
+	const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
 	const apiFetch = useAuthUserFetch();
 
 	const initialPosts = use(fetchPosts);
@@ -74,6 +70,7 @@ const AdminPage = () => {
 		setUserEmail(user.email);
 		setUserFirstname(user.firstname);
 		setUserLastname(user.lastname);
+		setUserRole(user.role || 'user');
 		setUserPassword('');
 		setUserConfirmPassword('');
 	};
@@ -85,15 +82,11 @@ const AdminPage = () => {
 			return;
 		}
 
-		const updateData: {
-			email: string;
-			firstname: string;
-			lastname: string;
-			password?: string;
-		} = {
+		const updateData: Partial<IUser> = {
 			email: userEmail,
 			firstname: userFirstname,
-			lastname: userLastname
+			lastname: userLastname,
+			role: userRole
 		};
 
 		if (userPassword) {
@@ -120,11 +113,58 @@ const AdminPage = () => {
 	};
 	const handleCancelEdit = () => {
 		setEditingUser(null);
+		setIsCreatingUser(false);
 		setUserEmail('');
 		setUserPassword('');
 		setUserConfirmPassword('');
 		setUserFirstname('');
 		setUserLastname('');
+		setUserRole('user');
+	};
+
+	const handleCreateUser = async () => {
+		if (userPassword !== userConfirmPassword) {
+			toast.error("Passwords do not match");
+			return;
+		}
+
+		if (!userEmail || !userFirstname || !userLastname || !userPassword) {
+			toast.error("All fields are required");
+			return;
+		}
+
+		const userData = {
+			email: userEmail,
+			firstname: userFirstname,
+			lastname: userLastname,
+			password: userPassword,
+			role: userRole
+		};
+
+		try {
+			const newUser = await apiFetch<IUser>('/api/users/create', {
+				method: 'POST',
+				body: JSON.stringify(userData),
+			});
+
+			setUsers(prevUsers => [...prevUsers, newUser]);
+			handleCancelEdit();
+			toast.success("User successfully created");
+		} catch (error) {
+			console.error("Error creating user:", error);
+			toast.error("Failed to create user");
+		}
+	};
+
+	const handleStartCreateUser = () => {
+		setEditingUser(null);
+		setIsCreatingUser(true);
+		setUserEmail('');
+		setUserPassword('');
+		setUserConfirmPassword('');
+		setUserFirstname('');
+		setUserLastname('');
+		setUserRole('user');
 	};
 
 	return (
@@ -132,8 +172,8 @@ const AdminPage = () => {
 			<h1 className="text-3xl font-bold mb-8">Admin Panel</h1>
 			<Tabs defaultValue="posts" className="w-full">
 				<TabsList className="mb-8">
-					<TabsTrigger value="posts">Manage Posts</TabsTrigger>
-					<TabsTrigger value="users">Manage Users</TabsTrigger>
+					<TabsTrigger value="posts" className="cursor-pointer">Manage Posts</TabsTrigger>
+					<TabsTrigger value="users" className="cursor-pointer">Manage Users</TabsTrigger>
 				</TabsList>
 				<TabsContent value="posts" className="space-y-4">
 					<div className="bg-white p-6 rounded-lg shadow-md">
@@ -144,6 +184,85 @@ const AdminPage = () => {
 				<TabsContent value="users" className="space-y-4">
 					<div className="bg-white p-6 rounded-lg shadow-md">
 						<h2 className="text-2xl font-semibold mb-4">All Users</h2>
+						<div className="mb-4">
+							<Button onClick={handleStartCreateUser}>Create New User</Button>
+						</div>
+						{isCreatingUser && (
+							<Card className="mb-6">
+								<CardHeader>
+									<CardTitle>Create New User</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<div className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium mb-1">Email</label>
+											<input
+												type="email"
+												value={userEmail}
+												onChange={(e) => setUserEmail(e.target.value)}
+												className="w-full p-2 border rounded"
+												required
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">First Name</label>
+											<input
+												type="text"
+												value={userFirstname}
+												onChange={(e) => setUserFirstname(e.target.value)}
+												className="w-full p-2 border rounded"
+												required
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Last Name</label>
+											<input
+												type="text"
+												value={userLastname}
+												onChange={(e) => setUserLastname(e.target.value)}
+												className="w-full p-2 border rounded"
+												required
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Password</label>
+											<input
+												type="password"
+												value={userPassword}
+												onChange={(e) => setUserPassword(e.target.value)}
+												className="w-full p-2 border rounded"
+												required
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Confirm Password</label>
+											<input
+												type="password"
+												value={userConfirmPassword}
+												onChange={(e) => setUserConfirmPassword(e.target.value)}
+												className="w-full p-2 border rounded"
+												required
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Role</label>
+											<select
+												value={userRole}
+												onChange={(e) => setUserRole(e.target.value as 'user' | 'admin')}
+												className="w-full p-2 border rounded"
+											>
+												<option value="user">User</option>
+												<option value="admin">Admin</option>
+											</select>
+										</div>
+										<div className="flex space-x-2">
+											<Button onClick={handleCreateUser}>Create User</Button>
+											<Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+										</div>
+									</div>
+								</CardContent>
+							</Card>
+						)}
 						{editingUser && (
 							<Card className="mb-6">
 								<CardHeader>
@@ -197,6 +316,17 @@ const AdminPage = () => {
 												className="w-full p-2 border rounded"
 												placeholder="Confirm new password"
 											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Role</label>
+											<select
+												value={userRole}
+												onChange={(e) => setUserRole(e.target.value as 'user' | 'admin')}
+												className="w-full p-2 border rounded"
+											>
+												<option value="user">User</option>
+												<option value="admin">Admin</option>
+											</select>
 										</div>
 										<div className="flex space-x-2">
 											<Button onClick={handleUpdateUser}>Save Changes</Button>

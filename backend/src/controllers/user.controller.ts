@@ -16,6 +16,7 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { Request, Response } from 'express'
+import * as bcrypt from 'bcrypt'
 
 import { UserSignInResponseDto } from '../dto/user.dto'
 
@@ -26,7 +27,7 @@ import {
   TokenService,
   UserService,
 } from '@/services'
-import type { IUser, RequestWithUser } from '@/types'
+import type { IUser, IUserRoleOp, RequestWithUser } from '@/types'
 
 @Controller('users')
 export class UserController {
@@ -236,7 +237,6 @@ export class UserController {
         throw new UnauthorizedException()
       } else {
         const isAdmin = userData.role === 'admin'
-        // Only admins can delete users
         if (!isAdmin) {
           throw new ForbiddenException(
             'Only administrators can delete users.',
@@ -247,7 +247,6 @@ export class UserController {
       throw new UnauthorizedException()
     }
 
-    // Prevent admins from deleting themselves
     if (req.user.id === id) {
       throw new ForbiddenException(
         'You cannot delete your own account.',
@@ -259,5 +258,56 @@ export class UserController {
       throw new NotFoundException(`User with ID ${id} not found`)
     }
     return { success: true }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('create')
+  async createUser(
+    @Req() req: RequestWithUser,
+    @Body()
+    userData: {
+      email: string
+      firstname: string
+      lastname: string
+      password: string
+      role: IUserRoleOp
+    },
+  ) {
+    if (req?.user) {
+      const adminData = await this.userService.findById(req.user.id)
+      if (!adminData) {
+        throw new UnauthorizedException()
+      } else {
+        const isAdmin = adminData.role === 'admin'
+        if (!isAdmin) {
+          throw new ForbiddenException(
+            'Only administrators can create users.',
+          )
+        }
+      }
+    } else {
+      throw new UnauthorizedException()
+    }
+
+    const existingUser = await this.userService.findOne({
+      email: userData.email,
+    })
+    if (existingUser) {
+      throw new BadRequestException(
+        `User with email ${userData.email} already exists`,
+      )
+    }
+
+    const hashPassword = await bcrypt.hash(userData.password, 3)
+
+    const user = await this.userService.createUser({
+      email: userData.email,
+      password: hashPassword,
+      firstname: userData.firstname,
+      lastname: userData.lastname,
+      role: userData.role,
+    })
+
+    return new UserDto(user)
   }
 }

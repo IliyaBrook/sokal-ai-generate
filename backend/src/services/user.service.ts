@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import type {
   IAuthResponse,
   ISignUpData,
+  IUserRoleOp,
 } from '@sokal_ai_generate/shared-types'
 import * as bcrypt from 'bcrypt'
 import type { Model } from 'mongoose'
@@ -34,9 +35,8 @@ export class UserService {
     id: string,
     userData: Partial<IUser>,
   ): Promise<UserDto | null> {
-    // If password is provided, hash it before saving
     if (userData.password) {
-      userData.password = await bcrypt.hash(userData.password, 3);
+      userData.password = await bcrypt.hash(userData.password, 3)
     }
 
     const user = await this.userModel.findByIdAndUpdate(
@@ -75,7 +75,7 @@ export class UserService {
     return this.userModel.findOne(projection).exec()
   }
 
-  async createUser(userData: ISignUpData): Promise<TUserDocument> {
+  async createUser(userData: ISignUpData & { role?: IUserRoleOp }): Promise<TUserDocument> {
     const user = new this.userModel(userData)
     return user.save()
   }
